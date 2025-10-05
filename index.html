@@ -452,6 +452,9 @@
                 <button onclick="showAdminUsers()" id="usersTab" class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     👥 Usuarios
                 </button>
+                <button onclick="showAdminMemory()" id="memoryTab" class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                    🗃️ Memoria Local
+                </button>
             </div>
 
             <div id="adminStockSection" class="mb-6">
@@ -483,6 +486,15 @@
                 <div id="adminUsersList" class="space-y-3">
                     </div>
             </div>
+
+            <div id="adminMemorySection" class="hidden mb-6">
+                <h3 class="text-lg font-semibold mb-3">🗃️ Datos Guardados Localmente</h3>
+                <div id="memoryList" class="space-y-4">
+                    </div>
+                <button onclick="clearLocalMemory()" class="w-full bg-red-500 text-white py-2 rounded-lg font-medium mt-4 hover:bg-red-600 transition-colors">
+                    ⚠️ Borrar Todos los Datos Locales
+                </button>
+            </div>
         </div>
     </div>
 
@@ -506,7 +518,7 @@
                 
                 <div>
                     <label class="block text-sm font-medium mb-1">Imagen de Vista Previa</label>
-                    <input type="url" id="productImageURL" class="w-full border rounded-lg px-3 py-2 mb-2 text-gray-800" placeholder="Opcional: Enlace URL a la imagen">
+                    <input type="url" id="productImageURL" class="w-full border rounded-lg px-3 py-2 mb-2 text-gray-800" placeholder="Opcional: Enlace URL a la imagen" onchange="document.getElementById('productImageFile').value = ''; document.getElementById('imagePreviewStatus').textContent = this.value ? 'Usando URL ✓' : 'Ningún archivo seleccionado.';">
                     
                     <div class="flex items-center space-x-2">
                         <span class="text-gray-500 text-xs">O</span>
@@ -519,7 +531,7 @@
                         <button type="button" onclick="document.getElementById('productImageFile').click()" class="w-full py-2 px-4 bg-gray-100 text-blue-600 rounded-lg hover:bg-gray-200 transition-colors">
                             📁 Cargar desde Dispositivo
                         </button>
-                        <p id="imagePreviewStatus" class="text-xs mt-2 text-gray-600"></p>
+                        <p id="imagePreviewStatus" class="text-xs mt-2 text-gray-600">Ningún archivo seleccionado.</p>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
@@ -596,7 +608,7 @@
             
             <div id="previewImageContainer" class="relative h-64 w-full bg-preview rounded-t-3xl" style="background-image: url('https://images.unsplash.com/photo-1541167760496-1628856ab22d?q=80&w=2047&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')">
                 <button onclick="closeProductPreview()" class="absolute top-4 left-4 p-2 bg-white bg-opacity-80 rounded-full shadow-lg z-10 hover:bg-opacity-100 transition-colors">
-                    <svg class="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
@@ -678,10 +690,70 @@
 
     <script>
         // ====================================================================================
-        // E S T A D O S
+        // G E S T I Ó N   D E   M E M O R I A   L O C A L
         // ====================================================================================
 
-        // Materia Prima
+        const STORAGE_KEYS = {
+            PRODUCTS: 'cafetec_products',
+            MATERIALS: 'cafetec_materials',
+            ORDERS: 'cafetec_orders',
+            USERS: 'cafetec_users',
+            CURRENT_USER: 'cafetec_current_user',
+            ORDER_ID_COUNTER: 'cafetec_order_id_counter'
+        };
+
+        function saveState() {
+            localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
+            localStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(rawMaterials));
+            localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
+            localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+            localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
+            
+            // Si el usuario está logeado, recargar la pantalla correcta
+            if (currentUser && currentUser.userType === 'admin') {
+                showAdminPanel();
+            } else if (currentUser) {
+                showWelcome();
+            } else {
+                showLogin();
+            }
+        }
+
+        function loadState() {
+            const storedProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
+            const storedMaterials = localStorage.getItem(STORAGE_KEYS.MATERIALS);
+            const storedOrders = localStorage.getItem(STORAGE_KEYS.ORDERS);
+            const storedUsers = localStorage.getItem(STORAGE_KEYS.USERS);
+            const storedCurrentUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+            const storedOrderIdCounter = localStorage.getItem(STORAGE_KEYS.ORDER_ID_COUNTER);
+
+            if (storedProducts) products = JSON.parse(storedProducts);
+            if (storedMaterials) rawMaterials = JSON.parse(storedMaterials);
+            if (storedOrders) orders = JSON.parse(storedOrders);
+            if (storedUsers) users = JSON.parse(storedUsers);
+            if (storedCurrentUser) currentUser = JSON.parse(storedCurrentUser);
+            if (storedOrderIdCounter) orderIdCounter = parseInt(storedOrderIdCounter);
+
+            // Si hay un usuario cargado, iniciar sesión automáticamente
+            if (currentUser) {
+                 if (currentUser.userType === 'admin') {
+                    showAdminPanel();
+                } else {
+                    document.getElementById('welcomeUserName').textContent = currentUser.fullName;
+                    showWelcome();
+                }
+            } else {
+                showLogin();
+            }
+        }
+        
+        // ====================================================================================
+        // E S T A D O S   I N I C I A L E S 
+        // (Usados solo si localStorage está vacío)
+        // ====================================================================================
+
+        // Materia Prima (Valores iniciales)
         let rawMaterials = [
             { id: 101, name: 'Granos de Café (kg)', stock: 5.0, unit: 'kg', emoji: '☕' }, 
             { id: 102, name: 'Leche (litros)', stock: 20.0, unit: 'L', emoji: '🥛' },
@@ -694,7 +766,7 @@
             { id: 109, name: 'Chocolate (kg)', stock: 18.0, unit: 'kg', emoji: '🍫' }
         ];
 
-        // Productos (ACTUALIZADO con datos de vista previa)
+        // Productos (Valores iniciales)
         let products = [
             {
                 id: 1, name: 'Café Americano', price: 25.00, category: 'bebidas', stock: 50, emoji: '☕',
@@ -747,6 +819,18 @@
         let users = [];
         let currentUser = null;
         let previewProduct = null;
+        
+        // Si localStorage no tiene datos, inicializar con valores por defecto
+        if (!localStorage.getItem(STORAGE_KEYS.PRODUCTS)) {
+             localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
+             localStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(rawMaterials));
+             localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
+             localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+             localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
+        }
+
+        // Cargar estado al inicio de la aplicación
+        loadState();
 
 
         // ====================================================================================
@@ -824,6 +908,7 @@
                 if (isPhoneMatch) {
                     user.password = newPassword;
                     alert(`Contraseña restablecida exitosamente para ${user.fullName}. Por favor inicia sesión.`);
+                    saveState();
                     closePasswordResetModal();
                     showLogin();
                     return;
@@ -949,6 +1034,7 @@
             document.getElementById('registerForm').reset();
             document.getElementById('credentialPreview').classList.add('hidden');
             toggleUserFields();
+            saveState(); // Guardar el nuevo usuario
             showLogin();
         });
 
@@ -966,6 +1052,7 @@
             if (user) {
                 currentUser = user;
                 document.getElementById('welcomeUserName').textContent = user.fullName;
+                saveState(); // Guardar el inicio de sesión
                 showWelcome();
             } else {
                 alert('Usuario o contraseña incorrectos');
@@ -974,6 +1061,7 @@
 
         function loginAsAdmin() {
             currentUser = { id: 0, userType: 'admin', fullName: 'Administrador', username: 'admin' };
+            saveState(); // Guardar el inicio de sesión
             showAdminPanel();
         }
 
@@ -981,6 +1069,7 @@
             currentUser = null;
             cart = [];
             updateCartCount();
+            saveState(); // Guardar el cierre de sesión
             showLogin();
         }
 
@@ -1037,6 +1126,7 @@
             document.getElementById('adminOrdersSection').classList.add('hidden');
             document.getElementById('adminUsersSection').classList.add('hidden');
             document.getElementById('adminStatsSection').classList.add('hidden');
+            document.getElementById('adminMemorySection').classList.add('hidden');
             
             renderAdminProducts();
         }
@@ -1054,6 +1144,7 @@
             document.getElementById('adminOrdersSection').classList.add('hidden');
             document.getElementById('adminUsersSection').classList.add('hidden');
             document.getElementById('adminStatsSection').classList.add('hidden');
+            document.getElementById('adminMemorySection').classList.add('hidden');
             
             renderAdminRawMaterials();
         }
@@ -1071,6 +1162,7 @@
             document.getElementById('adminOrdersSection').classList.remove('hidden');
             document.getElementById('adminUsersSection').classList.add('hidden');
             document.getElementById('adminStatsSection').classList.add('hidden');
+            document.getElementById('adminMemorySection').classList.add('hidden');
             
             renderAdminOrders();
         }
@@ -1088,6 +1180,7 @@
             document.getElementById('adminOrdersSection').classList.add('hidden');
             document.getElementById('adminUsersSection').classList.add('hidden');
             document.getElementById('adminStatsSection').classList.remove('hidden');
+            document.getElementById('adminMemorySection').classList.add('hidden');
 
             renderSalesStats();
         }
@@ -1105,8 +1198,86 @@
             document.getElementById('adminOrdersSection').classList.add('hidden');
             document.getElementById('adminUsersSection').classList.remove('hidden');
             document.getElementById('adminStatsSection').classList.add('hidden');
+            document.getElementById('adminMemorySection').classList.add('hidden');
             
             renderAdminUsers();
+        }
+        
+        function showAdminMemory() {
+            document.querySelectorAll('.admin-tab').forEach(tab => {
+                tab.classList.remove('bg-blue-600', 'text-white');
+                tab.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            document.getElementById('memoryTab').classList.remove('bg-gray-200', 'text-gray-700');
+            document.getElementById('memoryTab').classList.add('bg-blue-600', 'text-white');
+            
+            document.getElementById('adminStockSection').classList.add('hidden');
+            document.getElementById('adminRawMaterialsSection').classList.add('hidden');
+            document.getElementById('adminOrdersSection').classList.add('hidden');
+            document.getElementById('adminUsersSection').classList.add('hidden');
+            document.getElementById('adminStatsSection').classList.add('hidden');
+            document.getElementById('adminMemorySection').classList.remove('hidden');
+            
+            renderLocalMemory();
+        }
+
+        function renderLocalMemory() {
+            const memoryList = document.getElementById('memoryList');
+            let html = '';
+            let totalSize = 0;
+
+            for (const key in localStorage) {
+                if (localStorage.hasOwnProperty(key) && key.startsWith('cafetec_')) {
+                    const value = localStorage.getItem(key);
+                    const size = value.length; // Estimación simple del tamaño en bytes
+                    totalSize += size;
+                    
+                    let displayValue = value;
+                    try {
+                        const parsed = JSON.parse(value);
+                        displayValue = JSON.stringify(parsed, null, 2).substring(0, 500) + '...';
+                    } catch {
+                        // Si no es JSON válido, usar el valor como está
+                        displayValue = value.substring(0, 500) + '...';
+                    }
+                    
+                    html += `
+                        <div class="bg-white border rounded-lg p-4 shadow-sm">
+                            <h4 class="font-bold text-lg">${key.replace('cafetec_', '').toUpperCase()}</h4>
+                            <p class="text-xs text-gray-500 mb-2">Tamaño: ${(size / 1024).toFixed(2)} KB</p>
+                            <pre class="bg-gray-100 p-2 text-xs rounded overflow-x-auto whitespace-pre-wrap">${displayValue}</pre>
+                        </div>
+                    `;
+                }
+            }
+
+            if (totalSize > 0) {
+                 html = `<p class="text-sm font-medium mb-4">Total de datos almacenados: ${(totalSize / 1024).toFixed(2)} KB</p>` + html;
+            } else {
+                html = `<p class="text-center text-gray-500 py-8">No hay datos de CAFE-TEC guardados en la memoria local.</p>`;
+            }
+
+            memoryList.innerHTML = html;
+        }
+        
+        function clearLocalMemory() {
+            if (confirm("¡ADVERTENCIA! ¿Estás seguro de que deseas borrar TODOS los datos guardados localmente (productos, usuarios, pedidos, etc.)? Esta acción es irreversible.")) {
+                for (const key in localStorage) {
+                    if (localStorage.hasOwnProperty(key) && key.startsWith('cafetec_')) {
+                        localStorage.removeItem(key);
+                    }
+                }
+                // Reiniciar el estado de la aplicación a los valores por defecto
+                products = [/* ... productos iniciales ... */];
+                rawMaterials = [/* ... materias primas iniciales ... */];
+                orders = [];
+                users = [];
+                currentUser = null;
+                orderIdCounter = 1;
+                
+                // Recargar para usar los valores predeterminados y guardar el estado vacío
+                location.reload(); 
+            }
         }
         
         // ====================================================================================
@@ -1171,7 +1342,7 @@
             document.getElementById('previewStock').textContent = product.stock > 0 ? `${product.stock} disp.` : 'Agotado';
             
             const imageContainer = document.getElementById('previewImageContainer');
-            // Usar la imagen guardada o un placeholder
+            // Prioriza imagen local (data URL) sobre URL
             const imageSource = product.imageLocal || product.imageURL || 'https://images.unsplash.com/photo-1541167760496-1628856ab22d?q=80&w=2047&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
             imageContainer.style.backgroundImage = `url(${imageSource})`;
             
@@ -1454,6 +1625,7 @@
             document.getElementById('cardCvv').value = '';
             document.getElementById('cardHolder').value = '';
             updateCartCount();
+            saveState(); // Guardar el nuevo pedido y stock
             showCustomerMenu();
         }
 
@@ -1564,6 +1736,7 @@
                 material.stock = stock;
             }
 
+            saveState(); // Guardar cambios en materia prima
             renderAdminRawMaterials();
             closeRawMaterialModal();
         });
@@ -1841,7 +2014,8 @@
                 </div>
             `).join('');
         }
-        
+
+
         // --- Funciones del Modal de Productos Finales ---
         
         function previewLocalImage(event) {
@@ -1849,8 +2023,9 @@
             const statusEl = document.getElementById('imagePreviewStatus');
 
             if (file) {
-                statusEl.textContent = `Archivo: ${file.name} ✓`;
-                // NOTA: La codificación a Data URL se hace en el handler del formulario.
+                statusEl.textContent = `Archivo: ${file.name} ✓ (Guardado al confirmar)`;
+                // Limpiar el campo de URL si se carga un archivo local
+                document.getElementById('productImageURL').value = ''; 
             } else {
                 statusEl.textContent = 'Ningún archivo seleccionado.';
             }
@@ -1880,10 +2055,17 @@
                 document.getElementById('productEmoji').value = product.emoji || '';
                 
                 document.getElementById('productDescription').value = product.description || '';
-                // Cargar URL existente
                 document.getElementById('productImageURL').value = product.imageURL || '';
-                // Mostrar estado de la imagen local si existe
-                document.getElementById('imagePreviewStatus').textContent = product.imageLocal ? 'Imagen Local Cargada ✓' : 'Ningún archivo seleccionado.';
+                
+                // Mostrar estado de la imagen (local o URL)
+                if (product.imageLocal) {
+                    document.getElementById('imagePreviewStatus').textContent = 'Imagen Local Cargada ✓';
+                } else if (product.imageURL) {
+                    document.getElementById('imagePreviewStatus').textContent = 'Usando URL ✓';
+                } else {
+                    document.getElementById('imagePreviewStatus').textContent = 'Ningún archivo seleccionado.';
+                }
+                document.getElementById('productImageFile').value = null; // Limpiar el input file
                 
                 document.getElementById('productTime').value = product.time || '';
                 document.getElementById('productCalories').value = product.calories || '';
@@ -1898,6 +2080,7 @@
         function deleteProduct(id) {
             if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
                 products = products.filter(p => p.id !== id);
+                saveState(); // Guardar cambios
                 renderAdminProducts();
             }
         }
@@ -1910,6 +2093,7 @@
             const order = orders.find(o => o.id === orderId);
             if (order) {
                 order.status = order.status === 'pendiente' ? 'listo' : 'pendiente';
+                saveState(); // Guardar cambios
                 renderAdminOrders();
             }
         }
@@ -1918,6 +2102,7 @@
             const order = orders.find(o => o.id === orderId);
             if (order) {
                 order.isPaid = !order.isPaid;
+                saveState(); // Guardar cambios
                 renderAdminOrders();
             }
         }
@@ -1933,7 +2118,7 @@
             const category = document.getElementById('productCategory').value;
             const stock = parseInt(document.getElementById('productStock').value);
             
-            // Recoger campos de Preview
+            // Recoger campos de Preview (NUEVOS)
             const description = document.getElementById('productDescription').value;
             const imageURL = document.getElementById('productImageURL').value;
             const imageFile = document.getElementById('productImageFile').files[0];
@@ -1946,42 +2131,7 @@
                 'postres': [{ materialId: 109, quantity: 0.1 }]
             };
             
-            // Lógica para manejar la imagen (usando Promise para Data URL)
-            const handleImageSave = (productToSave) => {
-                
-                if (imageFile) {
-                    // Si se cargó un archivo local, convertir a Data URL y sobreescribir URL/Local
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        productToSave.imageLocal = event.target.result; // Data URL
-                        productToSave.imageURL = ''; // Limpiar URL si se usa local
-                        saveProduct(productToSave);
-                    };
-                    reader.readAsDataURL(imageFile);
-                } else {
-                    // Si no hay archivo local, solo usar/actualizar la URL y limpiar el local
-                    productToSave.imageURL = imageURL;
-                    productToSave.imageLocal = '';
-                    saveProduct(productToSave);
-                }
-            };
-            
-            const saveProduct = (productToSave) => {
-                 if (id) {
-                    // Edición de producto existente
-                    Object.assign(products.find(p => p.id === parseInt(id)), productToSave);
-                } else {
-                    // Agregar nuevo producto
-                    const newId = Math.max(...products.map(p => p.id), 0) + 1;
-                    productToSave.id = newId;
-                    products.push(productToSave);
-                }
-                
-                renderAdminProducts();
-                closeModal();
-            }
-
-            // Crear objeto base (se completará en handleImageSave)
+            // Crear objeto base
             const productToSave = {
                 id: id ? parseInt(id) : null,
                 name,
@@ -1993,9 +2143,50 @@
                 description,
                 time,
                 calories,
+                imageURL: '',
+                imageLocal: '',
+            };
+
+            const existingProduct = id ? products.find(p => p.id === parseInt(id)) : null;
+
+            const finalizeSave = (localData = null) => {
+                // Lógica de prioridad de imagen
+                if (localData) {
+                    productToSave.imageLocal = localData;
+                    productToSave.imageURL = '';
+                } else if (imageURL) {
+                    productToSave.imageURL = imageURL;
+                    productToSave.imageLocal = '';
+                } else if (existingProduct) {
+                    // Mantener la imagen local anterior si no se proporciona una nueva URL o archivo
+                    productToSave.imageLocal = existingProduct.imageLocal || '';
+                    productToSave.imageURL = existingProduct.imageURL || '';
+                }
+
+
+                 if (id) {
+                    Object.assign(products.find(p => p.id === parseInt(id)), productToSave);
+                } else {
+                    const newId = Math.max(...products.map(p => p.id), 0) + 1;
+                    productToSave.id = newId;
+                    products.push(productToSave);
+                }
+                
+                saveState(); // Guardar cambios
+                renderAdminProducts();
+                closeModal();
             };
             
-            handleImageSave(productToSave);
+            // Lógica para manejar la imagen (usando Promise para Data URL)
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    finalizeSave(e.target.result); // Pasa la Data URL
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                finalizeSave(); // No hay archivo para leer
+            }
         });
 
         // Formateo automático de campos de tarjeta
