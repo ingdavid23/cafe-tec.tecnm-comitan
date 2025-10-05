@@ -12,6 +12,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .slide-up { animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .bg-preview { background-size: cover; background-position: center; }
     </style>
 </head>
 <body class="bg-gray-50 max-w-md mx-auto min-h-screen">
@@ -502,9 +503,24 @@
                     <label class="block text-sm font-medium mb-1">Descripción</label>
                     <textarea id="productDescription" class="w-full border rounded-lg px-3 py-2 resize-none h-16"></textarea>
                 </div>
+                
                 <div>
-                    <label class="block text-sm font-medium mb-1">URL de Imagen</label>
-                    <input type="url" id="productImageURL" class="w-full border rounded-lg px-3 py-2" placeholder="https://ejemplo.com/img.jpg">
+                    <label class="block text-sm font-medium mb-1">Imagen de Vista Previa</label>
+                    <input type="url" id="productImageURL" class="w-full border rounded-lg px-3 py-2 mb-2 text-gray-800" placeholder="Opcional: Enlace URL a la imagen">
+                    
+                    <div class="flex items-center space-x-2">
+                        <span class="text-gray-500 text-xs">O</span>
+                        <div class="flex-grow border-t border-gray-300"></div>
+                        <span class="text-gray-500 text-xs">Cargar Archivo</span>
+                    </div>
+
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-3 mt-2 text-center">
+                        <input type="file" id="productImageFile" accept="image/*" class="hidden" onchange="previewLocalImage(event)">
+                        <button type="button" onclick="document.getElementById('productImageFile').click()" class="w-full py-2 px-4 bg-gray-100 text-blue-600 rounded-lg hover:bg-gray-200 transition-colors">
+                            📁 Cargar desde Dispositivo
+                        </button>
+                        <p id="imagePreviewStatus" class="text-xs mt-2 text-gray-600"></p>
+                    </div>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
@@ -578,7 +594,7 @@
     <div id="productPreviewModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50">
         <div class="bg-white rounded-t-3xl w-full max-w-md slide-up max-h-[90vh] overflow-y-auto">
             
-            <div id="previewImageContainer" class="relative h-64 w-full bg-cover bg-center rounded-t-3xl" style="background-image: url('https://images.unsplash.com/photo-1541167760496-1628856ab22d?q=80&w=2047&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')">
+            <div id="previewImageContainer" class="relative h-64 w-full bg-preview rounded-t-3xl" style="background-image: url('https://images.unsplash.com/photo-1541167760496-1628856ab22d?q=80&w=2047&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')">
                 <button onclick="closeProductPreview()" class="absolute top-4 left-4 p-2 bg-white bg-opacity-80 rounded-full shadow-lg z-10 hover:bg-opacity-100 transition-colors">
                     <svg class="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -803,8 +819,6 @@
             let user = users.find(u => u.username === username);
 
             if (user) {
-                // Para estudiantes, solo se usa el No. Control (username).
-                // Para personal, se verifica el phone (si existe).
                 const isPhoneMatch = user.userType === 'estudiante' || user.phoneNumber === phone;
                 
                 if (isPhoneMatch) {
@@ -1157,7 +1171,9 @@
             document.getElementById('previewStock').textContent = product.stock > 0 ? `${product.stock} disp.` : 'Agotado';
             
             const imageContainer = document.getElementById('previewImageContainer');
-            imageContainer.style.backgroundImage = `url(${product.imageURL || 'https://images.unsplash.com/photo-1541167760496-1628856ab22d?q=80&w=2047&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'})`;
+            // Usar la imagen guardada o un placeholder
+            const imageSource = product.imageLocal || product.imageURL || 'https://images.unsplash.com/photo-1541167760496-1628856ab22d?q=80&w=2047&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+            imageContainer.style.backgroundImage = `url(${imageSource})`;
             
             const isOutOfStock = product.stock === 0 || !checkRawMaterialStock(product, 1);
             const addButton = document.getElementById('previewAddToCartButton');
@@ -1825,6 +1841,20 @@
                 </div>
             `).join('');
         }
+        
+        // --- Funciones del Modal de Productos Finales ---
+        
+        function previewLocalImage(event) {
+            const file = event.target.files[0];
+            const statusEl = document.getElementById('imagePreviewStatus');
+
+            if (file) {
+                statusEl.textContent = `Archivo: ${file.name} ✓`;
+                // NOTA: La codificación a Data URL se hace en el handler del formulario.
+            } else {
+                statusEl.textContent = 'Ningún archivo seleccionado.';
+            }
+        }
 
 
         function addNewProduct() {
@@ -1838,6 +1868,7 @@
             document.getElementById('productId').value = '';
             document.getElementById('productModal').classList.remove('hidden');
             document.getElementById('productEmoji').value = ''; 
+            document.getElementById('imagePreviewStatus').textContent = 'Ningún archivo seleccionado.';
         }
 
         function editProduct(id) {
@@ -1847,9 +1878,13 @@
                 document.getElementById('productId').value = product.id;
                 document.getElementById('productName').value = product.name;
                 document.getElementById('productEmoji').value = product.emoji || '';
-                // Cargar campos de Preview
+                
                 document.getElementById('productDescription').value = product.description || '';
+                // Cargar URL existente
                 document.getElementById('productImageURL').value = product.imageURL || '';
+                // Mostrar estado de la imagen local si existe
+                document.getElementById('imagePreviewStatus').textContent = product.imageLocal ? 'Imagen Local Cargada ✓' : 'Ningún archivo seleccionado.';
+                
                 document.getElementById('productTime').value = product.time || '';
                 document.getElementById('productCalories').value = product.calories || '';
                 
@@ -1887,7 +1922,7 @@
             }
         }
 
-        // Manejar formulario de producto (MODIFICADO para guardar Preview Fields)
+        // Manejar formulario de producto (MODIFICADO para guardar imagen local/url)
         document.getElementById('productForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
@@ -1898,54 +1933,69 @@
             const category = document.getElementById('productCategory').value;
             const stock = parseInt(document.getElementById('productStock').value);
             
-            // Recoger campos de Preview (NUEVOS)
+            // Recoger campos de Preview
             const description = document.getElementById('productDescription').value;
             const imageURL = document.getElementById('productImageURL').value;
+            const imageFile = document.getElementById('productImageFile').files[0];
             const time = document.getElementById('productTime').value;
             const calories = document.getElementById('productCalories').value;
-
 
             const baseMaterials = {
                 'bebidas': [{ materialId: 101, quantity: 0.05 }],
                 'comida': [{ materialId: 104, quantity: 1 }],
                 'postres': [{ materialId: 109, quantity: 0.1 }]
             };
-
-
-            if (id) {
-                const product = products.find(p => p.id === parseInt(id));
-                if (product) {
-                    product.name = name;
-                    product.emoji = emoji; 
-                    product.price = price;
-                    product.category = category;
-                    product.stock = stock;
-                    // Guardar campos de Preview
-                    product.description = description;
-                    product.imageURL = imageURL;
-                    product.time = time;
-                    product.calories = calories;
+            
+            // Lógica para manejar la imagen (usando Promise para Data URL)
+            const handleImageSave = (productToSave) => {
+                
+                if (imageFile) {
+                    // Si se cargó un archivo local, convertir a Data URL y sobreescribir URL/Local
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        productToSave.imageLocal = event.target.result; // Data URL
+                        productToSave.imageURL = ''; // Limpiar URL si se usa local
+                        saveProduct(productToSave);
+                    };
+                    reader.readAsDataURL(imageFile);
+                } else {
+                    // Si no hay archivo local, solo usar/actualizar la URL y limpiar el local
+                    productToSave.imageURL = imageURL;
+                    productToSave.imageLocal = '';
+                    saveProduct(productToSave);
                 }
-            } else {
-                const newId = Math.max(...products.map(p => p.id), 0) + 1;
-                products.push({
-                    id: newId,
-                    name,
-                    price,
-                    category,
-                    stock,
-                    emoji: emoji, 
-                    materialsNeeded: baseMaterials[category] || [],
-                    // Guardar campos de Preview
-                    description: description,
-                    imageURL: imageURL,
-                    time: time,
-                    calories: calories,
-                });
+            };
+            
+            const saveProduct = (productToSave) => {
+                 if (id) {
+                    // Edición de producto existente
+                    Object.assign(products.find(p => p.id === parseInt(id)), productToSave);
+                } else {
+                    // Agregar nuevo producto
+                    const newId = Math.max(...products.map(p => p.id), 0) + 1;
+                    productToSave.id = newId;
+                    products.push(productToSave);
+                }
+                
+                renderAdminProducts();
+                closeModal();
             }
 
-            renderAdminProducts();
-            closeModal();
+            // Crear objeto base (se completará en handleImageSave)
+            const productToSave = {
+                id: id ? parseInt(id) : null,
+                name,
+                price,
+                category,
+                stock,
+                emoji: emoji, 
+                materialsNeeded: baseMaterials[category] || [],
+                description,
+                time,
+                calories,
+            };
+            
+            handleImageSave(productToSave);
         });
 
         // Formateo automático de campos de tarjeta
