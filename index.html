@@ -499,6 +499,24 @@
                     <input type="text" id="productEmoji" class="w-full border rounded-lg px-3 py-2" maxlength="2" required>
                 </div>
                 <div>
+                    <label class="block text-sm font-medium mb-1">Descripción</label>
+                    <textarea id="productDescription" class="w-full border rounded-lg px-3 py-2 resize-none h-16"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">URL de Imagen</label>
+                    <input type="url" id="productImageURL" class="w-full border rounded-lg px-3 py-2" placeholder="https://ejemplo.com/img.jpg">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Tiempo (Ej: 5 min)</label>
+                        <input type="text" id="productTime" class="w-full border rounded-lg px-3 py-2" placeholder="Ej: 5 min">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Calorías (Ej: 150 Cal)</label>
+                        <input type="text" id="productCalories" class="w-full border rounded-lg px-3 py-2" placeholder="Ej: 150 Cal">
+                    </div>
+                </div>
+                <div>
                     <label class="block text-sm font-medium mb-1">Precio</label>
                     <input type="number" id="productPrice" step="0.01" class="w-full border rounded-lg px-3 py-2" required>
                 </div>
@@ -785,8 +803,8 @@
             let user = users.find(u => u.username === username);
 
             if (user) {
-                // Verificar teléfono para personal, o ignorar para estudiantes (asumiendo que el número de control es suficiente)
-                // Nota: En un entorno real, se enviaría un código al teléfono o correo.
+                // Para estudiantes, solo se usa el No. Control (username).
+                // Para personal, se verifica el phone (si existe).
                 const isPhoneMatch = user.userType === 'estudiante' || user.phoneNumber === phone;
                 
                 if (isPhoneMatch) {
@@ -801,8 +819,6 @@
             alert('Error: Usuario o Teléfono registrado no coinciden. Inténtalo de nuevo.');
         });
         
-        // El resto de funciones de autenticación se mantienen igual...
-
         function showLogin() {
             document.getElementById('loginScreen').classList.remove('hidden');
             document.getElementById('registerScreen').classList.add('hidden');
@@ -1831,6 +1847,12 @@
                 document.getElementById('productId').value = product.id;
                 document.getElementById('productName').value = product.name;
                 document.getElementById('productEmoji').value = product.emoji || '';
+                // Cargar campos de Preview
+                document.getElementById('productDescription').value = product.description || '';
+                document.getElementById('productImageURL').value = product.imageURL || '';
+                document.getElementById('productTime').value = product.time || '';
+                document.getElementById('productCalories').value = product.calories || '';
+                
                 document.getElementById('productPrice').value = product.price;
                 document.getElementById('productCategory').value = product.category;
                 document.getElementById('productStock').value = product.stock;
@@ -1865,7 +1887,7 @@
             }
         }
 
-        // Manejar formulario de producto (MODIFICADO para guardar Emoji)
+        // Manejar formulario de producto (MODIFICADO para guardar Preview Fields)
         document.getElementById('productForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
@@ -1875,6 +1897,13 @@
             const price = parseFloat(document.getElementById('productPrice').value);
             const category = document.getElementById('productCategory').value;
             const stock = parseInt(document.getElementById('productStock').value);
+            
+            // Recoger campos de Preview (NUEVOS)
+            const description = document.getElementById('productDescription').value;
+            const imageURL = document.getElementById('productImageURL').value;
+            const time = document.getElementById('productTime').value;
+            const calories = document.getElementById('productCalories').value;
+
 
             const baseMaterials = {
                 'bebidas': [{ materialId: 101, quantity: 0.05 }],
@@ -1891,6 +1920,11 @@
                     product.price = price;
                     product.category = category;
                     product.stock = stock;
+                    // Guardar campos de Preview
+                    product.description = description;
+                    product.imageURL = imageURL;
+                    product.time = time;
+                    product.calories = calories;
                 }
             } else {
                 const newId = Math.max(...products.map(p => p.id), 0) + 1;
@@ -1901,7 +1935,12 @@
                     category,
                     stock,
                     emoji: emoji, 
-                    materialsNeeded: baseMaterials[category] || []
+                    materialsNeeded: baseMaterials[category] || [],
+                    // Guardar campos de Preview
+                    description: description,
+                    imageURL: imageURL,
+                    time: time,
+                    calories: calories,
                 });
             }
 
