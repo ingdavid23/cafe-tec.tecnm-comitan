@@ -464,7 +464,13 @@
             </div>
 
             <div id="adminRawMaterialsSection" class="hidden mb-6">
-                <h3 class="text-lg font-semibold mb-3">Gestión de Materia Prima</h3>
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-lg font-semibold">Gestión de Materia Prima</h3>
+                    <button onclick="addNewRawMaterial()" class="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                        Nueva MP
+                    </button>
+                </div>
                 <div id="adminRawMaterialsList" class="space-y-3">
                     </div>
             </div>
@@ -499,7 +505,7 @@
     </div>
 
     <div id="productModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up">
+        <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up max-h-[90vh] overflow-y-auto">
             <h3 id="modalTitle" class="text-lg font-bold mb-4">Agregar Producto</h3>
             <form id="productForm" class="space-y-4">
                 <input type="hidden" id="productId">
@@ -557,8 +563,18 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1">Stock</label>
+                    <label class="block text-sm font-medium mb-1">Stock de Producto Final</label>
                     <input type="number" id="productStock" class="w-full border rounded-lg px-3 py-2" required>
+                </div>
+                
+                <div class="border-t pt-4">
+                    <h4 class="font-bold mb-2 text-md text-blue-700">Receta (Materia Prima por 1 unidad)</h4>
+                    <div id="productMaterialsContainer" class="space-y-2 border p-3 rounded-lg bg-gray-50">
+                        <p class="text-sm text-gray-500">Haz clic en "Añadir Materia Prima" para empezar.</p>
+                    </div>
+                    <button type="button" onclick="addMaterialFieldToProductModal()" class="w-full mt-2 py-2 px-4 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600 transition-colors text-sm">
+                        + Añadir Materia Prima
+                    </button>
                 </div>
                 <div class="flex space-x-3">
                     <button type="button" onclick="closeModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-medium">
@@ -579,7 +595,11 @@
                 <input type="hidden" id="materialId">
                 <div>
                     <label class="block text-sm font-medium mb-1">Nombre</label>
-                    <input type="text" id="materialName" class="w-full border rounded-lg px-3 py-2 bg-gray-100" readonly>
+                    <input type="text" id="materialName" class="w-full border rounded-lg px-3 py-2" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Emoji (Ej: ☕, 🍚)</label>
+                    <input type="text" id="materialEmoji" class="w-full border rounded-lg px-3 py-2" maxlength="2" required>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
@@ -587,8 +607,8 @@
                         <input type="number" id="materialStock" step="0.01" class="w-full border rounded-lg px-3 py-2" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Unidad</label>
-                        <input type="text" id="materialUnit" class="w-full border rounded-lg px-3 py-2 bg-gray-100" readonly>
+                        <label class="block text-sm font-medium mb-1">Unidad (Ej: kg, L, pzas)</label>
+                        <input type="text" id="materialUnit" class="w-full border rounded-lg px-3 py-2" required>
                     </div>
                 </div>
                 <div class="flex space-x-3">
@@ -600,6 +620,11 @@
                     </button>
                 </div>
             </form>
+            <div id="materialDeleteContainer" class="mt-4 hidden">
+                 <button type="button" onclick="deleteRawMaterial(parseInt(document.getElementById('materialId').value))" class="w-full bg-red-500 text-white py-2 rounded-lg font-medium hover:bg-red-600">
+                    Eliminar Materia Prima
+                </button>
+            </div>
         </div>
     </div>
 
@@ -690,7 +715,7 @@
 
     <script>
         // ====================================================================================
-        // G E S T I Ó N   D E   M E M O R I A   L O C A L
+        // G E S T I Ó N   D E   M E M O R I A   L O C A L
         // ====================================================================================
 
         const STORAGE_KEYS = {
@@ -749,63 +774,83 @@
         }
         
         // ====================================================================================
-        // E S T A D O S   I N I C I A L E S 
+        // E S T A D O S   I N I C I A L E S 
         // (Usados solo si localStorage está vacío)
         // ====================================================================================
 
         // Materia Prima (Valores iniciales)
         let rawMaterials = [
-            { id: 101, name: 'Granos de Café (kg)', stock: 5.0, unit: 'kg', emoji: '☕' }, 
-            { id: 102, name: 'Leche (litros)', stock: 20.0, unit: 'L', emoji: '🥛' },
-            { id: 103, name: 'Azúcar (kg)', stock: 15.0, unit: 'kg', emoji: '🍚' },
-            { id: 104, name: 'Pan Club (pzas)', stock: 30.0, unit: 'pzas', emoji: '🍞' },
-            { id: 105, name: 'Pollo (kg)', stock: 10.0, unit: 'kg', emoji: '🍗' },
-            { id: 106, name: 'Lechuga (kg)', stock: 8.0, unit: 'kg', emoji: '🥬' },
-            { id: 107, name: 'Aderezo César (L)', stock: 5.0, unit: 'L', emoji: '🧴' },
-            { id: 108, name: 'Queso Crema (kg)', stock: 12.0, unit: 'kg', emoji: '🧀' },
-            { id: 109, name: 'Chocolate (kg)', stock: 18.0, unit: 'kg', emoji: '🍫' }
+            { id: 101, name: 'Granos de Café', stock: 5.0, unit: 'kg', emoji: '☕' }, 
+            { id: 102, name: 'Leche', stock: 20.0, unit: 'L', emoji: '🥛' },
+            { id: 103, name: 'Azúcar', stock: 15.0, unit: 'kg', emoji: '🍚' },
+            { id: 104, name: 'Pan Club', stock: 30.0, unit: 'pzas', emoji: '🍞' },
+            { id: 105, name: 'Pollo', stock: 10.0, unit: 'kg', emoji: '🍗' },
+            { id: 106, name: 'Lechuga', stock: 8.0, unit: 'kg', emoji: '🥬' },
+            { id: 107, name: 'Aderezo César', stock: 5.0, unit: 'L', emoji: '🧴' },
+            { id: 108, name: 'Queso Crema', stock: 12.0, unit: 'kg', emoji: '🧀' },
+            { id: 109, name: 'Chocolate', stock: 18.0, unit: 'kg', emoji: '🍫' }
         ];
 
         // Productos (Valores iniciales)
         let products = [
             {
                 id: 1, name: 'Café Americano', price: 25.00, category: 'bebidas', stock: 50, emoji: '☕',
-                materialsNeeded: [{ materialId: 101, quantity: 0.02 }],
+                materialsNeeded: [
+                    { materialId: 101, quantity: 0.02 }, // 20g de Granos de Café
+                    { materialId: 103, quantity: 0.01 } // 10g de Azúcar (estimado, opcional)
+                ], 
                 imageURL: 'https://images.unsplash.com/photo-1509785116905-f370a1a0fb84?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
                 description: 'El clásico café, simple y aromático. Perfecto para iniciar la mañana o recargar energías.',
                 time: '2 min', calories: '5 Cal'
             },
             {
                 id: 2, name: 'Cappuccino', price: 35.00, category: 'bebidas', stock: 30, emoji: '☕',
-                materialsNeeded: [{ materialId: 101, quantity: 0.015 }, { materialId: 102, quantity: 0.2 }],
+                materialsNeeded: [
+                    { materialId: 101, quantity: 0.015 }, // 15g de Granos de Café
+                    { materialId: 102, quantity: 0.2 } // 200ml de Leche
+                ], 
                 imageURL: 'https://images.unsplash.com/photo-1517454238596-f947477610c4?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
                 description: 'Espresso con leche espumada, suave y cremoso. Una delicia para los amantes del café con leche.',
                 time: '5 min', calories: '120 Cal'
             },
             {
                 id: 3, name: 'Sandwich Club', price: 65.00, category: 'comida', stock: 20, emoji: '🥪',
-                materialsNeeded: [{ materialId: 104, quantity: 2 }, { materialId: 105, quantity: 0.1 }],
+                materialsNeeded: [
+                    { materialId: 104, quantity: 3 }, // 3 pzas de Pan Club
+                    { materialId: 105, quantity: 0.1 }, // 100g de Pollo
+                    { materialId: 106, quantity: 0.05 } // 50g de Lechuga
+                ],
                 imageURL: 'https://images.unsplash.com/photo-1627915570889-019688b13958?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
                 description: 'Clásico sándwich de pollo, jamón, queso y verduras en triple pan tostado.',
                 time: '10 min', calories: '350 Cal'
             },
             {
                 id: 4, name: 'Ensalada César', price: 55.00, category: 'comida', stock: 15, emoji: '🥗',
-                materialsNeeded: [{ materialId: 106, quantity: 0.15 }, { materialId: 107, quantity: 0.05 }],
+                materialsNeeded: [
+                    { materialId: 106, quantity: 0.15 }, // 150g de Lechuga
+                    { materialId: 107, quantity: 0.05 }, // 50ml de Aderezo César
+                    { materialId: 105, quantity: 0.05 } // 50g de Pollo
+                ],
                 imageURL: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
                 description: 'La ensalada más famosa: lechuga, crutones, queso parmesano y aderezo César.',
                 time: '8 min', calories: '230 Cal'
             },
             {
                 id: 5, name: 'Cheesecake', price: 45.00, category: 'postres', stock: 12, emoji: '🍰',
-                materialsNeeded: [{ materialId: 108, quantity: 0.2 }],
+                materialsNeeded: [
+                    { materialId: 108, quantity: 0.2 }, // 200g de Queso Crema
+                    { materialId: 103, quantity: 0.05 } // 50g de Azúcar
+                ],
                 imageURL: 'https://images.unsplash.com/photo-1565292881729-e85d9c228220?q=80&w=1925&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
                 description: 'Tarta de queso cremosa con base de galleta, servida con coulis de frutos rojos.',
                 time: '5 min', calories: '480 Cal'
             },
             {
                 id: 6, name: 'Muffin Chocolate', price: 30.00, category: 'postres', stock: 25, emoji: '🧁',
-                materialsNeeded: [{ materialId: 109, quantity: 0.1 }],
+                materialsNeeded: [
+                    { materialId: 109, quantity: 0.1 }, // 100g de Chocolate
+                    { materialId: 103, quantity: 0.02 } // 20g de Azúcar
+                ],
                 imageURL: 'https://images.unsplash.com/photo-1628172088031-155e97148530?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
                 description: 'Suave panecillo de chocolate, ideal para acompañar tu café o como postre rápido.',
                 time: '3 min', calories: '290 Cal'
@@ -834,22 +879,34 @@
 
 
         // ====================================================================================
-        // F U N C I O N E S   D E   S T O C K   Y   R E C E T A S
+        // F U N C I O N E S   D E   S T O C K   Y   R E C E T A S
         // ====================================================================================
         
+        /**
+         * Obtiene un objeto de materia prima por ID.
+         */
+        function getRawMaterial(id) {
+            return rawMaterials.find(m => m.id === id);
+        }
+
         /**
          * Verifica si hay suficiente materia prima para producir 'quantity' unidades de un producto.
          */
         function checkRawMaterialStock(product, quantity) {
-            if (!product.materialsNeeded) return true;
+            if (!product.materialsNeeded || product.materialsNeeded.length === 0) return true; // Asume que si no hay receta, no se necesita MP
             
             for (const material of product.materialsNeeded) {
-                const rawMaterial = rawMaterials.find(m => m.id === material.materialId);
-                if (!rawMaterial) continue;
+                const rawMaterial = getRawMaterial(material.materialId);
+                if (!rawMaterial) {
+                    console.warn(`Materia prima ID ${material.materialId} no encontrada.`);
+                    continue; 
+                }
 
                 const required = material.quantity * quantity;
                 
+                // Usamos un pequeño margen de error para números flotantes.
                 if (rawMaterial.stock < required - 0.001) { 
+                    console.log(`Falta MP para ${product.name}. Stock de ${rawMaterial.name}: ${rawMaterial.stock}, requerido: ${required}.`);
                     return false;
                 }
             }
@@ -865,9 +922,10 @@
                 if (!product || !product.materialsNeeded) return;
 
                 product.materialsNeeded.forEach(material => {
-                    const rawMaterial = rawMaterials.find(m => m.id === material.materialId);
+                    const rawMaterial = getRawMaterial(material.materialId);
                     if (rawMaterial) {
-                        rawMaterial.stock -= (material.quantity * cartItem.quantity);
+                        const depletionAmount = material.quantity * cartItem.quantity;
+                        rawMaterial.stock = parseFloat((rawMaterial.stock - depletionAmount).toFixed(2));
                     }
                 });
             });
@@ -875,8 +933,13 @@
 
 
         // ====================================================================================
-        // F U N C I O N E S   D E   A U T E N T I C A C I Ó N
+        // F U N C I O N E S   D E   A U T E N T I C A C I Ó N
+        // (Sin cambios, se mantiene para contexto)
         // ====================================================================================
+        
+        // ... (Funciones showPasswordResetModal, closePasswordResetModal, event listener passwordResetForm,
+        // showLogin, showRegister, toggleUserFields, previewCredential, event listener registerForm,
+        // login, loginAsAdmin, logout, showWelcome, showCustomerMenu, showCart, showAdminPanel) ...
         
         function showPasswordResetModal() {
              document.getElementById('passwordResetModal').classList.remove('hidden');
@@ -1110,7 +1173,7 @@
         }
         
         // ====================================================================================
-        // F U N C I O N E S   P A N E L   A D M I N I S T R A D O R   ( V I S T A S )
+        // F U N C I O N E S   P A N E L   A D M I N I S T R A D O R   ( V I S T A S )
         // ====================================================================================
 
         function showAdminStock() {
@@ -1281,7 +1344,7 @@
         }
         
         // ====================================================================================
-        // F U N C I O N E S   M E N Ú   C L I E N T E   ( C A R R I T O )
+        // F U N C I O N E S   M E N Ú   C L I E N T E   ( C A R R I T O )
         // ====================================================================================
 
         function renderProducts() {
@@ -1291,6 +1354,7 @@
                 : products.filter(p => p.category === currentCategory);
 
             productList.innerHTML = filteredProducts.map(product => {
+                // Verificar stock de producto final Y stock de materia prima
                 const isOutOfStock = product.stock === 0 || !checkRawMaterialStock(product, 1);
                 
                 return `
@@ -1324,10 +1388,8 @@
             }).join('');
         }
         
-        // ====================================================================================
-        // F U N C I O N E S   D E   V I S T A   P R E V I A
-        // ====================================================================================
-        
+        // ... (Funciones showProductPreview, closeProductPreview, updatePreviewQuantity, addToCartFromPreview) ...
+
         function showProductPreview(productId) {
             const product = products.find(p => p.id === productId);
             if (!product) return;
@@ -1339,14 +1401,17 @@
             document.getElementById('previewProductPrice').textContent = `$${product.price.toFixed(2)}`;
             document.getElementById('previewTime').textContent = product.time || 'N/A';
             document.getElementById('previewCalories').textContent = product.calories || 'N/A';
-            document.getElementById('previewStock').textContent = product.stock > 0 ? `${product.stock} disp.` : 'Agotado';
+            
+            // Determinar si hay stock de producto final O materia prima
+            const isOutOfStock = product.stock === 0 || !checkRawMaterialStock(product, 1);
+            document.getElementById('previewStock').textContent = isOutOfStock ? 'Agotado' : `${product.stock} disp.`;
             
             const imageContainer = document.getElementById('previewImageContainer');
             // Prioriza imagen local (data URL) sobre URL
             const imageSource = product.imageLocal || product.imageURL || 'https://images.unsplash.com/photo-1541167760496-1628856ab22d?q=80&w=2047&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
             imageContainer.style.backgroundImage = `url(${imageSource})`;
             
-            const isOutOfStock = product.stock === 0 || !checkRawMaterialStock(product, 1);
+            
             const addButton = document.getElementById('previewAddToCartButton');
             document.getElementById('previewQuantity').textContent = 1;
             addButton.disabled = isOutOfStock;
@@ -1411,8 +1476,9 @@
             alert(`${quantity}x ${previewProduct.name} agregado al carrito.`);
         }
 
+
         // ====================================================================================
-        // O T R A S   F U N C I O N E S   D E L   M E N Ú
+        // O T R A S   F U N C I O N E S   D E L   M E N Ú
         // ====================================================================================
 
         function filterCategory(category) {
@@ -1573,6 +1639,7 @@
                 return;
             }
             
+            // Re-validar stock de MP en el último momento
             for (const item of cart) {
                 if (!checkRawMaterialStock(products.find(p => p.id === item.id), item.quantity)) {
                      alert(`ERROR: Materia prima insuficiente para preparar ${item.name} x${item.quantity}. Por favor reduce la cantidad.`);
@@ -1606,6 +1673,7 @@
             orders.push(newOrder);
             
             
+            // 1. Reducir stock del producto final
             cart.forEach(cartItem => {
                 const product = products.find(p => p.id === cartItem.id);
                 if (product) {
@@ -1613,6 +1681,7 @@
                 }
             });
             
+            // 2. Reducir stock de la materia prima
             depleteRawMaterialStock(cart);
 
 
@@ -1638,7 +1707,7 @@
         }
 
         // ====================================================================================
-        // F U N C I O N E S   P A N E L   A D M I N I S T R A D O R   ( G E S T I Ó N )
+        // F U N C I O N E S   P A N E L   A D M I N I S T R A D O R   ( G E S T I Ó N )
         // ====================================================================================
         
         // --- Productos Finales ---
@@ -1646,35 +1715,63 @@
         function renderAdminProducts() {
             const adminProductList = document.getElementById('adminProductList');
             
-            adminProductList.innerHTML = products.map(product => `
-                <div class="bg-gray-50 border rounded-lg p-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <span class="text-xl mr-3">${product.emoji}</span>
-                            <div>
-                                <h4 class="font-medium">${product.name}</h4>
-                                <p class="text-sm text-gray-600">$${product.price.toFixed(2)} - ${product.category}</p>
+            adminProductList.innerHTML = products.map(product => {
+                // Función auxiliar para obtener el nombre de la MP
+                const getMaterialInfo = (id) => {
+                    const material = getRawMaterial(id);
+                    return material ? `${material.emoji} ${material.name} (${material.unit})` : 'MP Desconocida';
+                };
+
+                // Crear lista de ingredientes de la receta
+                const recipeHtml = product.materialsNeeded && product.materialsNeeded.length > 0
+                    ? product.materialsNeeded.map(mat => {
+                        const material = getRawMaterial(mat.materialId);
+                        const isStockLow = material && material.stock < mat.quantity * 5; // Aviso si el stock es bajo para 5 unidades del producto
+                        return `<span class="text-xs ${isStockLow ? 'text-red-500 font-semibold' : 'text-gray-600'} block">
+                                    ${mat.quantity} ${material.unit} de ${material.name}
+                                </span>`;
+                      }).join('')
+                    : '<span class="text-xs text-red-500 italic">⚠️ Sin Receta Vinculada</span>';
+
+
+                return `
+                    <div class="bg-gray-50 border rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center mb-1">
+                                    <span class="text-xl mr-3">${product.emoji}</span>
+                                    <div>
+                                        <h4 class="font-medium">${product.name}</h4>
+                                        <p class="text-sm text-gray-600">$${product.price.toFixed(2)} - ${product.category}</p>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-left p-2 border-l-4 border-indigo-300 bg-white shadow-inner">
+                                    <p class="text-xs font-semibold mb-1 text-indigo-700">Receta por 1 unidad:</p>
+                                    ${recipeHtml}
+                                </div>
                             </div>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <div class="text-center">
-                                <p class="text-sm text-gray-600">Stock</p>
-                                <p class="font-bold ${product.stock < 5 ? 'text-red-600' : 'text-green-600'}">${product.stock}</p>
+                            <div class="flex flex-col items-end space-y-2 ml-4">
+                                <div class="text-center">
+                                    <p class="text-sm text-gray-600">Stock</p>
+                                    <p class="font-bold ${product.stock < 5 ? 'text-red-600' : 'text-green-600'}">${product.stock}</p>
+                                </div>
+                                <div class="flex space-x-1">
+                                    <button onclick="editProduct(${product.id})" class="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                    </button>
+                                    <button onclick="deleteProduct(${product.id})" class="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
-                            <button onclick="editProduct(${product.id})" class="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                </svg>
-                            </button>
-                            <button onclick="deleteProduct(${product.id})" class="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                </svg>
-                            </button>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
         
         // --- Materia Prima ---
@@ -1708,35 +1805,89 @@
             `).join('');
         }
         
+        function addNewRawMaterial() {
+            document.getElementById('materialModalTitle').textContent = 'Nueva Materia Prima';
+            document.getElementById('rawMaterialForm').reset();
+            document.getElementById('materialId').value = '';
+            document.getElementById('materialDeleteContainer').classList.add('hidden');
+            document.getElementById('materialName').readOnly = false;
+            document.getElementById('materialUnit').readOnly = false;
+            document.getElementById('rawMaterialModal').classList.remove('hidden');
+        }
+
         function editRawMaterial(id) {
             const material = rawMaterials.find(m => m.id === id);
             if (material) {
                 document.getElementById('materialModalTitle').textContent = 'Editar Materia Prima';
                 document.getElementById('materialId').value = material.id;
                 document.getElementById('materialName').value = material.name;
+                document.getElementById('materialEmoji').value = material.emoji;
                 document.getElementById('materialStock').value = material.stock;
                 document.getElementById('materialUnit').value = material.unit;
                 
+                document.getElementById('materialName').readOnly = false;
+                document.getElementById('materialUnit').readOnly = false;
+                document.getElementById('materialDeleteContainer').classList.remove('hidden');
+
                 document.getElementById('rawMaterialModal').classList.remove('hidden');
+            }
+        }
+
+        function deleteRawMaterial(id) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta materia prima? Se eliminará de todas las recetas.')) {
+                // 1. Eliminar la materia prima
+                rawMaterials = rawMaterials.filter(m => m.id !== id);
+                
+                // 2. Eliminar de las recetas de todos los productos
+                products.forEach(product => {
+                    if (product.materialsNeeded) {
+                        product.materialsNeeded = product.materialsNeeded.filter(mat => mat.materialId !== id);
+                    }
+                });
+
+                saveState();
+                renderAdminRawMaterials();
+                closeRawMaterialModal();
+                alert('Materia prima eliminada correctamente.');
             }
         }
 
         function closeRawMaterialModal() {
             document.getElementById('rawMaterialModal').classList.add('hidden');
+            document.getElementById('materialDeleteContainer').classList.add('hidden');
         }
 
         document.getElementById('rawMaterialForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
-            const id = parseInt(document.getElementById('materialId').value);
+            const id = document.getElementById('materialId').value;
+            const name = document.getElementById('materialName').value.trim();
+            const emoji = document.getElementById('materialEmoji').value.trim();
             const stock = parseFloat(document.getElementById('materialStock').value);
+            const unit = document.getElementById('materialUnit').value.trim();
 
-            const material = rawMaterials.find(m => m.id === id);
-            if (material) {
-                material.stock = stock;
+            if (id) {
+                // Editar
+                const material = rawMaterials.find(m => m.id === parseInt(id));
+                if (material) {
+                    material.name = name;
+                    material.emoji = emoji;
+                    material.stock = stock;
+                    material.unit = unit;
+                }
+            } else {
+                // Agregar nuevo
+                const newId = Math.max(...rawMaterials.map(m => m.id), 100) + 1;
+                rawMaterials.push({
+                    id: newId,
+                    name,
+                    stock,
+                    unit,
+                    emoji
+                });
             }
 
-            saveState(); // Guardar cambios en materia prima
+            saveState(); 
             renderAdminRawMaterials();
             closeRawMaterialModal();
         });
@@ -1967,8 +2118,8 @@
                             <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                                 <span class="text-lg">
                                     ${user.userType === 'estudiante' ? '👨‍🎓' : 
-                                      user.userType === 'profesor' ? '👨‍🏫' : 
-                                      user.userType === 'docente' ? '👩‍🏫' : '👨‍💼'}
+                                    user.userType === 'profesor' ? '👨‍🏫' : 
+                                    user.userType === 'docente' ? '👩‍🏫' : '👨‍💼'}
                                 </span>
                             </div>
                             <div>
@@ -2016,21 +2167,65 @@
         }
 
 
-        // --- Funciones del Modal de Productos Finales ---
+        // --- Funciones del Modal de Productos Finales (CON GESTIÓN DE RECETA) ---
         
-        function previewLocalImage(event) {
-            const file = event.target.files[0];
-            const statusEl = document.getElementById('imagePreviewStatus');
+        function addMaterialFieldToProductModal(materialId = '', quantity = '') {
+            const container = document.getElementById('productMaterialsContainer');
+            
+            // Si es el primer elemento, borra el mensaje de ayuda
+            if (container.querySelector('.text-sm.text-gray-500')) {
+                container.innerHTML = '';
+            }
 
-            if (file) {
-                statusEl.textContent = `Archivo: ${file.name} ✓ (Guardado al confirmar)`;
-                // Limpiar el campo de URL si se carga un archivo local
-                document.getElementById('productImageURL').value = ''; 
-            } else {
-                statusEl.textContent = 'Ningún archivo seleccionado.';
+            const newIndex = container.children.length;
+            const materialOptions = rawMaterials.map(m => 
+                `<option value="${m.id}" ${m.id == materialId ? 'selected' : ''}>${m.emoji} ${m.name} (${m.unit})</option>`
+            ).join('');
+
+            const materialHtml = `
+                <div class="flex items-center space-x-2 p-2 bg-white rounded-lg border" data-index="${newIndex}">
+                    <div class="flex-1">
+                        <label class="block text-xs font-medium mb-1">Materia Prima</label>
+                        <select name="material_id_${newIndex}" class="w-full border rounded-lg px-2 py-1 text-sm bg-white" required>
+                            <option value="">Seleccionar MP</option>
+                            ${materialOptions}
+                        </select>
+                    </div>
+                    <div class="w-20">
+                        <label class="block text-xs font-medium mb-1">Cantidad</label>
+                        <input type="number" name="material_quantity_${newIndex}" step="0.01" class="w-full border rounded-lg px-2 py-1 text-sm" placeholder="Cantidad" value="${quantity}" required>
+                    </div>
+                    <button type="button" onclick="removeMaterialField(this)" class="p-2 bg-red-100 text-red-600 rounded-full self-end hover:bg-red-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', materialHtml);
+        }
+
+        function removeMaterialField(button) {
+            const container = document.getElementById('productMaterialsContainer');
+            button.closest('.flex').remove();
+            
+            // Si no quedan elementos, muestra el mensaje de ayuda
+            if (container.children.length === 0) {
+                container.innerHTML = '<p class="text-sm text-gray-500">Haz clic en "Añadir Materia Prima" para empezar.</p>';
             }
         }
 
+        function renderProductMaterials(product) {
+            const container = document.getElementById('productMaterialsContainer');
+            container.innerHTML = '';
+
+            if (product.materialsNeeded && product.materialsNeeded.length > 0) {
+                product.materialsNeeded.forEach(mat => {
+                    addMaterialFieldToProductModal(mat.materialId, mat.quantity);
+                });
+            } else {
+                container.innerHTML = '<p class="text-sm text-gray-500">Haz clic en "Añadir Materia Prima" para empezar.</p>';
+            }
+        }
 
         function addNewProduct() {
             if (!document.getElementById('adminRawMaterialsSection').classList.contains('hidden')) {
@@ -2041,9 +2236,10 @@
             document.getElementById('modalTitle').textContent = 'Agregar Producto';
             document.getElementById('productForm').reset();
             document.getElementById('productId').value = '';
-            document.getElementById('productModal').classList.remove('hidden');
             document.getElementById('productEmoji').value = ''; 
             document.getElementById('imagePreviewStatus').textContent = 'Ningún archivo seleccionado.';
+            renderProductMaterials({ materialsNeeded: [] }); // Llama a la nueva función de renderizado de receta
+            document.getElementById('productModal').classList.remove('hidden');
         }
 
         function editProduct(id) {
@@ -2057,7 +2253,6 @@
                 document.getElementById('productDescription').value = product.description || '';
                 document.getElementById('productImageURL').value = product.imageURL || '';
                 
-                // Mostrar estado de la imagen (local o URL)
                 if (product.imageLocal) {
                     document.getElementById('imagePreviewStatus').textContent = 'Imagen Local Cargada ✓';
                 } else if (product.imageURL) {
@@ -2065,7 +2260,7 @@
                 } else {
                     document.getElementById('imagePreviewStatus').textContent = 'Ningún archivo seleccionado.';
                 }
-                document.getElementById('productImageFile').value = null; // Limpiar el input file
+                document.getElementById('productImageFile').value = null; 
                 
                 document.getElementById('productTime').value = product.time || '';
                 document.getElementById('productCalories').value = product.calories || '';
@@ -2073,6 +2268,10 @@
                 document.getElementById('productPrice').value = product.price;
                 document.getElementById('productCategory').value = product.category;
                 document.getElementById('productStock').value = product.stock;
+                
+                // Cargar la receta del producto
+                renderProductMaterials(product);
+
                 document.getElementById('productModal').classList.remove('hidden');
             }
         }
@@ -2107,7 +2306,7 @@
             }
         }
 
-        // Manejar formulario de producto (MODIFICADO para guardar imagen local/url)
+        // Manejar formulario de producto (MODIFICADO para capturar RECETA)
         document.getElementById('productForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
@@ -2118,19 +2317,31 @@
             const category = document.getElementById('productCategory').value;
             const stock = parseInt(document.getElementById('productStock').value);
             
-            // Recoger campos de Preview (NUEVOS)
+            // Recoger campos de Preview
             const description = document.getElementById('productDescription').value;
             const imageURL = document.getElementById('productImageURL').value;
             const imageFile = document.getElementById('productImageFile').files[0];
             const time = document.getElementById('productTime').value;
             const calories = document.getElementById('productCalories').value;
 
-            const baseMaterials = {
-                'bebidas': [{ materialId: 101, quantity: 0.05 }],
-                'comida': [{ materialId: 104, quantity: 1 }],
-                'postres': [{ materialId: 109, quantity: 0.1 }]
-            };
+            // CAPTURA DE LA RECETA DINÁMICA
+            const productMaterialsContainer = document.getElementById('productMaterialsContainer');
+            const materialsNeeded = [];
             
+            // Iterar sobre los campos de materia prima dinámicos
+            productMaterialsContainer.querySelectorAll('.flex[data-index]').forEach((item, index) => {
+                const materialId = item.querySelector(`[name="material_id_${index}"]`).value;
+                const quantity = item.querySelector(`[name="material_quantity_${index}"]`).value;
+                
+                if (materialId && quantity > 0) {
+                    materialsNeeded.push({
+                        materialId: parseInt(materialId),
+                        quantity: parseFloat(quantity)
+                    });
+                }
+            });
+
+
             // Crear objeto base
             const productToSave = {
                 id: id ? parseInt(id) : null,
@@ -2139,7 +2350,7 @@
                 category,
                 stock,
                 emoji: emoji, 
-                materialsNeeded: baseMaterials[category] || [],
+                materialsNeeded: materialsNeeded, // GUARDAR LA RECETA PERSONALIZADA
                 description,
                 time,
                 calories,
@@ -2158,7 +2369,7 @@
                     productToSave.imageURL = imageURL;
                     productToSave.imageLocal = '';
                 } else if (existingProduct) {
-                    // Mantener la imagen local anterior si no se proporciona una nueva URL o archivo
+                    // Mantener la imagen local/url anterior si no se proporciona una nueva URL o archivo
                     productToSave.imageLocal = existingProduct.imageLocal || '';
                     productToSave.imageURL = existingProduct.imageURL || '';
                 }
@@ -2189,7 +2400,7 @@
             }
         });
 
-        // Formateo automático de campos de tarjeta
+        // Formateo automático de campos de tarjeta (sin cambios)
         document.getElementById('cardNumber').addEventListener('input', function (e) {
             let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
             let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
