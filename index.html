@@ -2456,6 +2456,73 @@
          * 3. Si no hay usuario, ejecutar showLogin().
          */
         loadState(); 
+
+          // ====================================================================================
+        // G E S T O S   T Á C T I L E S   ( S W I P E ) 
+        // ====================================================================================
+        
+        let touchstartX = 0;
+        let touchendX = 0;
+        const SWIPE_THRESHOLD = 80; // Mínimo de píxeles para considerar un desplazamiento lateral
+        const ADMIN_CONTENT_ID = 'adminContent';
+
+        function checkDirection() {
+            const deltaX = touchendX - touchstartX;
+            if (Math.abs(deltaX) < SWIPE_THRESHOLD) return;
+
+            if (deltaX < 0) {
+                // Swipe a la IZQUIERDA (ir a la siguiente pestaña)
+                goToNextAdminTab();
+            } else if (deltaX > 0) {
+                // Swipe a la DERECHA (ir a la pestaña anterior)
+                goToPreviousAdminTab();
+            }
+        }
+
+        function goToNextAdminTab() {
+            if (currentAdminTabIndex < adminTabsFunctions.length - 1) {
+                currentAdminTabIndex++;
+                adminTabsFunctions[currentAdminTabIndex]();
+            } else {
+                // Opcional: loop back to the first tab
+                // currentAdminTabIndex = 0;
+                // adminTabsFunctions[currentAdminTabIndex]();
+            }
+        }
+
+        function goToPreviousAdminTab() {
+            if (currentAdminTabIndex > 0) {
+                currentAdminTabIndex--;
+                adminTabsFunctions[currentAdminTabIndex]();
+            } else {
+                // Opcional: loop to the last tab
+                // currentAdminTabIndex = adminTabsFunctions.length - 1;
+                // adminTabsFunctions[currentAdminTabIndex]();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const adminContent = document.getElementById(ADMIN_CONTENT_ID);
+            if (adminContent) {
+                adminContent.addEventListener('touchstart', e => {
+                    touchstartX = e.changedTouches[0].screenX;
+                }, false);
+
+                adminContent.addEventListener('touchend', e => {
+                    touchendX = e.changedTouches[0].screenX;
+                    if (!document.getElementById('adminPanel').classList.contains('hidden')) {
+                        checkDirection();
+                    }
+                }, false);
+            }
+        });
+
+        // ====================================================================================
+        // I N I C I A L I Z A C I Ó N
+        // ====================================================================================
+        
+        loadState(); 
+        
         
     </script> 
     
