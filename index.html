@@ -715,7 +715,7 @@
 
     <script>
         // ====================================================================================
-        // G E S T I Ó N   D E   M E M O R I A   L O C A L
+        // G E S T I Ó N  D E  M E M O R I A  L O C A L
         // ====================================================================================
 
         const STORAGE_KEYS = {
@@ -727,6 +727,9 @@
             ORDER_ID_COUNTER: 'cafetec_order_id_counter'
         };
 
+        // ========== INICIO DE LA CORRECCIÓN ==========
+        // Se eliminó el bloque if/else que refrescaba la interfaz.
+        // Ahora la función solo guarda los datos.
         function saveState() {
             localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
             localStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(rawMaterials));
@@ -734,16 +737,8 @@
             localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
             localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
             localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
-            
-            // Si el usuario está logeado, recargar la pantalla correcta
-            if (currentUser && currentUser.userType === 'admin') {
-                showAdminPanel();
-            } else if (currentUser) {
-                showWelcome();
-            } else {
-                showLogin();
-            }
         }
+        // ========== FIN DE LA CORRECCIÓN ==========
 
         function loadState() {
             const storedProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
@@ -774,7 +769,7 @@
         }
         
         // ====================================================================================
-        // E S T A D O S   I N I C I A L E S 
+        // E S T A D O S   I N I C I A L E S 
         // (Usados solo si localStorage está vacío)
         // ====================================================================================
 
@@ -879,7 +874,7 @@
 
 
         // ====================================================================================
-        // F U N C I O N E S   D E   S T O C K   Y   R E C E T A S
+        // F U N C I O N E S  D E  S T O C K  Y  R E C E T A S
         // ====================================================================================
         
         /**
@@ -933,7 +928,7 @@
 
 
         // ====================================================================================
-        // F U N C I O N E S   D E   A U T E N T I C A C I Ó N
+        // F U N C I O N E S  D E  A U T E N T I C A C I Ó N
         // (Sin cambios, se mantiene para contexto)
         // ====================================================================================
         
@@ -1173,7 +1168,7 @@
         }
         
         // ====================================================================================
-        // F U N C I O N E S   P A N E L   A D M I N I S T R A D O R   ( V I S T A S )
+        // F U N C I O N E S  P A N E L  A D M I N I S T R A D O R  ( V I S T A S )
         // ====================================================================================
 
         function showAdminStock() {
@@ -1344,7 +1339,7 @@
         }
         
         // ====================================================================================
-        // F U N C I O N E S   M E N Ú   C L I E N T E   ( C A R R I T O )
+        // F U N C I O N E S  M E N Ú  C L I E N T E  ( C A R R I T O )
         // ====================================================================================
 
         function renderProducts() {
@@ -1478,7 +1473,7 @@
 
 
         // ====================================================================================
-        // O T R A S   F U N C I O N E S   D E L   M E N Ú
+        // O T R A S  F U N C I O N E S  D E L  M E N Ú
         // ====================================================================================
 
         function filterCategory(category) {
@@ -1707,7 +1702,7 @@
         }
 
         // ====================================================================================
-        // F U N C I O N E S   P A N E L   A D M I N I S T R A D O R   ( G E S T I Ó N )
+        // F U N C I O N E S  P A N E L  A D M I N I S T R A D O R  ( G E S T I Ó N )
         // ====================================================================================
         
         // --- Productos Finales ---
@@ -1730,7 +1725,7 @@
                         return `<span class="text-xs ${isStockLow ? 'text-red-500 font-semibold' : 'text-gray-600'} block">
                                     ${mat.quantity} ${material.unit} de ${material.name}
                                 </span>`;
-                      }).join('')
+                        }).join('')
                     : '<span class="text-xs text-red-500 italic">⚠️ Sin Receta Vinculada</span>';
 
 
@@ -2425,7 +2420,7 @@
 
         
         // ====================================================================================
-        // F U N C I O N E S   D E   S T O C K   Y   R E C E T A S
+        // F U N C I O N E S  D E  S T O C K  Y  R E C E T A S
         // ... (Todas las funciones anteriores) ...
         
         // Formateo automático de campos de tarjeta (sin cambios)
@@ -2458,7 +2453,7 @@
         loadState(); 
 
           // ====================================================================================
-        // G E S T O S   T Á C T I L E S   ( S W I P E ) 
+        // G E S T O S  T Á C T I L E S  ( S W I P E ) 
         // ====================================================================================
         
         let touchstartX = 0;
@@ -2516,6 +2511,7 @@
                 }, false);
             }
         });
+        
 
         // ====================================================================================
         // I N I C I A L I Z A C I Ó N
@@ -2526,7 +2522,7 @@
         
     </script> 
     
-   
+    
     </script>
     <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'979585d9d239154d',t:'MTc1NjkwNTM5OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
 </body>
