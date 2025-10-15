@@ -52,10 +52,7 @@
                 <button onclick="showPasswordResetModal()" class="w-full bg-blue-800 bg-opacity-70 text-white py-2 px-6 rounded-lg font-medium text-sm hover:shadow-xl transform hover:scale-105 transition-all duration-200 border border-white">
                     🔑 ¿Olvidaste tu Contraseña?
                 </button>
-                <button onclick="loginAsAdmin()" class="w-full bg-red-600 text-white py-2 px-6 rounded-lg font-medium text-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
-                    ⚙️ Acceso Administrador
-                </button>
-            </div>
+                </div>
         </div>
     </div>
 
@@ -421,9 +418,9 @@
     <div id="adminPanel" class="hidden min-h-screen bg-white">
         <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 shadow-lg">
             <div class="flex items-center justify-between">
-                <button onclick="showLogin()" class="p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                <button onclick="logout()" class="p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors" title="Cerrar Sesión">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9"></path>
                     </svg>
                 </button>
                 <h2 class="text-xl font-bold">Panel Administrador</h2>
@@ -435,7 +432,7 @@
             </div>
         </div>
 
-        <div class="p-4">
+        <div class="p-4" id="adminContent">
             <div class="flex space-x-2 mb-6 overflow-x-auto">
                 <button onclick="showAdminStock()" id="stockTab" class="admin-tab bg-blue-600 text-white px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     🍽️ Stock Productos
@@ -524,14 +521,6 @@
                 
                 <div>
                     <label class="block text-sm font-medium mb-1">Imagen de Vista Previa</label>
-                    <input type="url" id="productImageURL" class="w-full border rounded-lg px-3 py-2 mb-2 text-gray-800" placeholder="Opcional: Enlace URL a la imagen" onchange="document.getElementById('productImageFile').value = ''; document.getElementById('imagePreviewStatus').textContent = this.value ? 'Usando URL ✓' : 'Ningún archivo seleccionado.';">
-                    
-                    <div class="flex items-center space-x-2">
-                        <span class="text-gray-500 text-xs">O</span>
-                        <div class="flex-grow border-t border-gray-300"></div>
-                        <span class="text-gray-500 text-xs">Cargar Archivo</span>
-                    </div>
-
                     <div class="border-2 border-dashed border-gray-300 rounded-lg p-3 mt-2 text-center">
                         <input type="file" id="productImageFile" accept="image/*" class="hidden" onchange="previewLocalImage(event)">
                         <button type="button" onclick="document.getElementById('productImageFile').click()" class="w-full py-2 px-4 bg-gray-100 text-blue-600 rounded-lg hover:bg-gray-200 transition-colors">
@@ -540,6 +529,7 @@
                         <p id="imagePreviewStatus" class="text-xs mt-2 text-gray-600">Ningún archivo seleccionado.</p>
                     </div>
                 </div>
+
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium mb-1">Tiempo (Ej: 5 min)</label>
@@ -587,7 +577,6 @@
             </form>
         </div>
     </div>
-    
     <div id="rawMaterialModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up">
             <h3 id="materialModalTitle" class="text-lg font-bold mb-4">Editar Materia Prima</h3>
@@ -727,9 +716,6 @@
             ORDER_ID_COUNTER: 'cafetec_order_id_counter'
         };
 
-        // ========== INICIO DE LA CORRECCIÓN ==========
-        // Se eliminó el bloque if/else que refrescaba la interfaz.
-        // Ahora la función solo guarda los datos.
         function saveState() {
             localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
             localStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(rawMaterials));
@@ -738,7 +724,6 @@
             localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
             localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
         }
-        // ========== FIN DE LA CORRECCIÓN ==========
 
         function loadState() {
             const storedProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
@@ -755,25 +740,22 @@
             if (storedCurrentUser) currentUser = JSON.parse(storedCurrentUser);
             if (storedOrderIdCounter) orderIdCounter = parseInt(storedOrderIdCounter);
 
-            // Si hay un usuario cargado, iniciar sesión automáticamente
             if (currentUser) {
                  if (currentUser.userType === 'admin') {
                     showAdminPanel();
-                } else {
+                 } else {
                     document.getElementById('welcomeUserName').textContent = currentUser.fullName;
                     showWelcome();
-                }
+                 }
             } else {
                 showLogin();
             }
         }
         
         // ====================================================================================
-        // E S T A D O S   I N I C I A L E S 
-        // (Usados solo si localStorage está vacío)
+        // E S T A D O S  I N I C I A L E S 
         // ====================================================================================
 
-        // Materia Prima (Valores iniciales)
         let rawMaterials = [
             { id: 101, name: 'Granos de Café', stock: 5.0, unit: 'kg', emoji: '☕' }, 
             { id: 102, name: 'Leche', stock: 20.0, unit: 'L', emoji: '🥛' },
@@ -786,67 +768,72 @@
             { id: 109, name: 'Chocolate', stock: 18.0, unit: 'kg', emoji: '🍫' }
         ];
 
-        // Productos (Valores iniciales)
         let products = [
             {
                 id: 1, name: 'Café Americano', price: 25.00, category: 'bebidas', stock: 50, emoji: '☕',
                 materialsNeeded: [
-                    { materialId: 101, quantity: 0.02 }, // 20g de Granos de Café
-                    { materialId: 103, quantity: 0.01 } // 10g de Azúcar (estimado, opcional)
+                    { materialId: 101, quantity: 0.02 }, 
+                    { materialId: 103, quantity: 0.01 } 
                 ], 
                 imageURL: 'https://images.unsplash.com/photo-1509785116905-f370a1a0fb84?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                imageLocal: '',
                 description: 'El clásico café, simple y aromático. Perfecto para iniciar la mañana o recargar energías.',
                 time: '2 min', calories: '5 Cal'
             },
             {
                 id: 2, name: 'Cappuccino', price: 35.00, category: 'bebidas', stock: 30, emoji: '☕',
                 materialsNeeded: [
-                    { materialId: 101, quantity: 0.015 }, // 15g de Granos de Café
-                    { materialId: 102, quantity: 0.2 } // 200ml de Leche
+                    { materialId: 101, quantity: 0.015 }, 
+                    { materialId: 102, quantity: 0.2 } 
                 ], 
                 imageURL: 'https://images.unsplash.com/photo-1517454238596-f947477610c4?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                imageLocal: '',
                 description: 'Espresso con leche espumada, suave y cremoso. Una delicia para los amantes del café con leche.',
                 time: '5 min', calories: '120 Cal'
             },
             {
                 id: 3, name: 'Sandwich Club', price: 65.00, category: 'comida', stock: 20, emoji: '🥪',
                 materialsNeeded: [
-                    { materialId: 104, quantity: 3 }, // 3 pzas de Pan Club
-                    { materialId: 105, quantity: 0.1 }, // 100g de Pollo
-                    { materialId: 106, quantity: 0.05 } // 50g de Lechuga
+                    { materialId: 104, quantity: 3 }, 
+                    { materialId: 105, quantity: 0.1 }, 
+                    { materialId: 106, quantity: 0.05 } 
                 ],
                 imageURL: 'https://images.unsplash.com/photo-1627915570889-019688b13958?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                imageLocal: '',
                 description: 'Clásico sándwich de pollo, jamón, queso y verduras en triple pan tostado.',
                 time: '10 min', calories: '350 Cal'
             },
             {
                 id: 4, name: 'Ensalada César', price: 55.00, category: 'comida', stock: 15, emoji: '🥗',
                 materialsNeeded: [
-                    { materialId: 106, quantity: 0.15 }, // 150g de Lechuga
-                    { materialId: 107, quantity: 0.05 }, // 50ml de Aderezo César
-                    { materialId: 105, quantity: 0.05 } // 50g de Pollo
+                    { materialId: 106, quantity: 0.15 }, 
+                    { materialId: 107, quantity: 0.05 }, 
+                    { materialId: 105, quantity: 0.05 } 
                 ],
                 imageURL: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                imageLocal: '',
                 description: 'La ensalada más famosa: lechuga, crutones, queso parmesano y aderezo César.',
                 time: '8 min', calories: '230 Cal'
             },
             {
                 id: 5, name: 'Cheesecake', price: 45.00, category: 'postres', stock: 12, emoji: '🍰',
                 materialsNeeded: [
-                    { materialId: 108, quantity: 0.2 }, // 200g de Queso Crema
-                    { materialId: 103, quantity: 0.05 } // 50g de Azúcar
+                    { materialId: 108, quantity: 0.2 }, 
+                    { materialId: 103, quantity: 0.05 } 
                 ],
                 imageURL: 'https://images.unsplash.com/photo-1565292881729-e85d9c228220?q=80&w=1925&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                imageLocal: '',
                 description: 'Tarta de queso cremosa con base de galleta, servida con coulis de frutos rojos.',
                 time: '5 min', calories: '480 Cal'
             },
             {
                 id: 6, name: 'Muffin Chocolate', price: 30.00, category: 'postres', stock: 25, emoji: '🧁',
                 materialsNeeded: [
-                    { materialId: 109, quantity: 0.1 }, // 100g de Chocolate
-                    { materialId: 103, quantity: 0.02 } // 20g de Azúcar
+                    { materialId: 109, quantity: 0.1 }, 
+                    { materialId: 103, quantity: 0.02 } 
                 ],
                 imageURL: 'https://images.unsplash.com/photo-1628172088031-155e97148530?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                imageLocal: '',
                 description: 'Suave panecillo de chocolate, ideal para acompañar tu café o como postre rápido.',
                 time: '3 min', calories: '290 Cal'
             }
@@ -860,35 +847,24 @@
         let currentUser = null;
         let previewProduct = null;
         
-        // Si localStorage no tiene datos, inicializar con valores por defecto
         if (!localStorage.getItem(STORAGE_KEYS.PRODUCTS)) {
-             localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
-             localStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(rawMaterials));
-             localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
-             localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-             localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
+              localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
+              localStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(rawMaterials));
+              localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
+              localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+              localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
         }
-
-        // Cargar estado al inicio de la aplicación
-        loadState();
-
 
         // ====================================================================================
         // F U N C I O N E S  D E  S T O C K  Y  R E C E T A S
         // ====================================================================================
         
-        /**
-         * Obtiene un objeto de materia prima por ID.
-         */
         function getRawMaterial(id) {
             return rawMaterials.find(m => m.id === id);
         }
 
-        /**
-         * Verifica si hay suficiente materia prima para producir 'quantity' unidades de un producto.
-         */
         function checkRawMaterialStock(product, quantity) {
-            if (!product.materialsNeeded || product.materialsNeeded.length === 0) return true; // Asume que si no hay receta, no se necesita MP
+            if (!product.materialsNeeded || product.materialsNeeded.length === 0) return true;
             
             for (const material of product.materialsNeeded) {
                 const rawMaterial = getRawMaterial(material.materialId);
@@ -899,7 +875,6 @@
 
                 const required = material.quantity * quantity;
                 
-                // Usamos un pequeño margen de error para números flotantes.
                 if (rawMaterial.stock < required - 0.001) { 
                     console.log(`Falta MP para ${product.name}. Stock de ${rawMaterial.name}: ${rawMaterial.stock}, requerido: ${required}.`);
                     return false;
@@ -908,9 +883,6 @@
             return true;
         }
 
-        /**
-         * Reduce el stock de materia prima después de una venta.
-         */
         function depleteRawMaterialStock(items) {
             items.forEach(cartItem => {
                 const product = products.find(p => p.id === cartItem.id);
@@ -929,12 +901,7 @@
 
         // ====================================================================================
         // F U N C I O N E S  D E  A U T E N T I C A C I Ó N
-        // (Sin cambios, se mantiene para contexto)
         // ====================================================================================
-        
-        // ... (Funciones showPasswordResetModal, closePasswordResetModal, event listener passwordResetForm,
-        // showLogin, showRegister, toggleUserFields, previewCredential, event listener registerForm,
-        // login, loginAsAdmin, logout, showWelcome, showCustomerMenu, showCart, showAdminPanel) ...
         
         function showPasswordResetModal() {
              document.getElementById('passwordResetModal').classList.remove('hidden');
@@ -1092,7 +1059,7 @@
             document.getElementById('registerForm').reset();
             document.getElementById('credentialPreview').classList.add('hidden');
             toggleUserFields();
-            saveState(); // Guardar el nuevo usuario
+            saveState();
             showLogin();
         });
 
@@ -1105,33 +1072,33 @@
                 return;
             }
             
+            if (username === 'admin' && password === 'admin') {
+                currentUser = { id: 0, userType: 'admin', fullName: 'Administrador', username: 'admin' };
+                saveState();
+                showAdminPanel();
+                return;
+            }
+            
             const user = users.find(u => u.username === username && u.password === password);
             
             if (user) {
                 currentUser = user;
                 document.getElementById('welcomeUserName').textContent = user.fullName;
-                saveState(); // Guardar el inicio de sesión
+                saveState();
                 showWelcome();
             } else {
                 alert('Usuario o contraseña incorrectos');
             }
         }
 
-        function loginAsAdmin() {
-            currentUser = { id: 0, userType: 'admin', fullName: 'Administrador', username: 'admin' };
-            saveState(); // Guardar el inicio de sesión
-            showAdminPanel();
-        }
-
         function logout() {
             currentUser = null;
             cart = [];
             updateCartCount();
-            saveState(); // Guardar el cierre de sesión
+            saveState();
             showLogin();
         }
 
-        // Funciones de navegación (visibilidad)
         function showWelcome() {
             document.getElementById('welcomeScreen').classList.remove('hidden');
             document.getElementById('loginScreen').classList.add('hidden');
@@ -1172,6 +1139,7 @@
         // ====================================================================================
 
         function showAdminStock() {
+            currentAdminTabIndex = 0;
             document.querySelectorAll('.admin-tab').forEach(tab => {
                 tab.classList.remove('bg-blue-600', 'text-white');
                 tab.classList.add('bg-gray-200', 'text-gray-700');
@@ -1190,6 +1158,7 @@
         }
         
         function showAdminRawMaterials() {
+            currentAdminTabIndex = 1;
             document.querySelectorAll('.admin-tab').forEach(tab => {
                 tab.classList.remove('bg-blue-600', 'text-white');
                 tab.classList.add('bg-gray-200', 'text-gray-700');
@@ -1208,6 +1177,7 @@
         }
 
         function showAdminOrders() {
+            currentAdminTabIndex = 2;
             document.querySelectorAll('.admin-tab').forEach(tab => {
                 tab.classList.remove('bg-blue-600', 'text-white');
                 tab.classList.add('bg-gray-200', 'text-gray-700');
@@ -1226,6 +1196,7 @@
         }
         
         function showAdminStats() {
+            currentAdminTabIndex = 3;
             document.querySelectorAll('.admin-tab').forEach(tab => {
                 tab.classList.remove('bg-blue-600', 'text-white');
                 tab.classList.add('bg-gray-200', 'text-gray-700');
@@ -1244,6 +1215,7 @@
         }
 
         function showAdminUsers() {
+            currentAdminTabIndex = 4;
             document.querySelectorAll('.admin-tab').forEach(tab => {
                 tab.classList.remove('bg-blue-600', 'text-white');
                 tab.classList.add('bg-gray-200', 'text-gray-700');
@@ -1262,6 +1234,7 @@
         }
         
         function showAdminMemory() {
+            currentAdminTabIndex = 5;
             document.querySelectorAll('.admin-tab').forEach(tab => {
                 tab.classList.remove('bg-blue-600', 'text-white');
                 tab.classList.add('bg-gray-200', 'text-gray-700');
@@ -1287,7 +1260,7 @@
             for (const key in localStorage) {
                 if (localStorage.hasOwnProperty(key) && key.startsWith('cafetec_')) {
                     const value = localStorage.getItem(key);
-                    const size = value.length; // Estimación simple del tamaño en bytes
+                    const size = value.length;
                     totalSize += size;
                     
                     let displayValue = value;
@@ -1295,7 +1268,6 @@
                         const parsed = JSON.parse(value);
                         displayValue = JSON.stringify(parsed, null, 2).substring(0, 500) + '...';
                     } catch {
-                        // Si no es JSON válido, usar el valor como está
                         displayValue = value.substring(0, 500) + '...';
                     }
                     
@@ -1310,7 +1282,7 @@
             }
 
             if (totalSize > 0) {
-                 html = `<p class="text-sm font-medium mb-4">Total de datos almacenados: ${(totalSize / 1024).toFixed(2)} KB</p>` + html;
+                html = `<p class="text-sm font-medium mb-4">Total de datos almacenados: ${(totalSize / 1024).toFixed(2)} KB</p>` + html;
             } else {
                 html = `<p class="text-center text-gray-500 py-8">No hay datos de CAFE-TEC guardados en la memoria local.</p>`;
             }
@@ -1325,21 +1297,12 @@
                         localStorage.removeItem(key);
                     }
                 }
-                // Reiniciar el estado de la aplicación a los valores por defecto
-                products = [/* ... productos iniciales ... */];
-                rawMaterials = [/* ... materias primas iniciales ... */];
-                orders = [];
-                users = [];
-                currentUser = null;
-                orderIdCounter = 1;
-                
-                // Recargar para usar los valores predeterminados y guardar el estado vacío
                 location.reload(); 
             }
         }
         
         // ====================================================================================
-        // F U N C I O N E S  M E N Ú  C L I E N T E  ( C A R R I T O )
+        // F U N C I O N E S  M E N Ú  C L I E N T E
         // ====================================================================================
 
         function renderProducts() {
@@ -1349,7 +1312,6 @@
                 : products.filter(p => p.category === currentCategory);
 
             productList.innerHTML = filteredProducts.map(product => {
-                // Verificar stock de producto final Y stock de materia prima
                 const isOutOfStock = product.stock === 0 || !checkRawMaterialStock(product, 1);
                 
                 return `
@@ -1363,7 +1325,7 @@
                                     <span class="text-2xl mr-2">${product.emoji}</span>
                                     <h3 class="font-semibold text-lg">${product.name}</h3>
                                 </div>
-                                <p class="text-2xl font-bold text-amber-600">$${product.price.toFixed(2)}</p>
+                                <p class="text-2xl font-bold text-amber-600">$${(product.price || 0).toFixed(2)}</p>
                                 <p class="text-sm text-gray-500">Stock: ${product.stock} ${isOutOfStock ? '<span class="text-red-500 font-bold">(Limitado)</span>' : ''}</p>
                             </div>
                             <button 
@@ -1382,9 +1344,16 @@
                 `;
             }).join('');
         }
-        
-        // ... (Funciones showProductPreview, closeProductPreview, updatePreviewQuantity, addToCartFromPreview) ...
 
+        // ===== FUNCIÓN MODIFICADA =====
+        function previewLocalImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById('imagePreviewStatus').textContent = `Archivo: ${file.name} ✓`;
+            }
+        }
+
+        // ===== FUNCIÓN MODIFICADA =====
         function showProductPreview(productId) {
             const product = products.find(p => p.id === productId);
             if (!product) return;
@@ -1393,19 +1362,17 @@
             
             document.getElementById('previewProductName').textContent = product.name;
             document.getElementById('previewProductDescription').textContent = product.description;
-            document.getElementById('previewProductPrice').textContent = `$${product.price.toFixed(2)}`;
+            document.getElementById('previewProductPrice').textContent = `$${(product.price || 0).toFixed(2)}`;
             document.getElementById('previewTime').textContent = product.time || 'N/A';
             document.getElementById('previewCalories').textContent = product.calories || 'N/A';
             
-            // Determinar si hay stock de producto final O materia prima
             const isOutOfStock = product.stock === 0 || !checkRawMaterialStock(product, 1);
             document.getElementById('previewStock').textContent = isOutOfStock ? 'Agotado' : `${product.stock} disp.`;
             
             const imageContainer = document.getElementById('previewImageContainer');
-            // Prioriza imagen local (data URL) sobre URL
+            // Se prioriza la imagen local, si no existe se usa la URL (si la hay), y si no, una por defecto.
             const imageSource = product.imageLocal || product.imageURL || 'https://images.unsplash.com/photo-1541167760496-1628856ab22d?q=80&w=2047&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
             imageContainer.style.backgroundImage = `url(${imageSource})`;
-            
             
             const addButton = document.getElementById('previewAddToCartButton');
             document.getElementById('previewQuantity').textContent = 1;
@@ -1450,8 +1417,8 @@
             const totalNewQuantity = (existingItem ? existingItem.quantity : 0) + quantity;
 
             if (totalNewQuantity > previewProduct.stock) {
-                 alert(`Solo hay ${previewProduct.stock - (existingItem ? existingItem.quantity : 0)} unidades más disponibles.`);
-                 return;
+                  alert(`Solo hay ${previewProduct.stock - (existingItem ? existingItem.quantity : 0)} unidades más disponibles.`);
+                  return;
             }
             
             if (!checkRawMaterialStock(previewProduct, totalNewQuantity)) {
@@ -1470,11 +1437,6 @@
             renderProducts();
             alert(`${quantity}x ${previewProduct.name} agregado al carrito.`);
         }
-
-
-        // ====================================================================================
-        // O T R A S  F U N C I O N E S  D E L  M E N Ú
-        // ====================================================================================
 
         function filterCategory(category) {
             currentCategory = category;
@@ -1549,7 +1511,7 @@
                         <span class="text-xl mr-3">${item.emoji}</span>
                         <div>
                             <h4 class="font-medium">${item.name}</h4>
-                            <p class="text-sm text-gray-600">$${item.price.toFixed(2)} c/u</p>
+                            <p class="text-sm text-gray-600">$${(item.price || 0).toFixed(2)} c/u</p>
                         </div>
                     </div>
                     <div class="flex items-center space-x-2">
@@ -1560,7 +1522,7 @@
                 </div>
             `).join('');
 
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const total = cart.reduce((sum, item) => sum + ((item.price || 0) * item.quantity), 0);
             totalPrice.textContent = `$${total.toFixed(2)}`;
         }
 
@@ -1634,11 +1596,10 @@
                 return;
             }
             
-            // Re-validar stock de MP en el último momento
             for (const item of cart) {
                 if (!checkRawMaterialStock(products.find(p => p.id === item.id), item.quantity)) {
-                     alert(`ERROR: Materia prima insuficiente para preparar ${item.name} x${item.quantity}. Por favor reduce la cantidad.`);
-                     return;
+                    alert(`ERROR: Materia prima insuficiente para preparar ${item.name} x${item.quantity}. Por favor reduce la cantidad.`);
+                    return;
                 }
             }
 
@@ -1668,7 +1629,6 @@
             orders.push(newOrder);
             
             
-            // 1. Reducir stock del producto final
             cart.forEach(cartItem => {
                 const product = products.find(p => p.id === cartItem.id);
                 if (product) {
@@ -1676,7 +1636,6 @@
                 }
             });
             
-            // 2. Reducir stock de la materia prima
             depleteRawMaterialStock(cart);
 
 
@@ -1689,7 +1648,7 @@
             document.getElementById('cardCvv').value = '';
             document.getElementById('cardHolder').value = '';
             updateCartCount();
-            saveState(); // Guardar el nuevo pedido y stock
+            saveState();
             showCustomerMenu();
         }
 
@@ -1705,23 +1664,19 @@
         // F U N C I O N E S  P A N E L  A D M I N I S T R A D O R  ( G E S T I Ó N )
         // ====================================================================================
         
-        // --- Productos Finales ---
-
         function renderAdminProducts() {
             const adminProductList = document.getElementById('adminProductList');
             
             adminProductList.innerHTML = products.map(product => {
-                // Función auxiliar para obtener el nombre de la MP
                 const getMaterialInfo = (id) => {
                     const material = getRawMaterial(id);
                     return material ? `${material.emoji} ${material.name} (${material.unit})` : 'MP Desconocida';
                 };
 
-                // Crear lista de ingredientes de la receta
                 const recipeHtml = product.materialsNeeded && product.materialsNeeded.length > 0
                     ? product.materialsNeeded.map(mat => {
                         const material = getRawMaterial(mat.materialId);
-                        const isStockLow = material && material.stock < mat.quantity * 5; // Aviso si el stock es bajo para 5 unidades del producto
+                        const isStockLow = material && material.stock < mat.quantity * 5;
                         return `<span class="text-xs ${isStockLow ? 'text-red-500 font-semibold' : 'text-gray-600'} block">
                                     ${mat.quantity} ${material.unit} de ${material.name}
                                 </span>`;
@@ -1737,7 +1692,7 @@
                                     <span class="text-xl mr-3">${product.emoji}</span>
                                     <div>
                                         <h4 class="font-medium">${product.name}</h4>
-                                        <p class="text-sm text-gray-600">$${product.price.toFixed(2)} - ${product.category}</p>
+                                        <p class="text-sm text-gray-600">$${(product.price || 0).toFixed(2)} - ${product.category}</p>
                                     </div>
                                 </div>
                                 <div class="mt-2 text-left p-2 border-l-4 border-indigo-300 bg-white shadow-inner">
@@ -1769,8 +1724,6 @@
             }).join('');
         }
         
-        // --- Materia Prima ---
-        
         function renderAdminRawMaterials() {
             const adminRawMaterialsList = document.getElementById('adminRawMaterialsList');
             
@@ -1787,7 +1740,7 @@
                         <div class="flex items-center space-x-2">
                             <div class="text-center">
                                 <p class="text-sm text-gray-600">Stock</p>
-                                <p class="font-bold ${material.stock < 5 ? 'text-red-600' : 'text-green-600'}">${material.stock.toFixed(2)} ${material.unit}</p>
+                                <p class="font-bold ${material.stock < 5 ? 'text-red-600' : 'text-green-600'}">${(material.stock || 0).toFixed(2)} ${material.unit}</p>
                             </div>
                             <button onclick="editRawMaterial(${material.id})" class="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1830,10 +1783,8 @@
 
         function deleteRawMaterial(id) {
             if (confirm('¿Estás seguro de que quieres eliminar esta materia prima? Se eliminará de todas las recetas.')) {
-                // 1. Eliminar la materia prima
                 rawMaterials = rawMaterials.filter(m => m.id !== id);
                 
-                // 2. Eliminar de las recetas de todos los productos
                 products.forEach(product => {
                     if (product.materialsNeeded) {
                         product.materialsNeeded = product.materialsNeeded.filter(mat => mat.materialId !== id);
@@ -1858,11 +1809,10 @@
             const id = document.getElementById('materialId').value;
             const name = document.getElementById('materialName').value.trim();
             const emoji = document.getElementById('materialEmoji').value.trim();
-            const stock = parseFloat(document.getElementById('materialStock').value);
+            const stock = parseFloat(document.getElementById('materialStock').value) || 0; // Fix: Default to 0
             const unit = document.getElementById('materialUnit').value.trim();
 
             if (id) {
-                // Editar
                 const material = rawMaterials.find(m => m.id === parseInt(id));
                 if (material) {
                     material.name = name;
@@ -1871,7 +1821,6 @@
                     material.unit = unit;
                 }
             } else {
-                // Agregar nuevo
                 const newId = Math.max(...rawMaterials.map(m => m.id), 100) + 1;
                 rawMaterials.push({
                     id: newId,
@@ -1887,8 +1836,6 @@
             closeRawMaterialModal();
         });
 
-
-        // --- Pedidos ---
 
         function renderAdminOrders() {
             const adminOrdersList = document.getElementById('adminOrdersList');
@@ -2006,8 +1953,6 @@
             `).join('');
         }
         
-        // --- Estadísticas ---
-        
         function renderSalesStats() {
             const adminStatsList = document.getElementById('adminStatsList');
             
@@ -2016,17 +1961,14 @@
                 return;
             }
 
-            // 1. Total de Ventas
             const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
 
-            // 2. Pedidos por Tipo de Cliente
             const customerTypeCounts = orders.reduce((acc, order) => {
                 const type = order.user.userType;
                 acc[type] = (acc[type] || 0) + 1;
                 return acc;
             }, {});
 
-            // 3. Productos Más Vendidos
             const productSales = orders.flatMap(order => order.items).reduce((acc, item) => {
                 acc[item.name] = (acc[item.name] || 0) + item.quantity;
                 return acc;
@@ -2035,7 +1977,6 @@
                 .sort(([, a], [, b]) => b - a)
                 .slice(0, 5);
                 
-            // 4. Ventas por Método de Pago
             const paymentMethodSales = orders.reduce((acc, order) => {
                 const method = order.paymentMethod;
                 acc[method] = (acc[method] || 0) + 1;
@@ -2095,8 +2036,6 @@
             `;
         }
 
-
-        // --- Usuarios ---
 
         function renderAdminUsers() {
             const adminUsersList = document.getElementById('adminUsersList');
@@ -2162,12 +2101,9 @@
         }
 
 
-        // --- Funciones del Modal de Productos Finales (CON GESTIÓN DE RECETA) ---
-        
         function addMaterialFieldToProductModal(materialId = '', quantity = '') {
             const container = document.getElementById('productMaterialsContainer');
             
-            // Si es el primer elemento, borra el mensaje de ayuda
             if (container.querySelector('.text-sm.text-gray-500')) {
                 container.innerHTML = '';
             }
@@ -2203,7 +2139,6 @@
             const container = document.getElementById('productMaterialsContainer');
             button.closest('.flex').remove();
             
-            // Si no quedan elementos, muestra el mensaje de ayuda
             if (container.children.length === 0) {
                 container.innerHTML = '<p class="text-sm text-gray-500">Haz clic en "Añadir Materia Prima" para empezar.</p>';
             }
@@ -2233,10 +2168,11 @@
             document.getElementById('productId').value = '';
             document.getElementById('productEmoji').value = ''; 
             document.getElementById('imagePreviewStatus').textContent = 'Ningún archivo seleccionado.';
-            renderProductMaterials({ materialsNeeded: [] }); // Llama a la nueva función de renderizado de receta
+            renderProductMaterials({ materialsNeeded: [] });
             document.getElementById('productModal').classList.remove('hidden');
         }
 
+        // ===== FUNCIÓN MODIFICADA =====
         function editProduct(id) {
             const product = products.find(p => p.id === id);
             if (product) {
@@ -2246,12 +2182,10 @@
                 document.getElementById('productEmoji').value = product.emoji || '';
                 
                 document.getElementById('productDescription').value = product.description || '';
-                document.getElementById('productImageURL').value = product.imageURL || '';
                 
+                // Actualiza el estado del preview de la imagen
                 if (product.imageLocal) {
-                    document.getElementById('imagePreviewStatus').textContent = 'Imagen Local Cargada ✓';
-                } else if (product.imageURL) {
-                    document.getElementById('imagePreviewStatus').textContent = 'Usando URL ✓';
+                    document.getElementById('imagePreviewStatus').textContent = 'Imagen local cargada ✓';
                 } else {
                     document.getElementById('imagePreviewStatus').textContent = 'Ningún archivo seleccionado.';
                 }
@@ -2264,7 +2198,6 @@
                 document.getElementById('productCategory').value = product.category;
                 document.getElementById('productStock').value = product.stock;
                 
-                // Cargar la receta del producto
                 renderProductMaterials(product);
 
                 document.getElementById('productModal').classList.remove('hidden');
@@ -2274,7 +2207,7 @@
         function deleteProduct(id) {
             if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
                 products = products.filter(p => p.id !== id);
-                saveState(); // Guardar cambios
+                saveState();
                 renderAdminProducts();
             }
         }
@@ -2287,7 +2220,7 @@
             const order = orders.find(o => o.id === orderId);
             if (order) {
                 order.status = order.status === 'pendiente' ? 'listo' : 'pendiente';
-                saveState(); // Guardar cambios
+                saveState();
                 renderAdminOrders();
             }
         }
@@ -2296,37 +2229,33 @@
             const order = orders.find(o => o.id === orderId);
             if (order) {
                 order.isPaid = !order.isPaid;
-                saveState(); // Guardar cambios
+                saveState();
                 renderAdminOrders();
             }
         }
 
-        // Manejar formulario de producto (MODIFICADO para capturar RECETA)
+        // ===== FUNCIÓN MODIFICADA =====
         document.getElementById('productForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
             const id = document.getElementById('productId').value;
             const name = document.getElementById('productName').value;
             const emoji = document.getElementById('productEmoji').value.trim().substring(0, 2); 
-            const price = parseFloat(document.getElementById('productPrice').value);
+            const price = parseFloat(document.getElementById('productPrice').value) || 0;
             const category = document.getElementById('productCategory').value;
-            const stock = parseInt(document.getElementById('productStock').value);
+            const stock = parseInt(document.getElementById('productStock').value) || 0;
             
-            // Recoger campos de Preview
             const description = document.getElementById('productDescription').value;
-            const imageURL = document.getElementById('productImageURL').value;
             const imageFile = document.getElementById('productImageFile').files[0];
             const time = document.getElementById('productTime').value;
             const calories = document.getElementById('productCalories').value;
 
-            // CAPTURA DE LA RECETA DINÁMICA
             const productMaterialsContainer = document.getElementById('productMaterialsContainer');
             const materialsNeeded = [];
             
-            // Iterar sobre los campos de materia prima dinámicos
-            productMaterialsContainer.querySelectorAll('.flex[data-index]').forEach((item, index) => {
-                const materialId = item.querySelector(`[name="material_id_${index}"]`).value;
-                const quantity = item.querySelector(`[name="material_quantity_${index}"]`).value;
+            productMaterialsContainer.querySelectorAll('.flex[data-index]').forEach(item => {
+                const materialId = item.querySelector('select').value;
+                const quantity = item.querySelector('input[type="number"]').value;
                 
                 if (materialId && quantity > 0) {
                     materialsNeeded.push({
@@ -2336,8 +2265,6 @@
                 }
             });
 
-
-            // Crear objeto base
             const productToSave = {
                 id: id ? parseInt(id) : null,
                 name,
@@ -2345,32 +2272,29 @@
                 category,
                 stock,
                 emoji: emoji, 
-                materialsNeeded: materialsNeeded, // GUARDAR LA RECETA PERSONALIZADA
+                materialsNeeded: materialsNeeded,
                 description,
                 time,
                 calories,
-                imageURL: '',
+                imageURL: '', // Se mantiene por retrocompatibilidad, pero no se usa para guardar
                 imageLocal: '',
             };
 
             const existingProduct = id ? products.find(p => p.id === parseInt(id)) : null;
 
-            const finalizeSave = (localData = null) => {
-                // Lógica de prioridad de imagen
-                if (localData) {
-                    productToSave.imageLocal = localData;
-                    productToSave.imageURL = '';
-                } else if (imageURL) {
-                    productToSave.imageURL = imageURL;
-                    productToSave.imageLocal = '';
-                } else if (existingProduct) {
-                    // Mantener la imagen local/url anterior si no se proporciona una nueva URL o archivo
+            const finalizeSave = (localImageData = null) => {
+                // Si se subió una nueva imagen local, se guarda.
+                if (localImageData) {
+                    productToSave.imageLocal = localImageData;
+                    productToSave.imageURL = ''; // Limpia la URL por si existía
+                } 
+                // Si no hay nueva imagen, pero es un producto existente, se conservan las imágenes antiguas.
+                else if (existingProduct) {
                     productToSave.imageLocal = existingProduct.imageLocal || '';
-                    productToSave.imageURL = existingProduct.imageURL || '';
+                    productToSave.imageURL = existingProduct.imageURL || ''; // Conserva URL antigua si la tenía
                 }
 
-
-                 if (id) {
+                if (id) {
                     Object.assign(products.find(p => p.id === parseInt(id)), productToSave);
                 } else {
                     const newId = Math.max(...products.map(p => p.id), 0) + 1;
@@ -2378,24 +2302,23 @@
                     products.push(productToSave);
                 }
                 
-                saveState(); // Guardar cambios
+                saveState();
                 renderAdminProducts();
                 closeModal();
             };
             
-            // Lógica para manejar la imagen (usando Promise para Data URL)
+            // Si hay un archivo de imagen, se procesa. Si no, se guarda directamente.
             if (imageFile) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    finalizeSave(e.target.result); // Pasa la Data URL
+                    finalizeSave(e.target.result); // Pasa los datos de la imagen local
                 };
                 reader.readAsDataURL(imageFile);
             } else {
-                finalizeSave(); // No hay archivo para leer
+                finalizeSave(); // No hay imagen nueva
             }
         });
 
-        // Formateo automático de campos de tarjeta (sin cambios)
         document.getElementById('cardNumber').addEventListener('input', function (e) {
             let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
             let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
@@ -2415,51 +2338,23 @@
             e.target.value = e.target.value.replace(/[^0-9]/g, '');
         });
 
-        // Inicializar la aplicación
-        renderProducts();
-
-        
         // ====================================================================================
-        // F U N C I O N E S  D E  S T O C K  Y  R E C E T A S
-        // ... (Todas las funciones anteriores) ...
-        
-        // Formateo automático de campos de tarjeta (sin cambios)
-        document.getElementById('cardNumber').addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
-            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
-            if (formattedValue.length > 19) formattedValue = formattedValue.substr(0, 19);
-            e.target.value = formattedValue;
-        });
-
-        document.getElementById('cardExpiry').addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length >= 2) {
-                value = value.substring(0, 2) + '/' + value.substring(2, 4);
-            }
-            e.target.value = value;
-        });
-
-        document.getElementById('cardCvv').addEventListener('input', function (e) {
-            e.target.value = e.target.value.replace(/[^0-9]/g, '');
-        });
-
-        /**
-         * Inicializa la aplicación.
-         * La función loadState() al final del script se encarga de:
-         * 1. Cargar el estado.
-         * 2. Si hay un usuario, mostrar la pantalla de bienvenida/admin.
-         * 3. Si no hay usuario, ejecutar showLogin().
-         */
-        loadState(); 
-
-          // ====================================================================================
         // G E S T O S  T Á C T I L E S  ( S W I P E ) 
         // ====================================================================================
         
+        let currentAdminTabIndex = 0;
+        const adminTabsFunctions = [
+            showAdminStock,
+            showAdminRawMaterials,
+            showAdminOrders,
+            showAdminStats,
+            showAdminUsers,
+            showAdminMemory
+        ];
+
         let touchstartX = 0;
         let touchendX = 0;
-        const SWIPE_THRESHOLD = 80; // Mínimo de píxeles para considerar un desplazamiento lateral
-        const ADMIN_CONTENT_ID = 'adminContent';
+        const SWIPE_THRESHOLD = 80;
 
         function checkDirection() {
             const deltaX = touchendX - touchstartX;
@@ -2478,10 +2373,6 @@
             if (currentAdminTabIndex < adminTabsFunctions.length - 1) {
                 currentAdminTabIndex++;
                 adminTabsFunctions[currentAdminTabIndex]();
-            } else {
-                // Opcional: loop back to the first tab
-                // currentAdminTabIndex = 0;
-                // adminTabsFunctions[currentAdminTabIndex]();
             }
         }
 
@@ -2489,26 +2380,22 @@
             if (currentAdminTabIndex > 0) {
                 currentAdminTabIndex--;
                 adminTabsFunctions[currentAdminTabIndex]();
-            } else {
-                // Opcional: loop to the last tab
-                // currentAdminTabIndex = adminTabsFunctions.length - 1;
-                // adminTabsFunctions[currentAdminTabIndex]();
             }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const adminContent = document.getElementById(ADMIN_CONTENT_ID);
+            const adminContent = document.getElementById('adminContent');
             if (adminContent) {
                 adminContent.addEventListener('touchstart', e => {
                     touchstartX = e.changedTouches[0].screenX;
-                }, false);
+                }, { passive: true });
 
                 adminContent.addEventListener('touchend', e => {
                     touchendX = e.changedTouches[0].screenX;
                     if (!document.getElementById('adminPanel').classList.contains('hidden')) {
                         checkDirection();
                     }
-                }, false);
+                }, { passive: true });
             }
         });
         
@@ -2518,13 +2405,6 @@
         // ====================================================================================
         
         loadState(); 
-        
-        
     </script> 
-    
-    
-    </script>
-    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'979585d9d239154d',t:'MTc1NjkwNTM5OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
 </body>
-
 </html>
