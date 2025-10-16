@@ -52,10 +52,31 @@
                 <button onclick="showPasswordResetModal()" class="w-full bg-blue-800 bg-opacity-70 text-white py-2 px-6 rounded-lg font-medium text-sm hover:shadow-xl transform hover:scale-105 transition-all duration-200 border border-white">
                     🔑 ¿Olvidaste tu Contraseña?
                 </button>
-                </div>
+                <button onclick="loginAsAdmin()" class="w-full bg-red-600 text-white py-2 px-6 rounded-lg font-medium text-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                    ⚙️ Acceso Administrador
+                </button>
+            </div>
         </div>
     </div>
 
+    <div id="adminLoginScreen" class="hidden min-h-screen bg-gradient-to-br from-slate-700 to-slate-900 flex flex-col items-center justify-center text-white relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <svg class="w-full h-full" viewBox="0 0 100 100" fill="currentColor"><circle cx="20" cy="20" r="2"/><circle cx="80" cy="30" r="1.5"/><circle cx="60" cy="70" r="1"/><circle cx="30" cy="80" r="2.5"/><circle cx="90" cy="60" r="1"/></svg>
+        </div>
+        <div class="text-center z-10 fade-in w-full max-w-sm px-6">
+            <div class="mb-8">
+                <svg class="w-24 h-24 mx-auto mb-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </div>
+            <h1 class="text-4xl font-bold mb-2 tracking-wide">Portal Administrador</h1>
+            <p class="text-lg opacity-90 mb-8">Ingresa tus credenciales</p>
+            <div class="space-y-4">
+                <div><input type="text" id="adminLoginUser" class="w-full px-4 py-3 rounded-lg text-gray-800 placeholder-gray-500" placeholder="Usuario de Administrador"></div>
+                <div><input type="password" id="adminLoginPassword" class="w-full px-4 py-3 rounded-lg text-gray-800 placeholder-gray-500" placeholder="Contraseña de Administrador"></div>
+                <button onclick="checkAdminLogin()" class="w-full bg-red-600 text-white py-3 px-6 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">⚙️ Acceder al Panel</button>
+                <button onclick="showLogin()" class="w-full bg-slate-600 text-white py-2 px-6 rounded-lg font-medium text-sm hover:shadow-xl transform hover:scale-105 transition-all duration-200 border border-white">↩️ Volver</button>
+            </div>
+        </div>
+    </div>
     <div id="registerScreen" class="hidden min-h-screen bg-gradient-to-br from-green-600 to-teal-700 text-white overflow-y-auto">
         <div class="p-6">
             <div class="flex items-center mb-6">
@@ -418,9 +439,9 @@
     <div id="adminPanel" class="hidden min-h-screen bg-white">
         <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 shadow-lg">
             <div class="flex items-center justify-between">
-                <button onclick="logout()" class="p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors" title="Cerrar Sesión">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9"></path>
+                <button onclick="showLogin()" class="p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                     </svg>
                 </button>
                 <h2 class="text-xl font-bold">Panel Administrador</h2>
@@ -432,7 +453,7 @@
             </div>
         </div>
 
-        <div class="p-4" id="adminContent">
+        <div class="p-4">
             <div class="flex space-x-2 mb-6 overflow-x-auto">
                 <button onclick="showAdminStock()" id="stockTab" class="admin-tab bg-blue-600 text-white px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     🍽️ Stock Productos
@@ -521,6 +542,14 @@
                 
                 <div>
                     <label class="block text-sm font-medium mb-1">Imagen de Vista Previa</label>
+                    <input type="url" id="productImageURL" class="w-full border rounded-lg px-3 py-2 mb-2 text-gray-800" placeholder="Opcional: Enlace URL a la imagen" onchange="document.getElementById('productImageFile').value = ''; document.getElementById('imagePreviewStatus').textContent = this.value ? 'Usando URL ✓' : 'Ningún archivo seleccionado.';">
+                    
+                    <div class="flex items-center space-x-2">
+                        <span class="text-gray-500 text-xs">O</span>
+                        <div class="flex-grow border-t border-gray-300"></div>
+                        <span class="text-gray-500 text-xs">Cargar Archivo</span>
+                    </div>
+
                     <div class="border-2 border-dashed border-gray-300 rounded-lg p-3 mt-2 text-center">
                         <input type="file" id="productImageFile" accept="image/*" class="hidden" onchange="previewLocalImage(event)">
                         <button type="button" onclick="document.getElementById('productImageFile').click()" class="w-full py-2 px-4 bg-gray-100 text-blue-600 rounded-lg hover:bg-gray-200 transition-colors">
@@ -529,7 +558,6 @@
                         <p id="imagePreviewStatus" class="text-xs mt-2 text-gray-600">Ningún archivo seleccionado.</p>
                     </div>
                 </div>
-
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium mb-1">Tiempo (Ej: 5 min)</label>
@@ -577,6 +605,7 @@
             </form>
         </div>
     </div>
+    
     <div id="rawMaterialModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up">
             <h3 id="materialModalTitle" class="text-lg font-bold mb-4">Editar Materia Prima</h3>
@@ -611,8 +640,8 @@
             </form>
             <div id="materialDeleteContainer" class="mt-4 hidden">
                  <button type="button" onclick="deleteRawMaterial(parseInt(document.getElementById('materialId').value))" class="w-full bg-red-500 text-white py-2 rounded-lg font-medium hover:bg-red-600">
-                    Eliminar Materia Prima
-                </button>
+                     Eliminar Materia Prima
+                 </button>
             </div>
         </div>
     </div>
@@ -715,7 +744,7 @@
             CURRENT_USER: 'cafetec_current_user',
             ORDER_ID_COUNTER: 'cafetec_order_id_counter'
         };
-
+        
         function saveState() {
             localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
             localStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(rawMaterials));
@@ -742,10 +771,10 @@
 
             if (currentUser) {
                  if (currentUser.userType === 'admin') {
-                    showAdminPanel();
+                     showAdminPanel();
                  } else {
-                    document.getElementById('welcomeUserName').textContent = currentUser.fullName;
-                    showWelcome();
+                     document.getElementById('welcomeUserName').textContent = currentUser.fullName;
+                     showWelcome();
                  }
             } else {
                 showLogin();
@@ -753,7 +782,7 @@
         }
         
         // ====================================================================================
-        // E S T A D O S  I N I C I A L E S 
+        // E S T A D O S   I N I C I A L E S 
         // ====================================================================================
 
         let rawMaterials = [
@@ -773,10 +802,9 @@
                 id: 1, name: 'Café Americano', price: 25.00, category: 'bebidas', stock: 50, emoji: '☕',
                 materialsNeeded: [
                     { materialId: 101, quantity: 0.02 }, 
-                    { materialId: 103, quantity: 0.01 } 
+                    { materialId: 103, quantity: 0.01 }
                 ], 
                 imageURL: 'https://images.unsplash.com/photo-1509785116905-f370a1a0fb84?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                imageLocal: '',
                 description: 'El clásico café, simple y aromático. Perfecto para iniciar la mañana o recargar energías.',
                 time: '2 min', calories: '5 Cal'
             },
@@ -784,10 +812,9 @@
                 id: 2, name: 'Cappuccino', price: 35.00, category: 'bebidas', stock: 30, emoji: '☕',
                 materialsNeeded: [
                     { materialId: 101, quantity: 0.015 }, 
-                    { materialId: 102, quantity: 0.2 } 
+                    { materialId: 102, quantity: 0.2 }
                 ], 
                 imageURL: 'https://images.unsplash.com/photo-1517454238596-f947477610c4?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                imageLocal: '',
                 description: 'Espresso con leche espumada, suave y cremoso. Una delicia para los amantes del café con leche.',
                 time: '5 min', calories: '120 Cal'
             },
@@ -796,44 +823,40 @@
                 materialsNeeded: [
                     { materialId: 104, quantity: 3 }, 
                     { materialId: 105, quantity: 0.1 }, 
-                    { materialId: 106, quantity: 0.05 } 
+                    { materialId: 106, quantity: 0.05 }
                 ],
                 imageURL: 'https://images.unsplash.com/photo-1627915570889-019688b13958?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                imageLocal: '',
                 description: 'Clásico sándwich de pollo, jamón, queso y verduras en triple pan tostado.',
                 time: '10 min', calories: '350 Cal'
             },
             {
                 id: 4, name: 'Ensalada César', price: 55.00, category: 'comida', stock: 15, emoji: '🥗',
                 materialsNeeded: [
-                    { materialId: 106, quantity: 0.15 }, 
-                    { materialId: 107, quantity: 0.05 }, 
-                    { materialId: 105, quantity: 0.05 } 
+                    { materialId: 106, quantity: 0.15 },
+                    { materialId: 107, quantity: 0.05 },
+                    { materialId: 105, quantity: 0.05 }
                 ],
                 imageURL: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                imageLocal: '',
                 description: 'La ensalada más famosa: lechuga, crutones, queso parmesano y aderezo César.',
                 time: '8 min', calories: '230 Cal'
             },
             {
                 id: 5, name: 'Cheesecake', price: 45.00, category: 'postres', stock: 12, emoji: '🍰',
                 materialsNeeded: [
-                    { materialId: 108, quantity: 0.2 }, 
-                    { materialId: 103, quantity: 0.05 } 
+                    { materialId: 108, quantity: 0.2 },
+                    { materialId: 103, quantity: 0.05 }
                 ],
                 imageURL: 'https://images.unsplash.com/photo-1565292881729-e85d9c228220?q=80&w=1925&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                imageLocal: '',
                 description: 'Tarta de queso cremosa con base de galleta, servida con coulis de frutos rojos.',
                 time: '5 min', calories: '480 Cal'
             },
             {
                 id: 6, name: 'Muffin Chocolate', price: 30.00, category: 'postres', stock: 25, emoji: '🧁',
                 materialsNeeded: [
-                    { materialId: 109, quantity: 0.1 }, 
-                    { materialId: 103, quantity: 0.02 } 
+                    { materialId: 109, quantity: 0.1 },
+                    { materialId: 103, quantity: 0.02 }
                 ],
                 imageURL: 'https://images.unsplash.com/photo-1628172088031-155e97148530?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                imageLocal: '',
                 description: 'Suave panecillo de chocolate, ideal para acompañar tu café o como postre rápido.',
                 time: '3 min', calories: '290 Cal'
             }
@@ -848,56 +871,12 @@
         let previewProduct = null;
         
         if (!localStorage.getItem(STORAGE_KEYS.PRODUCTS)) {
-              localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
-              localStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(rawMaterials));
-              localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
-              localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-              localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
+             localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
+             localStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(rawMaterials));
+             localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
+             localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+             localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
         }
-
-        // ====================================================================================
-        // F U N C I O N E S  D E  S T O C K  Y  R E C E T A S
-        // ====================================================================================
-        
-        function getRawMaterial(id) {
-            return rawMaterials.find(m => m.id === id);
-        }
-
-        function checkRawMaterialStock(product, quantity) {
-            if (!product.materialsNeeded || product.materialsNeeded.length === 0) return true;
-            
-            for (const material of product.materialsNeeded) {
-                const rawMaterial = getRawMaterial(material.materialId);
-                if (!rawMaterial) {
-                    console.warn(`Materia prima ID ${material.materialId} no encontrada.`);
-                    continue; 
-                }
-
-                const required = material.quantity * quantity;
-                
-                if (rawMaterial.stock < required - 0.001) { 
-                    console.log(`Falta MP para ${product.name}. Stock de ${rawMaterial.name}: ${rawMaterial.stock}, requerido: ${required}.`);
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        function depleteRawMaterialStock(items) {
-            items.forEach(cartItem => {
-                const product = products.find(p => p.id === cartItem.id);
-                if (!product || !product.materialsNeeded) return;
-
-                product.materialsNeeded.forEach(material => {
-                    const rawMaterial = getRawMaterial(material.materialId);
-                    if (rawMaterial) {
-                        const depletionAmount = material.quantity * cartItem.quantity;
-                        rawMaterial.stock = parseFloat((rawMaterial.stock - depletionAmount).toFixed(2));
-                    }
-                });
-            });
-        }
-
 
         // ====================================================================================
         // F U N C I O N E S  D E  A U T E N T I C A C I Ó N
@@ -945,6 +924,7 @@
         
         function showLogin() {
             document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('adminLoginScreen').classList.add('hidden'); // MODIFICADO
             document.getElementById('registerScreen').classList.add('hidden');
             document.getElementById('welcomeScreen').classList.add('hidden');
             document.getElementById('customerMenu').classList.add('hidden');
@@ -957,6 +937,7 @@
         function showRegister() {
             document.getElementById('registerScreen').classList.remove('hidden');
             document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('adminLoginScreen').classList.add('hidden'); // MODIFICADO
             document.getElementById('productPreviewModal').classList.add('hidden');
             document.getElementById('passwordResetModal').classList.add('hidden');
         }
@@ -1072,13 +1053,6 @@
                 return;
             }
             
-            if (username === 'admin' && password === 'admin') {
-                currentUser = { id: 0, userType: 'admin', fullName: 'Administrador', username: 'admin' };
-                saveState();
-                showAdminPanel();
-                return;
-            }
-            
             const user = users.find(u => u.username === username && u.password === password);
             
             if (user) {
@@ -1088,6 +1062,34 @@
                 showWelcome();
             } else {
                 alert('Usuario o contraseña incorrectos');
+            }
+        }
+
+        // --- FUNCIÓN MODIFICADA ---
+        function loginAsAdmin() {
+            // Oculta todas las demás pantallas
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('registerScreen').classList.add('hidden');
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('customerMenu').classList.add('hidden');
+            document.getElementById('cartScreen').classList.add('hidden');
+            document.getElementById('adminPanel').classList.add('hidden');
+            // Muestra la nueva pantalla de login de admin
+            document.getElementById('adminLoginScreen').classList.remove('hidden');
+        }
+
+        // --- NUEVA FUNCIÓN ---
+        function checkAdminLogin() {
+            const user = document.getElementById('adminLoginUser').value;
+            const pass = document.getElementById('adminLoginPassword').value;
+
+            // Valida las credenciales
+            if (user === 'admin' && pass === 'Admin') {
+                currentUser = { id: 0, userType: 'admin', fullName: 'Administrador', username: 'admin' };
+                saveState();
+                showAdminPanel();
+            } else {
+                alert('Usuario o contraseña de administrador incorrectos.');
             }
         }
 
@@ -1102,6 +1104,7 @@
         function showWelcome() {
             document.getElementById('welcomeScreen').classList.remove('hidden');
             document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('adminLoginScreen').classList.add('hidden'); // MODIFICADO
             document.getElementById('customerMenu').classList.add('hidden');
             document.getElementById('cartScreen').classList.add('hidden');
             document.getElementById('adminPanel').classList.add('hidden');
@@ -1127,6 +1130,7 @@
 
         function showAdminPanel() {
             document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('adminLoginScreen').classList.add('hidden'); // MODIFICADO
             document.getElementById('adminPanel').classList.remove('hidden');
             document.getElementById('customerMenu').classList.add('hidden');
             document.getElementById('cartScreen').classList.add('hidden');
@@ -1135,11 +1139,62 @@
         }
         
         // ====================================================================================
+        //       [... AQUÍ VA TODO EL RESTO DE TU CÓDIGO JAVASCRIPT SIN CAMBIOS ...]
+        //                (Funciones de stock, menú, carrito, panel de admin, etc.)
+        // ====================================================================================
+        
+        // Al final, asegúrate de que la última llamada sea a loadState()
+        loadState();
+
+        // ====================================================================================
+        // F U N C I O N E S  D E  S T O C K  Y  R E C E T A S
+        // ====================================================================================
+        
+        function getRawMaterial(id) {
+            return rawMaterials.find(m => m.id === id);
+        }
+
+        function checkRawMaterialStock(product, quantity) {
+            if (!product.materialsNeeded || product.materialsNeeded.length === 0) return true;
+            
+            for (const material of product.materialsNeeded) {
+                const rawMaterial = getRawMaterial(material.materialId);
+                if (!rawMaterial) {
+                    console.warn(`Materia prima ID ${material.materialId} no encontrada.`);
+                    continue; 
+                }
+
+                const required = material.quantity * quantity;
+                
+                if (rawMaterial.stock < required - 0.001) { 
+                    console.log(`Falta MP para ${product.name}. Stock de ${rawMaterial.name}: ${rawMaterial.stock}, requerido: ${required}.`);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function depleteRawMaterialStock(items) {
+            items.forEach(cartItem => {
+                const product = products.find(p => p.id === cartItem.id);
+                if (!product || !product.materialsNeeded) return;
+
+                product.materialsNeeded.forEach(material => {
+                    const rawMaterial = getRawMaterial(material.materialId);
+                    if (rawMaterial) {
+                        const depletionAmount = material.quantity * cartItem.quantity;
+                        rawMaterial.stock = parseFloat((rawMaterial.stock - depletionAmount).toFixed(2));
+                    }
+                });
+            });
+        }
+
+
+        // ====================================================================================
         // F U N C I O N E S  P A N E L  A D M I N I S T R A D O R  ( V I S T A S )
         // ====================================================================================
 
         function showAdminStock() {
-            currentAdminTabIndex = 0;
             document.querySelectorAll('.admin-tab').forEach(tab => {
                 tab.classList.remove('bg-blue-600', 'text-white');
                 tab.classList.add('bg-gray-200', 'text-gray-700');
@@ -1158,7 +1213,6 @@
         }
         
         function showAdminRawMaterials() {
-            currentAdminTabIndex = 1;
             document.querySelectorAll('.admin-tab').forEach(tab => {
                 tab.classList.remove('bg-blue-600', 'text-white');
                 tab.classList.add('bg-gray-200', 'text-gray-700');
@@ -1177,7 +1231,6 @@
         }
 
         function showAdminOrders() {
-            currentAdminTabIndex = 2;
             document.querySelectorAll('.admin-tab').forEach(tab => {
                 tab.classList.remove('bg-blue-600', 'text-white');
                 tab.classList.add('bg-gray-200', 'text-gray-700');
@@ -1196,7 +1249,6 @@
         }
         
         function showAdminStats() {
-            currentAdminTabIndex = 3;
             document.querySelectorAll('.admin-tab').forEach(tab => {
                 tab.classList.remove('bg-blue-600', 'text-white');
                 tab.classList.add('bg-gray-200', 'text-gray-700');
@@ -1215,7 +1267,6 @@
         }
 
         function showAdminUsers() {
-            currentAdminTabIndex = 4;
             document.querySelectorAll('.admin-tab').forEach(tab => {
                 tab.classList.remove('bg-blue-600', 'text-white');
                 tab.classList.add('bg-gray-200', 'text-gray-700');
@@ -1234,7 +1285,6 @@
         }
         
         function showAdminMemory() {
-            currentAdminTabIndex = 5;
             document.querySelectorAll('.admin-tab').forEach(tab => {
                 tab.classList.remove('bg-blue-600', 'text-white');
                 tab.classList.add('bg-gray-200', 'text-gray-700');
@@ -1282,7 +1332,7 @@
             }
 
             if (totalSize > 0) {
-                html = `<p class="text-sm font-medium mb-4">Total de datos almacenados: ${(totalSize / 1024).toFixed(2)} KB</p>` + html;
+                 html = `<p class="text-sm font-medium mb-4">Total de datos almacenados: ${(totalSize / 1024).toFixed(2)} KB</p>` + html;
             } else {
                 html = `<p class="text-center text-gray-500 py-8">No hay datos de CAFE-TEC guardados en la memoria local.</p>`;
             }
@@ -1297,6 +1347,14 @@
                         localStorage.removeItem(key);
                     }
                 }
+                
+                products = [];
+                rawMaterials = [];
+                orders = [];
+                users = [];
+                currentUser = null;
+                orderIdCounter = 1;
+                
                 location.reload(); 
             }
         }
@@ -1325,7 +1383,7 @@
                                     <span class="text-2xl mr-2">${product.emoji}</span>
                                     <h3 class="font-semibold text-lg">${product.name}</h3>
                                 </div>
-                                <p class="text-2xl font-bold text-amber-600">$${(product.price || 0).toFixed(2)}</p>
+                                <p class="text-2xl font-bold text-amber-600">$${product.price.toFixed(2)}</p>
                                 <p class="text-sm text-gray-500">Stock: ${product.stock} ${isOutOfStock ? '<span class="text-red-500 font-bold">(Limitado)</span>' : ''}</p>
                             </div>
                             <button 
@@ -1344,16 +1402,7 @@
                 `;
             }).join('');
         }
-
-        // ===== FUNCIÓN MODIFICADA =====
-        function previewLocalImage(event) {
-            const file = event.target.files[0];
-            if (file) {
-                document.getElementById('imagePreviewStatus').textContent = `Archivo: ${file.name} ✓`;
-            }
-        }
-
-        // ===== FUNCIÓN MODIFICADA =====
+        
         function showProductPreview(productId) {
             const product = products.find(p => p.id === productId);
             if (!product) return;
@@ -1362,7 +1411,7 @@
             
             document.getElementById('previewProductName').textContent = product.name;
             document.getElementById('previewProductDescription').textContent = product.description;
-            document.getElementById('previewProductPrice').textContent = `$${(product.price || 0).toFixed(2)}`;
+            document.getElementById('previewProductPrice').textContent = `$${product.price.toFixed(2)}`;
             document.getElementById('previewTime').textContent = product.time || 'N/A';
             document.getElementById('previewCalories').textContent = product.calories || 'N/A';
             
@@ -1370,7 +1419,6 @@
             document.getElementById('previewStock').textContent = isOutOfStock ? 'Agotado' : `${product.stock} disp.`;
             
             const imageContainer = document.getElementById('previewImageContainer');
-            // Se prioriza la imagen local, si no existe se usa la URL (si la hay), y si no, una por defecto.
             const imageSource = product.imageLocal || product.imageURL || 'https://images.unsplash.com/photo-1541167760496-1628856ab22d?q=80&w=2047&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
             imageContainer.style.backgroundImage = `url(${imageSource})`;
             
@@ -1417,8 +1465,8 @@
             const totalNewQuantity = (existingItem ? existingItem.quantity : 0) + quantity;
 
             if (totalNewQuantity > previewProduct.stock) {
-                  alert(`Solo hay ${previewProduct.stock - (existingItem ? existingItem.quantity : 0)} unidades más disponibles.`);
-                  return;
+                 alert(`Solo hay ${previewProduct.stock - (existingItem ? existingItem.quantity : 0)} unidades más disponibles.`);
+                 return;
             }
             
             if (!checkRawMaterialStock(previewProduct, totalNewQuantity)) {
@@ -1511,7 +1559,7 @@
                         <span class="text-xl mr-3">${item.emoji}</span>
                         <div>
                             <h4 class="font-medium">${item.name}</h4>
-                            <p class="text-sm text-gray-600">$${(item.price || 0).toFixed(2)} c/u</p>
+                            <p class="text-sm text-gray-600">$${item.price.toFixed(2)} c/u</p>
                         </div>
                     </div>
                     <div class="flex items-center space-x-2">
@@ -1522,7 +1570,7 @@
                 </div>
             `).join('');
 
-            const total = cart.reduce((sum, item) => sum + ((item.price || 0) * item.quantity), 0);
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             totalPrice.textContent = `$${total.toFixed(2)}`;
         }
 
@@ -1598,8 +1646,8 @@
             
             for (const item of cart) {
                 if (!checkRawMaterialStock(products.find(p => p.id === item.id), item.quantity)) {
-                    alert(`ERROR: Materia prima insuficiente para preparar ${item.name} x${item.quantity}. Por favor reduce la cantidad.`);
-                    return;
+                     alert(`ERROR: Materia prima insuficiente para preparar ${item.name} x${item.quantity}. Por favor reduce la cantidad.`);
+                     return;
                 }
             }
 
@@ -1628,7 +1676,6 @@
             
             orders.push(newOrder);
             
-            
             cart.forEach(cartItem => {
                 const product = products.find(p => p.id === cartItem.id);
                 if (product) {
@@ -1637,7 +1684,6 @@
             });
             
             depleteRawMaterialStock(cart);
-
 
             alert(`¡Pedido confirmado!\n\nPedido #${newOrder.id}\nReferencia: ${referenceNumber}\nCliente: ${currentUser.fullName}\nTotal: $${total.toFixed(2)}\nHorario de recogida: ${timeFormatted}\nMétodo de pago: ${paymentMethod}\n\n¡Tu pedido estará listo a la hora seleccionada!\n¡Gracias por tu compra!`);
             
@@ -1692,7 +1738,7 @@
                                     <span class="text-xl mr-3">${product.emoji}</span>
                                     <div>
                                         <h4 class="font-medium">${product.name}</h4>
-                                        <p class="text-sm text-gray-600">$${(product.price || 0).toFixed(2)} - ${product.category}</p>
+                                        <p class="text-sm text-gray-600">$${product.price.toFixed(2)} - ${product.category}</p>
                                     </div>
                                 </div>
                                 <div class="mt-2 text-left p-2 border-l-4 border-indigo-300 bg-white shadow-inner">
@@ -1740,7 +1786,7 @@
                         <div class="flex items-center space-x-2">
                             <div class="text-center">
                                 <p class="text-sm text-gray-600">Stock</p>
-                                <p class="font-bold ${material.stock < 5 ? 'text-red-600' : 'text-green-600'}">${(material.stock || 0).toFixed(2)} ${material.unit}</p>
+                                <p class="font-bold ${material.stock < 5 ? 'text-red-600' : 'text-green-600'}">${material.stock.toFixed(2)} ${material.unit}</p>
                             </div>
                             <button onclick="editRawMaterial(${material.id})" class="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1809,7 +1855,7 @@
             const id = document.getElementById('materialId').value;
             const name = document.getElementById('materialName').value.trim();
             const emoji = document.getElementById('materialEmoji').value.trim();
-            const stock = parseFloat(document.getElementById('materialStock').value) || 0; // Fix: Default to 0
+            const stock = parseFloat(document.getElementById('materialStock').value);
             const unit = document.getElementById('materialUnit').value.trim();
 
             if (id) {
@@ -1822,20 +1868,13 @@
                 }
             } else {
                 const newId = Math.max(...rawMaterials.map(m => m.id), 100) + 1;
-                rawMaterials.push({
-                    id: newId,
-                    name,
-                    stock,
-                    unit,
-                    emoji
-                });
+                rawMaterials.push({ id: newId, name, stock, unit, emoji });
             }
 
             saveState(); 
             renderAdminRawMaterials();
             closeRawMaterialModal();
         });
-
 
         function renderAdminOrders() {
             const adminOrdersList = document.getElementById('adminOrdersList');
@@ -1983,7 +2022,6 @@
                 return acc;
             }, {});
 
-
             adminStatsList.innerHTML = `
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div class="bg-blue-50 p-4 rounded-lg shadow">
@@ -2035,7 +2073,6 @@
                 </div>
             `;
         }
-
 
         function renderAdminUsers() {
             const adminUsersList = document.getElementById('adminUsersList');
@@ -2099,7 +2136,6 @@
                 </div>
             `).join('');
         }
-
 
         function addMaterialFieldToProductModal(materialId = '', quantity = '') {
             const container = document.getElementById('productMaterialsContainer');
@@ -2172,7 +2208,6 @@
             document.getElementById('productModal').classList.remove('hidden');
         }
 
-        // ===== FUNCIÓN MODIFICADA =====
         function editProduct(id) {
             const product = products.find(p => p.id === id);
             if (product) {
@@ -2182,10 +2217,12 @@
                 document.getElementById('productEmoji').value = product.emoji || '';
                 
                 document.getElementById('productDescription').value = product.description || '';
+                document.getElementById('productImageURL').value = product.imageURL || '';
                 
-                // Actualiza el estado del preview de la imagen
                 if (product.imageLocal) {
-                    document.getElementById('imagePreviewStatus').textContent = 'Imagen local cargada ✓';
+                    document.getElementById('imagePreviewStatus').textContent = 'Imagen Local Cargada ✓';
+                } else if (product.imageURL) {
+                    document.getElementById('imagePreviewStatus').textContent = 'Usando URL ✓';
                 } else {
                     document.getElementById('imagePreviewStatus').textContent = 'Ningún archivo seleccionado.';
                 }
@@ -2234,18 +2271,18 @@
             }
         }
 
-        // ===== FUNCIÓN MODIFICADA =====
         document.getElementById('productForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
             const id = document.getElementById('productId').value;
             const name = document.getElementById('productName').value;
             const emoji = document.getElementById('productEmoji').value.trim().substring(0, 2); 
-            const price = parseFloat(document.getElementById('productPrice').value) || 0;
+            const price = parseFloat(document.getElementById('productPrice').value);
             const category = document.getElementById('productCategory').value;
-            const stock = parseInt(document.getElementById('productStock').value) || 0;
+            const stock = parseInt(document.getElementById('productStock').value);
             
             const description = document.getElementById('productDescription').value;
+            const imageURL = document.getElementById('productImageURL').value;
             const imageFile = document.getElementById('productImageFile').files[0];
             const time = document.getElementById('productTime').value;
             const calories = document.getElementById('productCalories').value;
@@ -2253,9 +2290,9 @@
             const productMaterialsContainer = document.getElementById('productMaterialsContainer');
             const materialsNeeded = [];
             
-            productMaterialsContainer.querySelectorAll('.flex[data-index]').forEach(item => {
-                const materialId = item.querySelector('select').value;
-                const quantity = item.querySelector('input[type="number"]').value;
+            productMaterialsContainer.querySelectorAll('.flex[data-index]').forEach((item, index) => {
+                const materialId = item.querySelector(`[name="material_id_${index}"]`).value;
+                const quantity = item.querySelector(`[name="material_quantity_${index}"]`).value;
                 
                 if (materialId && quantity > 0) {
                     materialsNeeded.push({
@@ -2267,55 +2304,47 @@
 
             const productToSave = {
                 id: id ? parseInt(id) : null,
-                name,
-                price,
-                category,
-                stock,
-                emoji: emoji, 
+                name, price, category, stock, emoji,
                 materialsNeeded: materialsNeeded,
-                description,
-                time,
-                calories,
-                imageURL: '', // Se mantiene por retrocompatibilidad, pero no se usa para guardar
-                imageLocal: '',
+                description, time, calories,
+                imageURL: '', imageLocal: '',
             };
 
             const existingProduct = id ? products.find(p => p.id === parseInt(id)) : null;
 
-            const finalizeSave = (localImageData = null) => {
-                // Si se subió una nueva imagen local, se guarda.
-                if (localImageData) {
-                    productToSave.imageLocal = localImageData;
-                    productToSave.imageURL = ''; // Limpia la URL por si existía
-                } 
-                // Si no hay nueva imagen, pero es un producto existente, se conservan las imágenes antiguas.
-                else if (existingProduct) {
+            const finalizeSave = (localData = null) => {
+                if (localData) {
+                    productToSave.imageLocal = localData;
+                    productToSave.imageURL = '';
+                } else if (imageURL) {
+                    productToSave.imageURL = imageURL;
+                    productToSave.imageLocal = '';
+                } else if (existingProduct) {
                     productToSave.imageLocal = existingProduct.imageLocal || '';
-                    productToSave.imageURL = existingProduct.imageURL || ''; // Conserva URL antigua si la tenía
+                    productToSave.imageURL = existingProduct.imageURL || '';
                 }
 
-                if (id) {
-                    Object.assign(products.find(p => p.id === parseInt(id)), productToSave);
-                } else {
-                    const newId = Math.max(...products.map(p => p.id), 0) + 1;
-                    productToSave.id = newId;
-                    products.push(productToSave);
-                }
+                 if (id) {
+                     Object.assign(products.find(p => p.id === parseInt(id)), productToSave);
+                 } else {
+                     const newId = Math.max(...products.map(p => p.id), 0) + 1;
+                     productToSave.id = newId;
+                     products.push(productToSave);
+                 }
                 
-                saveState();
-                renderAdminProducts();
-                closeModal();
+                 saveState();
+                 renderAdminProducts();
+                 closeModal();
             };
             
-            // Si hay un archivo de imagen, se procesa. Si no, se guarda directamente.
             if (imageFile) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    finalizeSave(e.target.result); // Pasa los datos de la imagen local
+                    finalizeSave(e.target.result);
                 };
                 reader.readAsDataURL(imageFile);
             } else {
-                finalizeSave(); // No hay imagen nueva
+                finalizeSave();
             }
         });
 
@@ -2338,73 +2367,6 @@
             e.target.value = e.target.value.replace(/[^0-9]/g, '');
         });
 
-        // ====================================================================================
-        // G E S T O S  T Á C T I L E S  ( S W I P E ) 
-        // ====================================================================================
-        
-        let currentAdminTabIndex = 0;
-        const adminTabsFunctions = [
-            showAdminStock,
-            showAdminRawMaterials,
-            showAdminOrders,
-            showAdminStats,
-            showAdminUsers,
-            showAdminMemory
-        ];
-
-        let touchstartX = 0;
-        let touchendX = 0;
-        const SWIPE_THRESHOLD = 80;
-
-        function checkDirection() {
-            const deltaX = touchendX - touchstartX;
-            if (Math.abs(deltaX) < SWIPE_THRESHOLD) return;
-
-            if (deltaX < 0) {
-                // Swipe a la IZQUIERDA (ir a la siguiente pestaña)
-                goToNextAdminTab();
-            } else if (deltaX > 0) {
-                // Swipe a la DERECHA (ir a la pestaña anterior)
-                goToPreviousAdminTab();
-            }
-        }
-
-        function goToNextAdminTab() {
-            if (currentAdminTabIndex < adminTabsFunctions.length - 1) {
-                currentAdminTabIndex++;
-                adminTabsFunctions[currentAdminTabIndex]();
-            }
-        }
-
-        function goToPreviousAdminTab() {
-            if (currentAdminTabIndex > 0) {
-                currentAdminTabIndex--;
-                adminTabsFunctions[currentAdminTabIndex]();
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const adminContent = document.getElementById('adminContent');
-            if (adminContent) {
-                adminContent.addEventListener('touchstart', e => {
-                    touchstartX = e.changedTouches[0].screenX;
-                }, { passive: true });
-
-                adminContent.addEventListener('touchend', e => {
-                    touchendX = e.changedTouches[0].screenX;
-                    if (!document.getElementById('adminPanel').classList.contains('hidden')) {
-                        checkDirection();
-                    }
-                }, { passive: true });
-            }
-        });
-        
-
-        // ====================================================================================
-        // I N I C I A L I Z A C I Ó N
-        // ====================================================================================
-        
-        loadState(); 
-    </script> 
+    </script>
 </body>
 </html>
