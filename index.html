@@ -439,9 +439,9 @@
     <div id="adminPanel" class="hidden min-h-screen bg-white">
         <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 shadow-lg">
             <div class="flex items-center justify-between">
-                <button onclick="showLogin()" class="p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors">
+                <button onclick="adminLogout()" class="p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                     </svg>
                 </button>
                 <h2 class="text-xl font-bold">Panel Administrador</h2>
@@ -472,6 +472,9 @@
                 </button>
                 <button onclick="showAdminMemory()" id="memoryTab" class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     🗃️ Memoria Local
+                </button>
+                <button onclick="adminLogout()" class="admin-tab bg-red-200 text-red-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                    🚪 Cerrar Sesión
                 </button>
             </div>
 
@@ -640,7 +643,7 @@
             </form>
             <div id="materialDeleteContainer" class="mt-4 hidden">
                  <button type="button" onclick="deleteRawMaterial(parseInt(document.getElementById('materialId').value))" class="w-full bg-red-500 text-white py-2 rounded-lg font-medium hover:bg-red-600">
-                     Eliminar Materia Prima
+                      Eliminar Materia Prima
                  </button>
             </div>
         </div>
@@ -777,7 +780,7 @@
                      showWelcome();
                  }
             } else {
-                showLogin();
+                 showLogin();
             }
         }
         
@@ -881,6 +884,16 @@
         // ====================================================================================
         // F U N C I O N E S  D E  A U T E N T I C A C I Ó N
         // ====================================================================================
+        
+        /**
+         * NUEVA FUNCIÓN: Limpia los campos de los formularios de login.
+         */
+        function clearLoginFields() {
+            document.getElementById('loginUser').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('adminLoginUser').value = '';
+            document.getElementById('adminLoginPassword').value = '';
+        }
         
         function showPasswordResetModal() {
              document.getElementById('passwordResetModal').classList.remove('hidden');
@@ -1093,12 +1106,26 @@
             }
         }
 
+        /**
+         * FUNCIÓN DE LOGOUT MODIFICADA
+         */
         function logout() {
             currentUser = null;
             cart = [];
             updateCartCount();
             saveState();
+            clearLoginFields(); // <-- LÍNEA AÑADIDA
             showLogin();
+        }
+
+        /**
+         * NUEVA FUNCIÓN: Cierra la sesión del administrador.
+         */
+        function adminLogout() {
+            currentUser = null;
+            saveState();
+            clearLoginFields(); // Limpia los campos
+            showLogin();        // Vuelve a la pantalla de login principal
         }
 
         function showWelcome() {
@@ -1139,8 +1166,8 @@
         }
         
         // ====================================================================================
-        //       [... AQUÍ VA TODO EL RESTO DE TU CÓDIGO JAVASCRIPT SIN CAMBIOS ...]
-        //                (Funciones de stock, menú, carrito, panel de admin, etc.)
+        //   [... AQUÍ VA TODO EL RESTO DE TU CÓDIGO JAVASCRIPT SIN CAMBIOS ...]
+        //         (Funciones de stock, menú, carrito, panel de admin, etc.)
         // ====================================================================================
         
         // Al final, asegúrate de que la última llamada sea a loadState()
@@ -1334,7 +1361,7 @@
             if (totalSize > 0) {
                  html = `<p class="text-sm font-medium mb-4">Total de datos almacenados: ${(totalSize / 1024).toFixed(2)} KB</p>` + html;
             } else {
-                html = `<p class="text-center text-gray-500 py-8">No hay datos de CAFE-TEC guardados en la memoria local.</p>`;
+                 html = `<p class="text-center text-gray-500 py-8">No hay datos de CAFE-TEC guardados en la memoria local.</p>`;
             }
 
             memoryList.innerHTML = html;
