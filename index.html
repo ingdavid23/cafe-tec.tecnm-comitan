@@ -1097,8 +1097,8 @@
             const pass = document.getElementById('adminLoginPassword').value;
 
             // Valida las credenciales
-            if (user === 'admin' && pass === 'Admin') {
-                currentUser = { id: 0, userType: 'admin', fullName: 'Administrador', username: 'admin' };
+            if (user === 'ADMIN' && pass === 'ADMIN') {
+                currentUser = { id: 0, userType: 'ADMIN', fullName: 'Administrador', username: 'ADMIN' };
                 saveState();
                 showAdminPanel();
             } else {
