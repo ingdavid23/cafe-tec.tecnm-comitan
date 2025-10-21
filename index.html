@@ -40,8 +40,12 @@
                 <div>
                     <input type="text" id="loginUser" class="w-full px-4 py-3 rounded-lg text-gray-800 placeholder-gray-500" placeholder="Usuario o Número de Control">
                 </div>
-                <div>
-                    <input type="password" id="loginPassword" class="w-full px-4 py-3 rounded-lg text-gray-800 placeholder-gray-500" placeholder="Contraseña">
+                <div class="relative">
+                    <input type="password" id="loginPassword" class="w-full pl-4 pr-10 py-3 rounded-lg text-gray-800 placeholder-gray-500" placeholder="Contraseña">
+                    <button type="button" onclick="togglePasswordVisibility('loginPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                        <svg class="h-5 w-5" id="eye-icon-loginPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
+                        <svg class="h-5 w-5 hidden" id="eye-slash-icon-loginPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 013.454-4.825l-2.062-2.062a1 1 0 011.414-1.414l16 16a1 1 0 01-1.414 1.414l-2.062-2.062z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15a3 3 0 01-3-3m0 0l-3.375-3.375M12 15l-3.375-3.375" /></svg>
+                    </button>
                 </div>
                 <button onclick="login()" class="w-full bg-white text-blue-700 py-3 px-6 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
                     🔐 Iniciar Sesión
@@ -71,7 +75,13 @@
             <p class="text-lg opacity-90 mb-8">Ingresa tus credenciales</p>
             <div class="space-y-4">
                 <div><input type="text" id="adminLoginUser" class="w-full px-4 py-3 rounded-lg text-gray-800 placeholder-gray-500" placeholder="Usuario de Administrador"></div>
-                <div><input type="password" id="adminLoginPassword" class="w-full px-4 py-3 rounded-lg text-gray-800 placeholder-gray-500" placeholder="Contraseña de Administrador"></div>
+                <div class="relative">
+                    <input type="password" id="adminLoginPassword" class="w-full pl-4 pr-10 py-3 rounded-lg text-gray-800 placeholder-gray-500" placeholder="Contraseña de Administrador">
+                    <button type="button" onclick="togglePasswordVisibility('adminLoginPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                        <svg class="h-5 w-5" id="eye-icon-adminLoginPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
+                        <svg class="h-5 w-5 hidden" id="eye-slash-icon-adminLoginPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 013.454-4.825l-2.062-2.062a1 1 0 011.414-1.414l16 16a1 1 0 01-1.414 1.414l-2.062-2.062z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15a3 3 0 01-3-3m0 0l-3.375-3.375M12 15l-3.375-3.375" /></svg>
+                    </button>
+                </div>
                 <button onclick="checkAdminLogin()" class="w-full bg-red-600 text-white py-3 px-6 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">⚙️ Acceder al Panel</button>
                 <button onclick="showLogin()" class="w-full bg-slate-600 text-white py-2 px-6 rounded-lg font-medium text-sm hover:shadow-xl transform hover:scale-105 transition-all duration-200 border border-white">↩️ Volver</button>
             </div>
@@ -106,12 +116,24 @@
 
                 <div>
                     <label class="block text-sm font-medium mb-2">Contraseña</label>
-                    <input type="password" id="password" class="w-full px-4 py-3 rounded-lg text-gray-800" required>
+                    <div class="relative">
+                        <input type="password" id="password" class="w-full pl-4 pr-10 py-3 rounded-lg text-gray-800" required>
+                        <button type="button" onclick="togglePasswordVisibility('password')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                            <svg class="h-5 w-5" id="eye-icon-password" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
+                            <svg class="h-5 w-5 hidden" id="eye-slash-icon-password" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 013.454-4.825l-2.062-2.062a1 1 0 011.414-1.414l16 16a1 1 0 01-1.414 1.414l-2.062-2.062z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15a3 3 0 01-3-3m0 0l-3.375-3.375M12 15l-3.375-3.375" /></svg>
+                        </button>
+                    </div>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium mb-2">Confirmar Contraseña</label>
-                    <input type="password" id="confirmPassword" class="w-full px-4 py-3 rounded-lg text-gray-800" required>
+                    <div class="relative">
+                        <input type="password" id="confirmPassword" class="w-full pl-4 pr-10 py-3 rounded-lg text-gray-800" required>
+                        <button type="button" onclick="togglePasswordVisibility('confirmPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                            <svg class="h-5 w-5" id="eye-icon-confirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
+                            <svg class="h-5 w-5 hidden" id="eye-slash-icon-confirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 013.454-4.825l-2.062-2.062a1 1 0 011.414-1.414l16 16a1 1 0 01-1.414 1.414l-2.062-2.062z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15a3 3 0 01-3-3m0 0l-3.375-3.375M12 15l-3.375-3.375" /></svg>
+                        </button>
+                    </div>
                 </div>
 
                 <div id="studentFields" class="hidden space-y-4">
@@ -643,7 +665,7 @@
             </form>
             <div id="materialDeleteContainer" class="mt-4 hidden">
                  <button type="button" onclick="deleteRawMaterial(parseInt(document.getElementById('materialId').value))" class="w-full bg-red-500 text-white py-2 rounded-lg font-medium hover:bg-red-600">
-                      Eliminar Materia Prima
+                     Eliminar Materia Prima
                  </button>
             </div>
         </div>
@@ -715,11 +737,23 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Nueva Contraseña</label>
-                    <input type="password" id="resetNewPassword" class="w-full border rounded-lg px-3 py-2 text-gray-800" required>
+                    <div class="relative">
+                        <input type="password" id="resetNewPassword" class="w-full border rounded-lg pl-3 pr-10 py-2 text-gray-800" required>
+                        <button type="button" onclick="togglePasswordVisibility('resetNewPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                            <svg class="h-5 w-5" id="eye-icon-resetNewPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
+                            <svg class="h-5 w-5 hidden" id="eye-slash-icon-resetNewPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 013.454-4.825l-2.062-2.062a1 1 0 011.414-1.414l16 16a1 1 0 01-1.414 1.414l-2.062-2.062z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15a3 3 0 01-3-3m0 0l-3.375-3.375M12 15l-3.375-3.375" /></svg>
+                        </button>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Confirmar Nueva Contraseña</label>
-                    <input type="password" id="resetConfirmPassword" class="w-full border rounded-lg px-3 py-2 text-gray-800" required>
+                    <div class="relative">
+                        <input type="password" id="resetConfirmPassword" class="w-full border rounded-lg pl-3 pr-10 py-2 text-gray-800" required>
+                        <button type="button" onclick="togglePasswordVisibility('resetConfirmPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                            <svg class="h-5 w-5" id="eye-icon-resetConfirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
+                            <svg class="h-5 w-5 hidden" id="eye-slash-icon-resetConfirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 013.454-4.825l-2.062-2.062a1 1 0 011.414-1.414l16 16a1 1 0 01-1.414 1.414l-2.062-2.062z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15a3 3 0 01-3-3m0 0l-3.375-3.375M12 15l-3.375-3.375" /></svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="flex space-x-3 pt-2">
                     <button type="button" onclick="closePasswordResetModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-medium">
@@ -884,6 +918,26 @@
         // ====================================================================================
         // F U N C I O N E S  D E  A U T E N T I C A C I Ó N
         // ====================================================================================
+
+        /**
+         * NUEVA FUNCIÓN: Cambia la visibilidad de un campo de contraseña y alterna el ícono del ojo.
+         * @param {string} inputId El ID del campo de contraseña.
+         */
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            const eyeIcon = document.getElementById(`eye-icon-${inputId}`);
+            const eyeSlashIcon = document.getElementById(`eye-slash-icon-${inputId}`);
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeIcon.classList.add('hidden');
+                eyeSlashIcon.classList.remove('hidden');
+            } else {
+                input.type = 'password';
+                eyeIcon.classList.remove('hidden');
+                eyeSlashIcon.classList.add('hidden');
+            }
+        }
         
         /**
          * NUEVA FUNCIÓN: Limpia los campos de los formularios de login.
@@ -1171,7 +1225,7 @@
         // ====================================================================================
         
         // Al final, asegúrate de que la última llamada sea a loadState()
-        loadState();
+        
 
         // ====================================================================================
         // F U N C I O N E S  D E  S T O C K  Y  R E C E T A S
@@ -2394,6 +2448,7 @@
             e.target.value = e.target.value.replace(/[^0-9]/g, '');
         });
 
+        loadState();
     </script>
 </body>
 </html>
