@@ -56,37 +56,10 @@
                 <button onclick="showPasswordResetModal()" class="w-full bg-blue-800 bg-opacity-70 text-white py-2 px-6 rounded-lg font-medium text-sm hover:shadow-xl transform hover:scale-105 transition-all duration-200 border border-white">
                     🔑 ¿Olvidaste tu Contraseña?
                 </button>
-                <button onclick="loginAsAdmin()" class="w-full bg-red-600 text-white py-2 px-6 rounded-lg font-medium text-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
-                    ⚙️ Acceso Administrador
-                </button>
-            </div>
+                </div>
         </div>
     </div>
 
-    <div id="adminLoginScreen" class="hidden min-h-screen bg-gradient-to-br from-slate-700 to-slate-900 flex flex-col items-center justify-center text-white relative overflow-hidden">
-        <div class="absolute inset-0 opacity-10">
-            <svg class="w-full h-full" viewBox="0 0 100 100" fill="currentColor"><circle cx="20" cy="20" r="2"/><circle cx="80" cy="30" r="1.5"/><circle cx="60" cy="70" r="1"/><circle cx="30" cy="80" r="2.5"/><circle cx="90" cy="60" r="1"/></svg>
-        </div>
-        <div class="text-center z-10 fade-in w-full max-w-sm px-6">
-            <div class="mb-8">
-                <svg class="w-24 h-24 mx-auto mb-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-            </div>
-            <h1 class="text-4xl font-bold mb-2 tracking-wide">Portal Administrador</h1>
-            <p class="text-lg opacity-90 mb-8">Ingresa tus credenciales</p>
-            <div class="space-y-4">
-                <div><input type="text" id="adminLoginUser" class="w-full px-4 py-3 rounded-lg text-gray-800 placeholder-gray-500" placeholder="Usuario de Administrador"></div>
-                <div class="relative">
-                    <input type="password" id="adminLoginPassword" class="w-full pl-4 pr-10 py-3 rounded-lg text-gray-800 placeholder-gray-500" placeholder="Contraseña de Administrador">
-                    <button type="button" onclick="togglePasswordVisibility('adminLoginPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
-                        <svg class="h-5 w-5" id="eye-icon-adminLoginPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
-                        <svg class="h-5 w-5 hidden" id="eye-slash-icon-adminLoginPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 013.454-4.825l-2.062-2.062a1 1 0 011.414-1.414l16 16a1 1 0 01-1.414 1.414l-2.062-2.062z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15a3 3 0 01-3-3m0 0l-3.375-3.375M12 15l-3.375-3.375" /></svg>
-                    </button>
-                </div>
-                <button onclick="checkAdminLogin()" class="w-full bg-red-600 text-white py-3 px-6 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">⚙️ Acceder al Panel</button>
-                <button onclick="showLogin()" class="w-full bg-slate-600 text-white py-2 px-6 rounded-lg font-medium text-sm hover:shadow-xl transform hover:scale-105 transition-all duration-200 border border-white">↩️ Volver</button>
-            </div>
-        </div>
-    </div>
     <div id="registerScreen" class="hidden min-h-screen bg-gradient-to-br from-green-600 to-teal-700 text-white overflow-y-auto">
         <div class="p-6">
             <div class="flex items-center mb-6">
@@ -242,7 +215,6 @@
             </div>
         </div>
     </div>
-
     <div id="customerMenu" class="hidden min-h-screen bg-white">
         <div class="bg-gradient-to-r from-amber-600 to-orange-600 text-white p-4 shadow-lg">
             <div class="flex items-center justify-between">
@@ -260,7 +232,6 @@
                 </button>
             </div>
         </div>
-
         <div class="p-4">
             <div class="flex space-x-2 mb-6 overflow-x-auto">
                 <button onclick="filterCategory('all')" class="category-btn bg-amber-600 text-white px-4 py-2 rounded-full whitespace-nowrap font-medium">
@@ -276,12 +247,10 @@
                     🧁 Postres
                 </button>
             </div>
-
             <div id="productList" class="space-y-4">
-                </div>
+            </div>
         </div>
     </div>
-
     <div id="cartScreen" class="hidden min-h-screen bg-white">
         <div class="bg-gradient-to-r from-amber-600 to-orange-600 text-white p-4 shadow-lg">
             <div class="flex items-center justify-between">
@@ -294,23 +263,19 @@
                 <div class="w-10"></div>
             </div>
         </div>
-
         <div class="p-4">
             <div id="cartItems" class="space-y-4 mb-6">
-                </div>
-
+            </div>
             <div class="mb-6">
                 <h3 class="text-lg font-semibold mb-3">📝 Notas Especiales</h3>
                 <textarea id="orderNotes" class="w-full border rounded-lg px-3 py-2 h-20 resize-none" placeholder="Agrega cualquier nota especial para tu pedido (opcional)"></textarea>
             </div>
-
             <div class="border-t pt-4 mb-6">
                 <div class="flex justify-between items-center text-xl font-bold">
                     <span>Total:</span>
                     <span id="totalPrice">$0.00</span>
                 </div>
             </div>
-
             <div class="mb-6">
                 <h3 class="text-lg font-semibold mb-3">🕐 Horario de Recogida</h3>
                 <div class="grid grid-cols-2 gap-2">
@@ -384,7 +349,6 @@
                     </label>
                 </div>
             </div>
-
             <div class="mb-6">
                 <h3 class="text-lg font-semibold mb-3">💳 Método de Pago</h3>
                 <div class="space-y-2">
@@ -401,7 +365,6 @@
                         <span>📱 Transferencia</span>
                     </label>
                 </div>
-
                 <div id="cardPaymentDetails" class="hidden mt-4 p-4 bg-blue-50 rounded-lg border">
                     <h4 class="font-semibold mb-3 text-blue-800">💳 Datos de la Tarjeta</h4>
                     <div class="space-y-3">
@@ -425,7 +388,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div id="transferDetails" class="hidden mt-4 p-4 bg-green-50 rounded-lg border">
                     <h4 class="font-semibold mb-3 text-green-800">📱 Datos para Transferencia</h4>
                     <div class="space-y-2 text-sm">
@@ -451,13 +413,11 @@
                     </div>
                 </div>
             </div>
-
             <button onclick="confirmOrder()" class="w-full bg-green-600 text-white py-4 rounded-lg font-semibold text-lg hover:bg-green-700 transition-colors">
                 Confirmar Pedido
             </button>
         </div>
     </div>
-
     <div id="adminPanel" class="hidden min-h-screen bg-white">
         <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 shadow-lg">
             <div class="flex items-center justify-between">
@@ -474,7 +434,6 @@
                 </button>
             </div>
         </div>
-
         <div class="p-4">
             <div class="flex space-x-2 mb-6 overflow-x-auto">
                 <button onclick="showAdminStock()" id="stockTab" class="admin-tab bg-blue-600 text-white px-4 py-2 rounded-full whitespace-nowrap font-medium">
@@ -499,13 +458,11 @@
                     🚪 Cerrar Sesión
                 </button>
             </div>
-
             <div id="adminStockSection" class="mb-6">
                 <h3 class="text-lg font-semibold mb-3">Gestión de Stock de Productos Finales</h3>
                 <div id="adminProductList" class="space-y-3">
-                    </div>
+                </div>
             </div>
-
             <div id="adminRawMaterialsSection" class="hidden mb-6">
                 <div class="flex justify-between items-center mb-3">
                     <h3 class="text-lg font-semibold">Gestión de Materia Prima</h3>
@@ -515,38 +472,34 @@
                     </button>
                 </div>
                 <div id="adminRawMaterialsList" class="space-y-3">
-                    </div>
+                </div>
             </div>
-
             <div id="adminOrdersSection" class="hidden mb-6">
                 <h3 class="text-lg font-semibold mb-3">Pedidos en Tiempo Real</h3>
                 <div id="adminOrdersList" class="space-y-3">
-                    </div>
+                </div>
             </div>
             
             <div id="adminStatsSection" class="hidden mb-6">
                 <h3 class="text-lg font-semibold mb-3">📊 Estadísticas de Ventas</h3>
                 <div id="adminStatsList" class="space-y-3">
-                    </div>
+                </div>
             </div>
-
             <div id="adminUsersSection" class="hidden mb-6">
                 <h3 class="text-lg font-semibold mb-3">Usuarios Registrados</h3>
                 <div id="adminUsersList" class="space-y-3">
-                    </div>
+                </div>
             </div>
-
             <div id="adminMemorySection" class="hidden mb-6">
                 <h3 class="text-lg font-semibold mb-3">🗃️ Datos Guardados Localmente</h3>
                 <div id="memoryList" class="space-y-4">
-                    </div>
+                </div>
                 <button onclick="clearLocalMemory()" class="w-full bg-red-500 text-white py-2 rounded-lg font-medium mt-4 hover:bg-red-600 transition-colors">
                     ⚠️ Borrar Todos los Datos Locales
                 </button>
             </div>
         </div>
     </div>
-
     <div id="productModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up max-h-[90vh] overflow-y-auto">
             <h3 id="modalTitle" class="text-lg font-bold mb-4">Agregar Producto</h3>
@@ -574,7 +527,6 @@
                         <div class="flex-grow border-t border-gray-300"></div>
                         <span class="text-gray-500 text-xs">Cargar Archivo</span>
                     </div>
-
                     <div class="border-2 border-dashed border-gray-300 rounded-lg p-3 mt-2 text-center">
                         <input type="file" id="productImageFile" accept="image/*" class="hidden" onchange="previewLocalImage(event)">
                         <button type="button" onclick="document.getElementById('productImageFile').click()" class="w-full py-2 px-4 bg-gray-100 text-blue-600 rounded-lg hover:bg-gray-200 transition-colors">
@@ -665,12 +617,11 @@
             </form>
             <div id="materialDeleteContainer" class="mt-4 hidden">
                  <button type="button" onclick="deleteRawMaterial(parseInt(document.getElementById('materialId').value))" class="w-full bg-red-500 text-white py-2 rounded-lg font-medium hover:bg-red-600">
-                     Eliminar Materia Prima
+                    Eliminar Materia Prima
                  </button>
             </div>
         </div>
     </div>
-
     <div id="productPreviewModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50">
         <div class="bg-white rounded-t-3xl w-full max-w-md slide-up max-h-[90vh] overflow-y-auto">
             
@@ -681,7 +632,6 @@
                     </svg>
                 </button>
             </div>
-
             <div class="p-6">
                 <h2 id="previewProductName" class="text-3xl font-bold mb-2">Nombre del Producto</h2>
                 <p id="previewProductDescription" class="text-gray-600 mb-4">Descripción breve.</p>
@@ -703,7 +653,6 @@
                         <span class="text-xs text-gray-500">Stock</span>
                     </div>
                 </div>
-
                 <h3 class="text-xl font-bold mb-4">🛒 Opciones de Pedido</h3>
                 
                 <div class="flex items-center justify-between border-t pt-4">
@@ -714,7 +663,6 @@
                         <button onclick="updatePreviewQuantity(1)" class="w-10 h-10 bg-amber-600 text-white rounded-full flex items-center justify-center font-bold text-lg">+</button>
                     </div>
                 </div>
-
                 <button onclick="addToCartFromPreview()" id="previewAddToCartButton" class="w-full mt-4 bg-green-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-700 transition-colors">
                     Agregar al Carrito
                 </button>
@@ -908,11 +856,11 @@
         let previewProduct = null;
         
         if (!localStorage.getItem(STORAGE_KEYS.PRODUCTS)) {
-             localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
-             localStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(rawMaterials));
-             localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
-             localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-             localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
+              localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
+              localStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(rawMaterials));
+              localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
+              localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+              localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
         }
 
         // ====================================================================================
@@ -945,8 +893,6 @@
         function clearLoginFields() {
             document.getElementById('loginUser').value = '';
             document.getElementById('loginPassword').value = '';
-            document.getElementById('adminLoginUser').value = '';
-            document.getElementById('adminLoginPassword').value = '';
         }
         
         function showPasswordResetModal() {
@@ -991,7 +937,6 @@
         
         function showLogin() {
             document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('adminLoginScreen').classList.add('hidden'); // MODIFICADO
             document.getElementById('registerScreen').classList.add('hidden');
             document.getElementById('welcomeScreen').classList.add('hidden');
             document.getElementById('customerMenu').classList.add('hidden');
@@ -1004,7 +949,6 @@
         function showRegister() {
             document.getElementById('registerScreen').classList.remove('hidden');
             document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('adminLoginScreen').classList.add('hidden'); // MODIFICADO
             document.getElementById('productPreviewModal').classList.add('hidden');
             document.getElementById('passwordResetModal').classList.add('hidden');
         }
@@ -1111,6 +1055,7 @@
             showLogin();
         });
 
+        // --- FUNCIÓN DE LOGIN MODIFICADA ---
         function login() {
             const username = document.getElementById('loginUser').value;
             const password = document.getElementById('loginPassword').value;
@@ -1119,7 +1064,16 @@
                 alert('Por favor ingresa usuario y contraseña');
                 return;
             }
+
+            // 1. Verificar si las credenciales son de administrador
+            if (username.toUpperCase() === 'ADMIN' && password === 'ADMIN') {
+                currentUser = { id: 0, userType: 'admin', fullName: 'Administrador', username: 'ADMIN' };
+                saveState();
+                showAdminPanel();
+                return; // Detener la ejecución si es admin
+            }
             
+            // 2. Si no es admin, proceder con la lógica para usuarios normales
             const user = users.find(u => u.username === username && u.password === password);
             
             if (user) {
@@ -1131,34 +1085,8 @@
                 alert('Usuario o contraseña incorrectos');
             }
         }
-
-        // --- FUNCIÓN MODIFICADA ---
-        function loginAsAdmin() {
-            // Oculta todas las demás pantallas
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('registerScreen').classList.add('hidden');
-            document.getElementById('welcomeScreen').classList.add('hidden');
-            document.getElementById('customerMenu').classList.add('hidden');
-            document.getElementById('cartScreen').classList.add('hidden');
-            document.getElementById('adminPanel').classList.add('hidden');
-            // Muestra la nueva pantalla de login de admin
-            document.getElementById('adminLoginScreen').classList.remove('hidden');
-        }
-
-        // --- NUEVA FUNCIÓN ---
-        function checkAdminLogin() {
-            const user = document.getElementById('adminLoginUser').value;
-            const pass = document.getElementById('adminLoginPassword').value;
-
-            // Valida las credenciales
-            if (user === 'ADMIN' && pass === 'ADMIN') {
-                currentUser = { id: 0, userType: 'ADMIN', fullName: 'Administrador', username: 'ADMIN' };
-                saveState();
-                showAdminPanel();
-            } else {
-                alert('Usuario o contraseña de administrador incorrectos.');
-            }
-        }
+        
+        // --- FUNCIONES DE LOGIN DE ADMIN (loginAsAdmin y checkAdminLogin) ELIMINADAS ---
 
         /**
          * FUNCIÓN DE LOGOUT MODIFICADA
@@ -1185,7 +1113,6 @@
         function showWelcome() {
             document.getElementById('welcomeScreen').classList.remove('hidden');
             document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('adminLoginScreen').classList.add('hidden'); // MODIFICADO
             document.getElementById('customerMenu').classList.add('hidden');
             document.getElementById('cartScreen').classList.add('hidden');
             document.getElementById('adminPanel').classList.add('hidden');
@@ -1211,7 +1138,6 @@
 
         function showAdminPanel() {
             document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('adminLoginScreen').classList.add('hidden'); // MODIFICADO
             document.getElementById('adminPanel').classList.remove('hidden');
             document.getElementById('customerMenu').classList.add('hidden');
             document.getElementById('cartScreen').classList.add('hidden');
@@ -1220,11 +1146,9 @@
         }
         
         // ====================================================================================
-        //   [... AQUÍ VA TODO EL RESTO DE TU CÓDIGO JAVASCRIPT SIN CAMBIOS ...]
-        //         (Funciones de stock, menú, carrito, panel de admin, etc.)
+        //  [... RESTO DEL CÓDIGO JAVASCRIPT SIN CAMBIOS ...]
+        //      (Funciones de stock, menú, carrito, panel de admin, etc.)
         // ====================================================================================
-        
-        // Al final, asegúrate de que la última llamada sea a loadState()
         
 
         // ====================================================================================
@@ -2406,11 +2330,11 @@
                 }
 
                  if (id) {
-                     Object.assign(products.find(p => p.id === parseInt(id)), productToSave);
+                      Object.assign(products.find(p => p.id === parseInt(id)), productToSave);
                  } else {
-                     const newId = Math.max(...products.map(p => p.id), 0) + 1;
-                     productToSave.id = newId;
-                     products.push(productToSave);
+                      const newId = Math.max(...products.map(p => p.id), 0) + 1;
+                      productToSave.id = newId;
+                      products.push(productToSave);
                  }
                 
                  saveState();
