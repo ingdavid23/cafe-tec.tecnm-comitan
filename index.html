@@ -733,6 +733,26 @@
 
 
     <script>
+
+        // --- INICIO DEL NUEVO SCRIPT ---
+        // ====================================================================================
+        // S C R O L L   E N   T E C L A D O   V I R T U A L
+        // ====================================================================================
+        // Este script previene que el teclado virtual en móviles tape los campos de texto.
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputs = document.querySelectorAll(
+                'input[type="text"], input[type="password"], input[type="tel"], input[type="number"], input[type="url"], textarea'
+            );
+
+            inputs.forEach(input => {
+                input.addEventListener('focus', () => {
+                    // Usamos un timeout para dar tiempo a que el teclado aparezca y la vista se ajuste
+                    setTimeout(() => {
+                        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                });
+            });
+        });
         // ====================================================================================
         // G E S T I Ó N  D E  M E M O R I A  L O C A L
         // ====================================================================================
