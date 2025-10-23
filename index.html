@@ -43,8 +43,11 @@
                 <div class="relative">
                     <input type="password" id="loginPassword" class="w-full pl-4 pr-10 py-3 rounded-lg text-gray-800 placeholder-gray-500" placeholder="Contraseña">
                     <button type="button" onclick="togglePasswordVisibility('loginPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
-                        <svg class="h-5 w-5" id="eye-icon-loginPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
-                        <svg class="h-5 w-5 hidden" id="eye-slash-icon-loginPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 013.454-4.825l-2.062-2.062a1 1 0 011.414-1.414l16 16a1 1 0 01-1.414 1.414l-2.062-2.062z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15a3 3 0 01-3-3m0 0l-3.375-3.375M12 15l-3.375-3.375" /></svg>
+                        <svg class="h-5 w-5 hidden" id="eye-icon-loginPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
+                        <svg class="h-5 w-5" id="eye-slash-icon-loginPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20" />
+                        </svg>
                     </button>
                 </div>
                 <button onclick="login()" class="w-full bg-white text-blue-700 py-3 px-6 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
@@ -92,8 +95,11 @@
                     <div class="relative">
                         <input type="password" id="password" class="w-full pl-4 pr-10 py-3 rounded-lg text-gray-800" required>
                         <button type="button" onclick="togglePasswordVisibility('password')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
-                            <svg class="h-5 w-5" id="eye-icon-password" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
-                            <svg class="h-5 w-5 hidden" id="eye-slash-icon-password" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 013.454-4.825l-2.062-2.062a1 1 0 011.414-1.414l16 16a1 1 0 01-1.414 1.414l-2.062-2.062z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15a3 3 0 01-3-3m0 0l-3.375-3.375M12 15l-3.375-3.375" /></svg>
+                            <svg class="h-5 w-5 hidden" id="eye-icon-password" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
+                            <svg class="h-5 w-5" id="eye-slash-icon-password" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20" />
+                            </svg>
                         </button>
                     </div>
                 </div>
@@ -103,8 +109,11 @@
                     <div class="relative">
                         <input type="password" id="confirmPassword" class="w-full pl-4 pr-10 py-3 rounded-lg text-gray-800" required>
                         <button type="button" onclick="togglePasswordVisibility('confirmPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
-                            <svg class="h-5 w-5" id="eye-icon-confirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
-                            <svg class="h-5 w-5 hidden" id="eye-slash-icon-confirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 013.454-4.825l-2.062-2.062a1 1 0 011.414-1.414l16 16a1 1 0 01-1.414 1.414l-2.062-2.062z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15a3 3 0 01-3-3m0 0l-3.375-3.375M12 15l-3.375-3.375" /></svg>
+                            <svg class="h-5 w-5 hidden" id="eye-icon-confirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
+                            <svg class="h-5 w-5" id="eye-slash-icon-confirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20" />
+                            </svg>
                         </button>
                     </div>
                 </div>
@@ -527,6 +536,7 @@
                         <div class="flex-grow border-t border-gray-300"></div>
                         <span class="text-gray-500 text-xs">Cargar Archivo</span>
                     </div>
+
                     <div class="border-2 border-dashed border-gray-300 rounded-lg p-3 mt-2 text-center">
                         <input type="file" id="productImageFile" accept="image/*" class="hidden" onchange="previewLocalImage(event)">
                         <button type="button" onclick="document.getElementById('productImageFile').click()" class="w-full py-2 px-4 bg-gray-100 text-blue-600 rounded-lg hover:bg-gray-200 transition-colors">
@@ -688,8 +698,11 @@
                     <div class="relative">
                         <input type="password" id="resetNewPassword" class="w-full border rounded-lg pl-3 pr-10 py-2 text-gray-800" required>
                         <button type="button" onclick="togglePasswordVisibility('resetNewPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
-                            <svg class="h-5 w-5" id="eye-icon-resetNewPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
-                            <svg class="h-5 w-5 hidden" id="eye-slash-icon-resetNewPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 013.454-4.825l-2.062-2.062a1 1 0 011.414-1.414l16 16a1 1 0 01-1.414 1.414l-2.062-2.062z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15a3 3 0 01-3-3m0 0l-3.375-3.375M12 15l-3.375-3.375" /></svg>
+                            <svg class="h-5 w-5 hidden" id="eye-icon-resetNewPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
+                            <svg class="h-5 w-5" id="eye-slash-icon-resetNewPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20" />
+                            </svg>
                         </button>
                     </div>
                 </div>
@@ -698,8 +711,11 @@
                     <div class="relative">
                         <input type="password" id="resetConfirmPassword" class="w-full border rounded-lg pl-3 pr-10 py-2 text-gray-800" required>
                         <button type="button" onclick="togglePasswordVisibility('resetConfirmPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
-                            <svg class="h-5 w-5" id="eye-icon-resetConfirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
-                            <svg class="h-5 w-5 hidden" id="eye-slash-icon-resetConfirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 013.454-4.825l-2.062-2.062a1 1 0 011.414-1.414l16 16a1 1 0 01-1.414 1.414l-2.062-2.062z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15a3 3 0 01-3-3m0 0l-3.375-3.375M12 15l-3.375-3.375" /></svg>
+                            <svg class="h-5 w-5 hidden" id="eye-icon-resetConfirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
+                            <svg class="h-5 w-5" id="eye-slash-icon-resetConfirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20" />
+                            </svg>
                         </button>
                     </div>
                 </div>
@@ -756,10 +772,10 @@
 
             if (currentUser) {
                  if (currentUser.userType === 'admin') {
-                     showAdminPanel();
+                      showAdminPanel();
                  } else {
-                     document.getElementById('welcomeUserName').textContent = currentUser.fullName;
-                     showWelcome();
+                      document.getElementById('welcomeUserName').textContent = currentUser.fullName;
+                      showWelcome();
                  }
             } else {
                  showLogin();
@@ -867,29 +883,26 @@
         // F U N C I O N E S  D E  A U T E N T I C A C I Ó N
         // ====================================================================================
 
-        /**
-         * NUEVA FUNCIÓN: Cambia la visibilidad de un campo de contraseña y alterna el ícono del ojo.
-         * @param {string} inputId El ID del campo de contraseña.
-         */
         function togglePasswordVisibility(inputId) {
             const input = document.getElementById(inputId);
             const eyeIcon = document.getElementById(`eye-icon-${inputId}`);
             const eyeSlashIcon = document.getElementById(`eye-slash-icon-${inputId}`);
 
             if (input.type === 'password') {
+                // Estaba OCULTO, ahora se hace VISIBLE
                 input.type = 'text';
-                eyeIcon.classList.add('hidden');
-                eyeSlashIcon.classList.remove('hidden');
-            } else {
-                input.type = 'password';
+                // Para representar el estado VISIBLE, se muestra el OJO ABIERTO
                 eyeIcon.classList.remove('hidden');
                 eyeSlashIcon.classList.add('hidden');
+            } else {
+                // Estaba VISIBLE, ahora se hace OCULTO
+                input.type = 'password';
+                // Para representar el estado OCULTO, se muestra el OJO TACHADO
+                eyeIcon.classList.add('hidden');
+                eyeSlashIcon.classList.remove('hidden');
             }
         }
         
-        /**
-         * NUEVA FUNCIÓN: Limpia los campos de los formularios de login.
-         */
         function clearLoginFields() {
             document.getElementById('loginUser').value = '';
             document.getElementById('loginPassword').value = '';
@@ -1055,7 +1068,6 @@
             showLogin();
         });
 
-        // --- FUNCIÓN DE LOGIN MODIFICADA ---
         function login() {
             const username = document.getElementById('loginUser').value;
             const password = document.getElementById('loginPassword').value;
@@ -1065,15 +1077,13 @@
                 return;
             }
 
-            // 1. Verificar si las credenciales son de administrador
             if (username.toUpperCase() === 'ADMIN' && password === 'ADMIN') {
                 currentUser = { id: 0, userType: 'admin', fullName: 'Administrador', username: 'ADMIN' };
                 saveState();
                 showAdminPanel();
-                return; // Detener la ejecución si es admin
+                return;
             }
             
-            // 2. Si no es admin, proceder con la lógica para usuarios normales
             const user = users.find(u => u.username === username && u.password === password);
             
             if (user) {
@@ -1086,12 +1096,66 @@
             }
         }
         
+        function logout() {
+            currentUser = null;
+            cart = [];
+            updateCartCount();
+            saveState();
+            clearLoginFields();
+            showLogin();
+        }
+
+        function adminLogout() {
+            currentUser = null;
+            saveState();
+            clearLoginFields();
+            showLogin();
+        }
+
+        function showWelcome() {
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('customerMenu').classList.add('hidden');
+            document.getElementById('cartScreen').classList.add('hidden');
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('productPreviewModal').classList.add('hidden');
+        }
+
+        function showCustomerMenu() {
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('customerMenu').classList.remove('hidden');
+            document.getElementById('cartScreen').classList.add('hidden');
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('productPreviewModal').classList.add('hidden');
+            renderProducts();
+            updateCartCount();
+        }
+
+        function showCart() {
+            document.getElementById('cartScreen').classList.remove('hidden');
+            document.getElementById('customerMenu').classList.add('hidden');
+            document.getElementById('productPreviewModal').classList.add('hidden');
+            renderCart();
+        }
+
+        function showAdminPanel() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+            document.getElementById('customerMenu').classList.add('hidden');
+            document.getElementById('cartScreen').classList.add('hidden');
+            document.getElementById('productPreviewModal').classList.add('hidden');
+            showAdminStock();
+        }
+        
+        // El resto del script es idéntico al original...
+
+
         // --- FUNCIONES DE LOGIN DE ADMIN (loginAsAdmin y checkAdminLogin) ELIMINADAS ---
 
         /**
          * FUNCIÓN DE LOGOUT MODIFICADA
          */
-        function logout() {
+         function logout() {
             currentUser = null;
             cart = [];
             updateCartCount();
@@ -2373,6 +2437,7 @@
         });
 
         loadState();
+
     </script>
 </body>
 </html>
