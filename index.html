@@ -38,15 +38,15 @@
             
             <div id="loginForm" class="space-y-4">
                 <div>
-                    <input type="text" id="loginUser" class="w-full px-4 py-3 rounded-lg text-gray-800 placeholder-gray-500" placeholder="Usuario o Número de Control">
+                    <input type="text" id="loginUser" class="w-full px-4 py-3 rounded-lg text-gray-800 placeholder-gray-500" placeholder="Usuario, No. Control o Teléfono">
                 </div>
                 <div class="relative">
                     <input type="password" id="loginPassword" class="w-full pl-4 pr-10 py-3 rounded-lg text-gray-800 placeholder-gray-500" placeholder="Contraseña">
                     <button type="button" onclick="togglePasswordVisibility('loginPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
                         <svg class="h-5 w-5 hidden" id="eye-icon-loginPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
                         <svg class="h-5 w-5" id="eye-slash-icon-loginPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20" />
                         </svg>
                     </button>
                 </div>
@@ -60,7 +60,7 @@
                     🔑 ¿Olvidaste tu Contraseña?
                 </button>
                 </div>
-        </div>
+            </div>
     </div>
     
     <div id="registerScreen" class="hidden h-screen bg-gradient-to-br from-green-600 to-teal-700 text-white flex flex-col">
@@ -90,6 +90,10 @@
                     <input type="text" id="fullName" class="w-full px-4 py-3 rounded-lg text-gray-800" required>
                 </div>
 
+                <div>
+                    <label class="block text-sm font-medium mb-2">Nombre de Usuario (Único)</label>
+                    <input type="text" id="username" class="w-full px-4 py-3 rounded-lg text-gray-800" placeholder="Ej: miusuario_cafetec" required>
+                </div>
                 <div>
                     <label class="block text-sm font-medium mb-2">Contraseña</label>
                     <div class="relative">
@@ -451,17 +455,26 @@
                 <button onclick="showAdminRawMaterials()" id="rawMaterialsTab" class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     📦 Stock Materia Prima
                 </button>
+                <button onclick="showAdminSupplierPurchases()" id="supplierPurchasesTab" class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                    🚚 Compras a Proveedor
+                </button>
                 <button onclick="showAdminOrders()" id="ordersTab" class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     📋 Pedidos
                 </button>
                 <button onclick="showAdminStats()" id="statsTab" class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     📊 Estadísticas
                 </button>
+                <button onclick="showAdminPersonalData()" id="personalDataTab" class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                    🧾 Datos Personales
+                </button>
                 <button onclick="showAdminUsers()" id="usersTab" class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     👥 Usuarios
                 </button>
                 <button onclick="showAdminMemory()" id="memoryTab" class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     🗃️ Memoria Local
+                </button>
+                <button onclick="showAdminReports()" id="reportsTab" class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                    📄 Reportes
                 </button>
                 <button onclick="adminLogout()" class="admin-tab bg-red-200 text-red-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     🚪 Cerrar Sesión
@@ -483,6 +496,20 @@
                 <div id="adminRawMaterialsList" class="space-y-3">
                 </div>
             </div>
+            <div id="adminSupplierPurchasesSection" class="hidden mb-6">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-lg font-semibold">Control de Compras a Proveedor</h3>
+                    <button onclick="showNewPurchaseModal()" class="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                        Registrar Compra
+                    </button>
+                </div>
+                <div id="supplierStatsContainer" class="mb-6">
+                </div>
+                <h3 class="text-lg font-semibold mb-3 border-t pt-4">Historial de Compras</h3>
+                <div id="adminSupplierPurchasesList" class="space-y-3">
+                </div>
+            </div>
             <div id="adminOrdersSection" class="hidden mb-6">
                 <h3 class="text-lg font-semibold mb-3">Pedidos en Tiempo Real</h3>
                 <div id="adminOrdersList" class="space-y-3">
@@ -493,6 +520,22 @@
                 <h3 class="text-lg font-semibold mb-3">📊 Estadísticas de Ventas</h3>
                 <div id="adminStatsList" class="space-y-3">
                 </div>
+            </div>
+
+            <div id="adminPersonalDataSection" class="hidden mb-6">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-lg font-semibold">🧾 Datos Personales</h3>
+                </div>
+                <div class="grid grid-cols-1 gap-2 mb-3">
+                    <input id="personalSearchInput" type="text" class="border rounded-lg px-3 py-2" placeholder="🔎 Buscar por nombre, usuario, teléfono o No. control">
+                    <select id="personalFilterSelect" class="border rounded-lg px-3 py-2">
+                        <option value="all">Todos los tipos</option>
+                        <option value="estudiante">Estudiantes</option>
+                        <option value="docente">Docentes</option>
+                        <option value="administrativo">Administrativos</option>
+                    </select>
+                </div>
+                <div id="adminPersonalDataList" class="space-y-3"></div>
             </div>
             <div id="adminUsersSection" class="hidden mb-6">
                 <h3 class="text-lg font-semibold mb-3">Usuarios Registrados</h3>
@@ -507,8 +550,30 @@
                     ⚠️ Borrar Todos los Datos Locales
                 </button>
             </div>
-        </div>
+            <div id="adminReportsSection" class="hidden mb-6">
+                <h3 class="text-lg font-semibold mb-3">📄 Reporte (Vista previa & Copiar)</h3>
+                <div class="space-y-3 p-4 bg-gray-50 rounded-lg shadow-inner">
+                  <p class="text-sm text-gray-700">
+                    Vista previa de <b>Usuarios</b> y <b>Productos</b> en texto plano. Copia y pégalo donde necesites.
+                  </p>
+              
+                  <div class="flex items-center justify-between text-xs text-gray-600">
+                    <span id="reportSummary">—</span>
+                    <div class="flex gap-2">
+                      <button onclick="copyReportToClipboard()" class="px-3 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700">
+                        📋 Copiar texto
+                      </button>
+                    </div>
+                  </div>
+              
+                  <textarea id="reportPreview"
+                    class="w-full h-72 md:h-96 font-mono text-xs border rounded-lg p-3 bg-white"
+                    readonly></textarea>
+                </div>
+              </div>
+            </div>
     </div>
+
     <div id="productModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up max-h-[90vh] overflow-y-auto">
             <h3 id="modalTitle" class="text-lg font-bold mb-4">Agregar Producto</h3>
@@ -626,12 +691,53 @@
                 </div>
             </form>
             <div id="materialDeleteContainer" class="mt-4 hidden">
-                 <button type="button" onclick="deleteRawMaterial(parseInt(document.getElementById('materialId').value))" class="w-full bg-red-500 text-white py-2 rounded-lg font-medium hover:bg-red-600">
+                <button type="button" onclick="deleteRawMaterial(parseInt(document.getElementById('materialId').value))" class="w-full bg-red-500 text-white py-2 rounded-lg font-medium hover:bg-red-600">
                     Eliminar Materia Prima
-                 </button>
+                </button>
             </div>
         </div>
     </div>
+
+    <div id="supplierPurchaseModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up">
+            <h3 id="purchaseModalTitle" class="text-lg font-bold mb-4">Registrar Compra</h3>
+            <form id="supplierPurchaseForm" class="space-y-4">
+                <input type="hidden" id="purchaseId">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Materia Prima</label>
+                    <select id="purchaseMaterialId" class="w-full border rounded-lg px-3 py-2" required>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Cantidad Comprada</label>
+                        <input type="number" id="purchaseQuantity" step="0.01" class="w-full border rounded-lg px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Unidad</label>
+                        <input type="text" id="purchaseUnit" class="w-full border rounded-lg px-3 py-2 bg-gray-100" readonly>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Costo Total ($)</label>
+                    <input type="number" id="purchaseCost" step="0.01" class="w-full border rounded-lg px-3 py-2" placeholder="Ej: 550.50" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Nombre del Proveedor (Opcional)</label>
+                    <input type="text" id="supplierName" class="w-full border rounded-lg px-3 py-2" placeholder="Ej: Proveedora del Sur">
+                </div>
+                <div class="flex space-x-3">
+                    <button type="button" onclick="closePurchaseModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-medium">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium">
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="productPreviewModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50">
         <div class="bg-white rounded-t-3xl w-full max-w-md slide-up max-h-[90vh] overflow-y-auto">
             
@@ -686,8 +792,8 @@
             <form id="passwordResetForm" class="space-y-4">
                 <p class="text-sm text-gray-600">Ingresa tus datos de verificación para establecer una nueva contraseña.</p>
                 <div>
-                    <label class="block text-sm font-medium mb-1">Usuario o No. Control</label>
-                    <input type="text" id="resetUser" class="w-full border rounded-lg px-3 py-2 text-gray-800" placeholder="Usuario o No. Control" required>
+                    <label class="block text-sm font-medium mb-1">Usuario, No. Control o Teléfono</label>
+                    <input type="text" id="resetUser" class="w-full border rounded-lg px-3 py-2 text-gray-800" placeholder="Usuario, No. Control o Teléfono" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Teléfono Registrado</label>
@@ -713,8 +819,8 @@
                         <button type="button" onclick="togglePasswordVisibility('resetConfirmPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
                             <svg class="h-5 w-5 hidden" id="eye-icon-resetConfirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
                             <svg class="h-5 w-5" id="eye-slash-icon-resetConfirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20" />
                             </svg>
                         </button>
                     </div>
@@ -731,17 +837,125 @@
         </div>
     </div>
 
-    <script>
-        // El código JavaScript no necesita cambios para esta funcionalidad.
-        // Las modificaciones en las clases de Tailwind CSS son suficientes.
-        // ... (todo el script original va aquí)
-        // ====================================================================================
-        // G E S T I Ó N  D E  M E M O R I A  L O C A L
-        // ====================================================================================
+    <div id="editUserModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up max-h-[90vh] overflow-y-auto">
+        <h3 class="text-lg font-bold mb-4">Editar Datos Personales</h3>
+        <form id="editUserForm" class="space-y-4">
+          <input type="hidden" id="editUserId">
+          <div>
+            <label class="block text-sm font-medium mb-1">Tipo de Usuario</label>
+            <select id="editUserType" class="w-full border rounded-lg px-3 py-2" onchange="toggleEditUserFields()" required>
+              <option value="estudiante">👨‍🎓 Estudiante</option>
+              <option value="docente">👩‍🏫 Docente</option>
+              <option value="administrativo">👨‍💼 Administrativo</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Nombre Completo</label>
+            <input type="text" id="editFullName" class="w-full border rounded-lg px-3 py-2" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Nombre de Usuario (Único)</label>
+            <input type="text" id="editUsername" class="w-full border rounded-lg px-3 py-2" required>
+          </div>
 
+          <div id="editStudentFields" class="hidden space-y-3">
+            <div>
+              <label class="block text-sm font-medium mb-1">Número de Control</label>
+              <input type="text" id="editControlNumber" class="w-full border rounded-lg px-3 py-2" placeholder="Ej: 20230001">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Carrera</label>
+              <select id="editCareer" class="w-full border rounded-lg px-3 py-2">
+                <option value="">Seleccionar carrera</option>
+                <option value="Ingeniería en Sistemas Computacionales">Ingeniería en Sistemas Computacionales</option>
+                <option value="Ingeniería Industrial">Ingeniería Industrial</option>
+                <option value="Ingeniería Electrónica">Ingeniería Electrónica</option>
+                <option value="Ingeniería Mecánica">Ingeniería Mecánica</option>
+                <option value="Ingeniería Civil">Ingeniería Civil</option>
+                <option value="Licenciatura en Administración">Licenciatura en Administración</option>
+                <option value="Contador Público">Contador Público</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm font-medium mb-1">Semestre</label>
+                <select id="editSemester" class="w-full border rounded-lg px-3 py-2">
+                  <option value="">Seleccionar</option>
+                  <option value="1">1°</option>
+                  <option value="2">2°</option>
+                  <option value="3">3°</option>
+                  <option value="4">4°</option>
+                  <option value="5">5°</option>
+                  <option value="6">6°</option>
+                  <option value="7">7°</option>
+                  <option value="8">8°</option>
+                  <option value="9">9°</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Grupo</label>
+                <select id="editGroup" class="w-full border rounded-lg px-3 py-2">
+                  <option value="">Seleccionar</option>
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
+                  <option value="D">D</option>
+                  <option value="E">E</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div id="editStaffFields" class="hidden space-y-3">
+            <div>
+              <label class="block text-sm font-medium mb-1">Número de Teléfono</label>
+              <input type="tel" id="editPhoneNumber" class="w-full border rounded-lg px-3 py-2" placeholder="Ej: 5551234567">
+            </div>
+          </div>
+
+          <div class="border-t pt-3">
+            <label class="block text-sm font-semibold mb-1">Cambiar Contraseña (opcional)</label>
+            <div class="grid grid-cols-1 gap-3">
+              <div class="relative">
+                <input type="password" id="editNewPassword" class="w-full border rounded-lg pl-3 pr-10 py-2" placeholder="Nueva contraseña">
+                <button type="button" onclick="togglePasswordVisibility('editNewPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                    <svg class="h-5 w-5 hidden" id="eye-icon-editNewPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
+                    <svg class="h-5 w-5" id="eye-slash-icon-editNewPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20" />
+                    </svg>
+                </button>
+              </div>
+              <div class="relative">
+                <input type="password" id="editConfirmPassword" class="w-full border rounded-lg pl-3 pr-10 py-2" placeholder="Confirmar nueva contraseña">
+                <button type="button" onclick="togglePasswordVisibility('editConfirmPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                    <svg class="h-5 w-5 hidden" id="eye-icon-editConfirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
+                    <svg class="h-5 w-5" id="eye-slash-icon-editConfirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20" />
+                    </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex space-x-3">
+            <button type="button" onclick="closeEditUserModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-medium">Cancelar</button>
+            <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <script>
+        // ====================================================================================
+        // G E S T I Ó N  D E  M E M O R I A  L O C A L
+        // ====================================================================================
+        
         const STORAGE_KEYS = {
             PRODUCTS: 'cafetec_products',
             MATERIALS: 'cafetec_materials',
+            SUPPLIER_PURCHASES: 'cafetec_supplier_purchases',
             ORDERS: 'cafetec_orders',
             USERS: 'cafetec_users',
             CURRENT_USER: 'cafetec_current_user',
@@ -751,43 +965,54 @@
         function saveState() {
             localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
             localStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(rawMaterials));
+            localStorage.setItem(STORAGE_KEYS.SUPPLIER_PURCHASES, JSON.stringify(supplierPurchases));
             localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
             localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
             localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
             localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
         }
-
+        
         function loadState() {
             const storedProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
             const storedMaterials = localStorage.getItem(STORAGE_KEYS.MATERIALS);
+            const storedPurchases = localStorage.getItem(STORAGE_KEYS.SUPPLIER_PURCHASES);
             const storedOrders = localStorage.getItem(STORAGE_KEYS.ORDERS);
             const storedUsers = localStorage.getItem(STORAGE_KEYS.USERS);
             const storedCurrentUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
             const storedOrderIdCounter = localStorage.getItem(STORAGE_KEYS.ORDER_ID_COUNTER);
-
+        
             if (storedProducts) products = JSON.parse(storedProducts);
             if (storedMaterials) rawMaterials = JSON.parse(storedMaterials);
+            if (storedPurchases) supplierPurchases = JSON.parse(storedPurchases);
             if (storedOrders) orders = JSON.parse(storedOrders);
-            if (storedUsers) users = JSON.parse(storedUsers);
+            // NOTA: Se actualiza el formato de la fecha de registro de los usuarios al cargar,
+            // ya que en el registro se guarda como un string local.
+            if (storedUsers) {
+                users = JSON.parse(storedUsers).map(u => ({
+                    ...u,
+                    // Asegurar que registrationDate sea parseable como objeto Date
+                    registrationDate: u.registrationDate ? new Date(u.registrationDate) : new Date(0) // Usar new Date(0) si no hay fecha para evitar errores
+                }));
+            }
             if (storedCurrentUser) currentUser = JSON.parse(storedCurrentUser);
             if (storedOrderIdCounter) orderIdCounter = parseInt(storedOrderIdCounter);
-
+        
             if (currentUser) {
-                 if (currentUser.userType === 'admin') {
-                     showAdminPanel();
-                 } else {
-                     document.getElementById('welcomeUserName').textContent = currentUser.fullName;
-                     showWelcome();
-                 }
+                if (currentUser.userType === 'admin') {
+                    showAdminPanel();
+                } else {
+                    document.getElementById('welcomeUserName').textContent = currentUser.fullName;
+                    showWelcome();
+                }
             } else {
-                 showLogin();
+                showLogin();
             }
         }
         
         // ====================================================================================
-        // E S T A D O S   I N I C I A L E S 
+        // E S T A D O S  I N I C I A L E S 
         // ====================================================================================
-
+        
         let rawMaterials = [
             { id: 101, name: 'Granos de Café', stock: 5.0, unit: 'kg', emoji: '☕' }, 
             { id: 102, name: 'Leche', stock: 20.0, unit: 'L', emoji: '🥛' },
@@ -799,7 +1024,7 @@
             { id: 108, name: 'Queso Crema', stock: 12.0, unit: 'kg', emoji: '🧀' },
             { id: 109, name: 'Chocolate', stock: 18.0, unit: 'kg', emoji: '🍫' }
         ];
-
+        
         let products = [
             {
                 id: 1, name: 'Café Americano', price: 25.00, category: 'bebidas', stock: 50, emoji: '☕',
@@ -868,38 +1093,36 @@
         let cart = [];
         let currentCategory = 'all';
         let orders = [];
+        let supplierPurchases = [];
         let orderIdCounter = 1;
         let users = [];
         let currentUser = null;
         let previewProduct = null;
         
         if (!localStorage.getItem(STORAGE_KEYS.PRODUCTS)) {
-              localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
-              localStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(rawMaterials));
-              localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
-              localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-              localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
+                 localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
+                 localStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(rawMaterials));
+                 localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
+                 localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+                 localStorage.setItem(STORAGE_KEYS.SUPPLIER_PURCHASES, JSON.stringify(supplierPurchases));
+                 localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
         }
-
+        
         // ====================================================================================
-        // F U N C I O N E S  D E  A U T E N T I C A C I Ó N
+        // F U N C I O N E S  D E  A U T E N T I C A C I Ó N
         // ====================================================================================
-
+        
         function togglePasswordVisibility(inputId) {
             const input = document.getElementById(inputId);
             const eyeIcon = document.getElementById(`eye-icon-${inputId}`);
             const eyeSlashIcon = document.getElementById(`eye-slash-icon-${inputId}`);
-
+        
             if (input.type === 'password') {
-                // Estaba OCULTO, ahora se hace VISIBLE
                 input.type = 'text';
-                // Para representar el estado VISIBLE, se muestra el OJO ABIERTO
                 eyeIcon.classList.remove('hidden');
                 eyeSlashIcon.classList.add('hidden');
             } else {
-                // Estaba VISIBLE, ahora se hace OCULTO
                 input.type = 'password';
-                // Para representar el estado OCULTO, se muestra el OJO TACHADO
                 eyeIcon.classList.add('hidden');
                 eyeSlashIcon.classList.remove('hidden');
             }
@@ -911,31 +1134,36 @@
         }
         
         function showPasswordResetModal() {
-             document.getElementById('passwordResetModal').classList.remove('hidden');
+            document.getElementById('passwordResetModal').classList.remove('hidden');
         }
-
+        
         function closePasswordResetModal() {
             document.getElementById('passwordResetModal').classList.add('hidden');
             document.getElementById('passwordResetForm').reset();
         }
-
+        
         document.getElementById('passwordResetForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const username = document.getElementById('resetUser').value;
-            const phone = document.getElementById('resetPhone').value;
+            const loginIdentifier = document.getElementById('resetUser').value.trim(); // Puede ser username, No. Control o Teléfono
+            const phone = document.getElementById('resetPhone').value.trim();
             const newPassword = document.getElementById('resetNewPassword').value;
             const confirmPassword = document.getElementById('resetConfirmPassword').value;
-
+        
             if (newPassword !== confirmPassword) {
                 alert('Las nuevas contraseñas no coinciden.');
                 return;
             }
-
-            let user = users.find(u => u.username === username);
-
+        
+            let user = users.find(u => 
+                u.username === loginIdentifier || 
+                u.controlNumber === loginIdentifier ||
+                u.phoneNumber === loginIdentifier
+            );
+        
             if (user) {
-                const isPhoneMatch = user.userType === 'estudiante' || user.phoneNumber === phone;
+                // Verificar que el teléfono coincida con el registrado para el restablecimiento.
+                const isPhoneMatch = (user.phoneNumber && user.phoneNumber === phone) || (user.userType === 'estudiante' && user.controlNumber && user.controlNumber === phone);
                 
                 if (isPhoneMatch) {
                     user.password = newPassword;
@@ -946,8 +1174,8 @@
                     return;
                 }
             }
-
-            alert('Error: Usuario o Teléfono registrado no coinciden. Inténtalo de nuevo.');
+        
+            alert('Error: Identificador (Usuario/No. Control/Teléfono) o Teléfono registrado no coinciden. Inténtalo de nuevo.');
         });
         
         function showLogin() {
@@ -960,19 +1188,20 @@
             document.getElementById('productPreviewModal').classList.add('hidden');
             document.getElementById('passwordResetModal').classList.add('hidden');
         }
-
+        
         function showRegister() {
             document.getElementById('registerScreen').classList.remove('hidden');
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('productPreviewModal').classList.add('hidden');
             document.getElementById('passwordResetModal').classList.add('hidden');
         }
-
+        
         function toggleUserFields() {
             const userType = document.getElementById('userType').value;
             const studentFields = document.getElementById('studentFields');
             const staffFields = document.getElementById('staffFields');
             
+            // Si el usuario es estudiante, los campos de staff no son requeridos y viceversa
             if (userType === 'estudiante') {
                 studentFields.classList.remove('hidden');
                 staffFields.classList.add('hidden');
@@ -994,7 +1223,7 @@
                 staffFields.classList.add('hidden');
             }
         }
-
+        
         function previewCredential() {
             const file = document.getElementById('credentialFile').files[0];
             if (file) {
@@ -1006,12 +1235,13 @@
                 reader.readAsDataURL(file);
             }
         }
-
+        
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const userType = document.getElementById('userType').value;
             const fullName = document.getElementById('fullName').value;
+            const username = document.getElementById('username').value.trim(); // Nuevo campo de usuario
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             
@@ -1019,19 +1249,28 @@
                 alert('Las contraseñas no coinciden');
                 return;
             }
+        
+            // Validación de nombre de usuario único
+            if (users.some(user => user.username && user.username.toLowerCase() === username.toLowerCase())) {
+                alert('Este nombre de usuario ya está registrado. Por favor, elige otro.');
+                return;
+            }
             
+            const now = new Date();
             const newUser = {
                 id: users.length + 1,
                 userType: userType,
                 fullName: fullName,
+                username: username, // Almacenar el nombre de usuario
                 password: password,
-                registrationDate: new Date().toLocaleString()
+                // ALMACENA LA FECHA DE REGISTRO COMO UN OBJETO Date para fácil comparación
+                registrationDate: now 
             };
             
             if (userType === 'estudiante') {
-                const controlNumber = document.getElementById('controlNumber').value;
+                const controlNumber = document.getElementById('controlNumber').value.trim();
                 
-                if (users.some(user => user.controlNumber === controlNumber)) {
+                if (users.some(user => user.controlNumber === controlNumber && user.controlNumber)) {
                     alert('Este número de control ya está registrado');
                     return;
                 }
@@ -1040,17 +1279,18 @@
                 newUser.career = document.getElementById('career').value;
                 newUser.semester = document.getElementById('semester').value;
                 newUser.group = document.getElementById('group').value;
-                newUser.username = controlNumber;
-            } else {
-                const phoneNumber = document.getElementById('phoneNumber').value;
                 
-                if (users.some(user => user.phoneNumber === phoneNumber)) {
+                // Antes: newUser.username = controlNumber;
+            } else {
+                const phoneNumber = document.getElementById('phoneNumber').value.trim();
+                
+                if (users.some(user => user.phoneNumber === phoneNumber && user.phoneNumber)) {
                     alert('Este número de teléfono ya está registrado');
                     return;
                 }
                 
                 newUser.phoneNumber = phoneNumber;
-                newUser.username = phoneNumber;
+                // Antes: newUser.username = phoneNumber;
             }
             
             const credentialFile = document.getElementById('credentialFile').files[0];
@@ -1061,7 +1301,7 @@
             
             users.push(newUser);
             
-            alert('¡Registro exitoso! Ya puedes iniciar sesión.');
+            alert(`¡Registro exitoso! Ya puedes iniciar sesión con tu nombre de usuario: ${username}.`);
             
             document.getElementById('registerForm').reset();
             document.getElementById('credentialPreview').classList.add('hidden');
@@ -1069,32 +1309,52 @@
             saveState();
             showLogin();
         });
-
+        
         function login() {
-            const username = document.getElementById('loginUser').value;
+            const loginIdentifier = document.getElementById('loginUser').value.trim(); // Puede ser username, No. Control o Teléfono
             const password = document.getElementById('loginPassword').value;
             
-            if (!username || !password) {
-                alert('Por favor ingresa usuario y contraseña');
+            if (!loginIdentifier || !password) {
+                alert('Por favor ingresa tu identificador y contraseña');
                 return;
             }
-
-            if (username.toUpperCase() === 'ADMIN' && password === 'ADMIN') {
+        
+            if (loginIdentifier.toUpperCase() === 'ADMIN' && password === 'ADMIN') {
                 currentUser = { id: 0, userType: 'admin', fullName: 'Administrador', username: 'ADMIN' };
                 saveState();
                 showAdminPanel();
                 return;
             }
             
-            const user = users.find(u => u.username === username && u.password === password);
+            // Búsqueda de usuario:
+            const user = users.find(u => 
+                (u.username && u.username.toLowerCase() === loginIdentifier.toLowerCase() && u.password === password) ||
+                (u.controlNumber && u.controlNumber === loginIdentifier && u.password === password) ||
+                (u.phoneNumber && u.phoneNumber === loginIdentifier && u.password === password)
+            );
             
             if (user) {
+                // OBTENER FECHAS: La fecha de registro ya se cargó como un objeto Date en loadState
+                const registrationDate = user.registrationDate instanceof Date ? user.registrationDate : new Date(user.registrationDate);
+                const currentDate = new Date();
+        
+                // NORMALIZAR FECHAS A SÓLO DÍA (IGNORAR HORA) para la comparación
+                const regDay = new Date(registrationDate.getFullYear(), registrationDate.getMonth(), registrationDate.getDate());
+                const currentDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+        
+                // VALIDACIÓN DE FECHA
+                if (currentDay.getTime() < regDay.getTime()) {
+                    alert('🚫 Acceso Bloqueado: La fecha y hora de tu computadora es anterior a tu fecha de registro. Por favor, actualiza la fecha para continuar.');
+                    return; // Bloquea el ingreso
+                }
+                // FIN VALIDACIÓN DE FECHA
+        
                 currentUser = user;
                 document.getElementById('welcomeUserName').textContent = user.fullName;
                 saveState();
                 showWelcome();
             } else {
-                alert('Usuario o contraseña incorrectos');
+                alert('Usuario, número de control o contraseña incorrectos');
             }
         }
         
@@ -1106,14 +1366,14 @@
             clearLoginFields();
             showLogin();
         }
-
+        
         function adminLogout() {
             currentUser = null;
             saveState();
             clearLoginFields();
             showLogin();
         }
-
+        
         function showWelcome() {
             document.getElementById('welcomeScreen').classList.remove('hidden');
             document.getElementById('loginScreen').classList.add('hidden');
@@ -1122,7 +1382,7 @@
             document.getElementById('adminPanel').classList.add('hidden');
             document.getElementById('productPreviewModal').classList.add('hidden');
         }
-
+        
         function showCustomerMenu() {
             document.getElementById('welcomeScreen').classList.add('hidden');
             document.getElementById('customerMenu').classList.remove('hidden');
@@ -1132,14 +1392,14 @@
             renderProducts();
             updateCartCount();
         }
-
+        
         function showCart() {
             document.getElementById('cartScreen').classList.remove('hidden');
             document.getElementById('customerMenu').classList.add('hidden');
             document.getElementById('productPreviewModal').classList.add('hidden');
             renderCart();
         }
-
+        
         function showAdminPanel() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('adminPanel').classList.remove('hidden');
@@ -1150,13 +1410,13 @@
         }
         
         // ====================================================================================
-        // F U N C I O N E S  D E  S T O C K  Y  R E C E T A S
+        // F U N C I O N E S  D E  S T O C K  Y  R E C E T A S
         // ====================================================================================
         
         function getRawMaterial(id) {
             return rawMaterials.find(m => m.id === id);
         }
-
+        
         function checkRawMaterialStock(product, quantity) {
             if (!product.materialsNeeded || product.materialsNeeded.length === 0) return true;
             
@@ -1166,7 +1426,7 @@
                     console.warn(`Materia prima ID ${material.materialId} no encontrada.`);
                     continue; 
                 }
-
+        
                 const required = material.quantity * quantity;
                 
                 if (rawMaterial.stock < required - 0.001) { 
@@ -1176,12 +1436,12 @@
             }
             return true;
         }
-
+        
         function depleteRawMaterialStock(items) {
             items.forEach(cartItem => {
                 const product = products.find(p => p.id === cartItem.id);
                 if (!product || !product.materialsNeeded) return;
-
+        
                 product.materialsNeeded.forEach(material => {
                     const rawMaterial = getRawMaterial(material.materialId);
                     if (rawMaterial) {
@@ -1191,125 +1451,90 @@
                 });
             });
         }
-
-
+        
+        
         // ====================================================================================
-        // F U N C I O N E S  P A N E L  A D M I N I S T R A D O R  ( V I S T A S )
+        // F U N C I O N E S  P A N E L  A D M I N I S T R A D O R  ( V I S T A S )
         // ====================================================================================
-
-        function showAdminStock() {
+        
+        function activateTab(targetId) {
             document.querySelectorAll('.admin-tab').forEach(tab => {
                 tab.classList.remove('bg-blue-600', 'text-white');
                 tab.classList.add('bg-gray-200', 'text-gray-700');
             });
-            document.getElementById('stockTab').classList.remove('bg-gray-200', 'text-gray-700');
-            document.getElementById('stockTab').classList.add('bg-blue-600', 'text-white');
-            
+            document.getElementById(targetId).classList.remove('bg-gray-200', 'text-gray-700');
+            document.getElementById(targetId).classList.add('bg-blue-600', 'text-white');
+        
+            // Oculta todas las secciones admin
+            const sections = [
+                'adminStockSection','adminRawMaterialsSection','adminSupplierPurchasesSection',
+                'adminOrdersSection','adminStatsSection','adminUsersSection','adminMemorySection',
+                'adminPersonalDataSection', 'adminReportsSection' // <<< AÑADIDO: Sección de Reportes
+            ];
+            sections.forEach(id => document.getElementById(id).classList.add('hidden'));
+        }
+        
+        function showAdminStock() {
+            activateTab('stockTab');
             document.getElementById('adminStockSection').classList.remove('hidden');
-            document.getElementById('adminRawMaterialsSection').classList.add('hidden');
-            document.getElementById('adminOrdersSection').classList.add('hidden');
-            document.getElementById('adminUsersSection').classList.add('hidden');
-            document.getElementById('adminStatsSection').classList.add('hidden');
-            document.getElementById('adminMemorySection').classList.add('hidden');
-            
             renderAdminProducts();
         }
         
         function showAdminRawMaterials() {
-            document.querySelectorAll('.admin-tab').forEach(tab => {
-                tab.classList.remove('bg-blue-600', 'text-white');
-                tab.classList.add('bg-gray-200', 'text-gray-700');
-            });
-            document.getElementById('rawMaterialsTab').classList.remove('bg-gray-200', 'text-gray-700');
-            document.getElementById('rawMaterialsTab').classList.add('bg-blue-600', 'text-white');
-            
-            document.getElementById('adminStockSection').classList.add('hidden');
+            activateTab('rawMaterialsTab');
             document.getElementById('adminRawMaterialsSection').classList.remove('hidden');
-            document.getElementById('adminOrdersSection').classList.add('hidden');
-            document.getElementById('adminUsersSection').classList.add('hidden');
-            document.getElementById('adminStatsSection').classList.add('hidden');
-            document.getElementById('adminMemorySection').classList.add('hidden');
-            
             renderAdminRawMaterials();
         }
-
+        
+        function showAdminSupplierPurchases() {
+            activateTab('supplierPurchasesTab');
+            document.getElementById('adminSupplierPurchasesSection').classList.remove('hidden');
+            renderSupplierPurchaseStats();
+            renderAdminSupplierPurchases();
+        }
+        
         function showAdminOrders() {
-            document.querySelectorAll('.admin-tab').forEach(tab => {
-                tab.classList.remove('bg-blue-600', 'text-white');
-                tab.classList.add('bg-gray-200', 'text-gray-700');
-            });
-            document.getElementById('ordersTab').classList.remove('bg-gray-200', 'text-gray-700');
-            document.getElementById('ordersTab').classList.add('bg-blue-600', 'text-white');
-            
-            document.getElementById('adminStockSection').classList.add('hidden');
-            document.getElementById('adminRawMaterialsSection').classList.add('hidden');
+            activateTab('ordersTab');
             document.getElementById('adminOrdersSection').classList.remove('hidden');
-            document.getElementById('adminUsersSection').classList.add('hidden');
-            document.getElementById('adminStatsSection').classList.add('hidden');
-            document.getElementById('adminMemorySection').classList.add('hidden');
-            
             renderAdminOrders();
         }
         
         function showAdminStats() {
-            document.querySelectorAll('.admin-tab').forEach(tab => {
-                tab.classList.remove('bg-blue-600', 'text-white');
-                tab.classList.add('bg-gray-200', 'text-gray-700');
-            });
-            document.getElementById('statsTab').classList.remove('bg-gray-200', 'text-gray-700');
-            document.getElementById('statsTab').classList.add('bg-blue-600', 'text-white');
-            
-            document.getElementById('adminStockSection').classList.add('hidden');
-            document.getElementById('adminRawMaterialsSection').classList.add('hidden');
-            document.getElementById('adminOrdersSection').classList.add('hidden');
-            document.getElementById('adminUsersSection').classList.add('hidden');
+            activateTab('statsTab');
             document.getElementById('adminStatsSection').classList.remove('hidden');
-            document.getElementById('adminMemorySection').classList.add('hidden');
-
             renderSalesStats();
         }
-
+        
         function showAdminUsers() {
-            document.querySelectorAll('.admin-tab').forEach(tab => {
-                tab.classList.remove('bg-blue-600', 'text-white');
-                tab.classList.add('bg-gray-200', 'text-gray-700');
-            });
-            document.getElementById('usersTab').classList.remove('bg-gray-200', 'text-gray-700');
-            document.getElementById('usersTab').classList.add('bg-blue-600', 'text-white');
-            
-            document.getElementById('adminStockSection').classList.add('hidden');
-            document.getElementById('adminRawMaterialsSection').classList.add('hidden');
-            document.getElementById('adminOrdersSection').classList.add('hidden');
+            activateTab('usersTab');
             document.getElementById('adminUsersSection').classList.remove('hidden');
-            document.getElementById('adminStatsSection').classList.add('hidden');
-            document.getElementById('adminMemorySection').classList.add('hidden');
-            
             renderAdminUsers();
         }
         
         function showAdminMemory() {
-            document.querySelectorAll('.admin-tab').forEach(tab => {
-                tab.classList.remove('bg-blue-600', 'text-white');
-                tab.classList.add('bg-gray-200', 'text-gray-700');
-            });
-            document.getElementById('memoryTab').classList.remove('bg-gray-200', 'text-gray-700');
-            document.getElementById('memoryTab').classList.add('bg-blue-600', 'text-white');
-            
-            document.getElementById('adminStockSection').classList.add('hidden');
-            document.getElementById('adminRawMaterialsSection').classList.add('hidden');
-            document.getElementById('adminOrdersSection').classList.add('hidden');
-            document.getElementById('adminUsersSection').classList.add('hidden');
-            document.getElementById('adminStatsSection').classList.add('hidden');
+            activateTab('memoryTab');
             document.getElementById('adminMemorySection').classList.remove('hidden');
-            
             renderLocalMemory();
         }
+        
+        // NUEVO: mostrar Datos Personales
+        function showAdminPersonalData() {
+            activateTab('personalDataTab');
+            document.getElementById('adminPersonalDataSection').classList.remove('hidden');
+            renderAdminPersonalData();
+        }
 
+        // NUEVO: mostrar Reportes
+        function showAdminReports() {
+            activateTab('reportsTab');
+            document.getElementById('adminReportsSection').classList.remove('hidden');
+        }
+        
         function renderLocalMemory() {
             const memoryList = document.getElementById('memoryList');
             let html = '';
             let totalSize = 0;
-
+        
             for (const key in localStorage) {
                 if (localStorage.hasOwnProperty(key) && key.startsWith('cafetec_')) {
                     const value = localStorage.getItem(key);
@@ -1333,13 +1558,13 @@
                     `;
                 }
             }
-
+        
             if (totalSize > 0) {
-                 html = `<p class="text-sm font-medium mb-4">Total de datos almacenados: ${(totalSize / 1024).toFixed(2)} KB</p>` + html;
+                html = `<p class="text-sm font-medium mb-4">Total de datos almacenados: ${(totalSize / 1024).toFixed(2)} KB</p>` + html;
             } else {
-                 html = `<p class="text-center text-gray-500 py-8">No hay datos de CAFE-TEC guardados en la memoria local.</p>`;
+                html = `<p class="text-center text-gray-500 py-8">No hay datos de CAFE-TEC guardados en la memoria local.</p>`;
             }
-
+        
             memoryList.innerHTML = html;
         }
         
@@ -1363,15 +1588,15 @@
         }
         
         // ====================================================================================
-        // F U N C I O N E S  M E N Ú  C L I E N T E
+        // F U N C I O N E S  M E N Ú  C L I E N T E
         // ====================================================================================
-
+        
         function renderProducts() {
             const productList = document.getElementById('productList');
             const filteredProducts = currentCategory === 'all' 
                 ? products 
                 : products.filter(p => p.category === currentCategory);
-
+        
             productList.innerHTML = filteredProducts.map(product => {
                 const isOutOfStock = product.stock === 0 || !checkRawMaterialStock(product, 1);
                 
@@ -1396,7 +1621,7 @@
                                     isOutOfStock 
                                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
                                         : 'bg-amber-600 text-white hover:bg-amber-700'
-                                }"
+                                    }"
                             >
                                 ${isOutOfStock ? 'Agotado' : 'Agregar'}
                             </button>
@@ -1409,7 +1634,7 @@
         function showProductPreview(productId) {
             const product = products.find(p => p.id === productId);
             if (!product) return;
-
+        
             previewProduct = product;
             
             document.getElementById('previewProductName').textContent = product.name;
@@ -1435,12 +1660,12 @@
             
             document.getElementById('productPreviewModal').classList.remove('hidden');
         }
-
+        
         function closeProductPreview() {
             document.getElementById('productPreviewModal').classList.add('hidden');
             previewProduct = null;
         }
-
+        
         function updatePreviewQuantity(change) {
             if (!previewProduct) return;
             const quantityEl = document.getElementById('previewQuantity');
@@ -1448,7 +1673,7 @@
             let newQuantity = currentQuantity + change;
             
             if (newQuantity < 1) newQuantity = 1;
-
+        
             if (newQuantity > previewProduct.stock) {
                 alert(`Stock limitado a ${previewProduct.stock} unidades.`);
                 newQuantity = previewProduct.stock;
@@ -1459,17 +1684,17 @@
             
             quantityEl.textContent = newQuantity;
         }
-
+        
         function addToCartFromPreview() {
             if (!previewProduct) return;
             const quantity = parseInt(document.getElementById('previewQuantity').textContent);
             
             const existingItem = cart.find(item => item.id === previewProduct.id);
             const totalNewQuantity = (existingItem ? existingItem.quantity : 0) + quantity;
-
+        
             if (totalNewQuantity > previewProduct.stock) {
-                 alert(`Solo hay ${previewProduct.stock - (existingItem ? existingItem.quantity : 0)} unidades más disponibles.`);
-                 return;
+                alert(`Solo hay ${previewProduct.stock - (existingItem ? existingItem.quantity : 0)} unidades más disponibles.`);
+                return;
             }
             
             if (!checkRawMaterialStock(previewProduct, totalNewQuantity)) {
@@ -1488,7 +1713,7 @@
             renderProducts();
             alert(`${quantity}x ${previewProduct.name} agregado al carrito.`);
         }
-
+        
         function filterCategory(category) {
             currentCategory = category;
             
@@ -1506,11 +1731,11 @@
             
             renderProducts();
         }
-
+        
         function addToCart(productId) {
             const product = products.find(p => p.id === productId);
             if (!product || product.stock === 0) return;
-
+        
             const existingItem = cart.find(item => item.id === productId);
             const quantityToAdd = existingItem ? existingItem.quantity + 1 : 1;
             
@@ -1523,7 +1748,7 @@
                 alert('Stock de materia prima insuficiente para añadir más unidades de este producto.');
                 return;
             }
-
+        
             if (existingItem) {
                 existingItem.quantity++;
             } else {
@@ -1533,7 +1758,7 @@
             updateCartCount();
             renderProducts();
         }
-
+        
         function updateCartCount() {
             const count = cart.reduce((sum, item) => sum + item.quantity, 0);
             const cartCountEl = document.getElementById('cartCount');
@@ -1545,7 +1770,7 @@
                 cartCountEl.classList.add('hidden');
             }
         }
-
+        
         function renderCart() {
             const cartItems = document.getElementById('cartItems');
             const totalPrice = document.getElementById('totalPrice');
@@ -1555,7 +1780,7 @@
                 totalPrice.textContent = '$0.00';
                 return;
             }
-
+        
             cartItems.innerHTML = cart.map(item => `
                 <div class="flex items-center justify-between bg-gray-50 p-4 rounded-lg">
                     <div class="flex items-center">
@@ -1572,11 +1797,11 @@
                     </div>
                 </div>
             `).join('');
-
+        
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             totalPrice.textContent = `$${total.toFixed(2)}`;
         }
-
+        
         function updateQuantity(productId, change) {
             const cartItem = cart.find(item => item.id === productId);
             const product = products.find(p => p.id === productId);
@@ -1598,7 +1823,7 @@
                 renderCart();
             }
         }
-
+        
         function showPaymentDetails() {
             const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
             const cardDetails = document.getElementById('cardPaymentDetails');
@@ -1613,7 +1838,7 @@
                 transferDetails.classList.remove('hidden');
             }
         }
-
+        
         function validatePaymentInfo(paymentMethod) {
             if (paymentMethod === 'tarjeta') {
                 const cardNumber = document.getElementById('cardNumber').value.trim();
@@ -1628,19 +1853,19 @@
             }
             return true;
         }
-
+        
         function generateReferenceNumber() {
             const timestamp = Date.now().toString();
             const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
             return `CT${timestamp.slice(-6)}${random}`;
         }
-
+        
         function confirmOrder() {
             if (cart.length === 0) {
                 alert('Tu carrito está vacío');
                 return;
             }
-
+        
             const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
             
             if (!validatePaymentInfo(paymentMethod)) {
@@ -1649,11 +1874,11 @@
             
             for (const item of cart) {
                 if (!checkRawMaterialStock(products.find(p => p.id === item.id), item.quantity)) {
-                     alert(`ERROR: Materia prima insuficiente para preparar ${item.name} x${item.quantity}. Por favor reduce la cantidad.`);
-                     return;
+                    alert(`ERROR: Materia prima insuficiente para preparar ${item.name} x${item.quantity}. Por favor reduce la cantidad.`);
+                    return;
                 }
             }
-
+        
             const pickupTime = document.querySelector('input[name="pickup-time"]:checked').value;
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             const orderNotes = document.getElementById('orderNotes').value.trim();
@@ -1687,7 +1912,7 @@
             });
             
             depleteRawMaterialStock(cart);
-
+        
             alert(`¡Pedido confirmado!\n\nPedido #${newOrder.id}\nReferencia: ${referenceNumber}\nCliente: ${currentUser.fullName}\nTotal: $${total.toFixed(2)}\nHorario de recogida: ${timeFormatted}\nMétodo de pago: ${paymentMethod}\n\n¡Tu pedido estará listo a la hora seleccionada!\n¡Gracias por tu compra!`);
             
             cart = [];
@@ -1700,7 +1925,7 @@
             saveState();
             showCustomerMenu();
         }
-
+        
         function formatTime(time) {
             const [hours, minutes] = time.split(':');
             const hour = parseInt(hours);
@@ -1708,9 +1933,9 @@
             const displayHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
             return `${displayHour}:${minutes} ${ampm}`;
         }
-
-        // ====================================================================================
-        // F U N C I O N E S  P A N E L  A D M I N I S T R A D O R  ( G E S T I Ó N )
+        
+         // ====================================================================================
+        // F U N C I O N E S  P A N E L  A D M I N I S T R A D O R  ( G E S T I Ó N )
         // ====================================================================================
         
         function renderAdminProducts() {
@@ -1721,18 +1946,19 @@
                     const material = getRawMaterial(id);
                     return material ? `${material.emoji} ${material.name} (${material.unit})` : 'MP Desconocida';
                 };
-
+    
                 const recipeHtml = product.materialsNeeded && product.materialsNeeded.length > 0
                     ? product.materialsNeeded.map(mat => {
                         const material = getRawMaterial(mat.materialId);
-                        const isStockLow = material && material.stock < mat.quantity * 5;
+                        if (!material) return '';
+                        const isStockLow = material.stock < mat.quantity * 5;
                         return `<span class="text-xs ${isStockLow ? 'text-red-500 font-semibold' : 'text-gray-600'} block">
                                     ${mat.quantity} ${material.unit} de ${material.name}
                                 </span>`;
                         }).join('')
                     : '<span class="text-xs text-red-500 italic">⚠️ Sin Receta Vinculada</span>';
-
-
+    
+    
                 return `
                     <div class="bg-gray-50 border rounded-lg p-4">
                         <div class="flex items-center justify-between">
@@ -1801,6 +2027,120 @@
                 </div>
             `).join('');
         }
+    
+        function renderSupplierPurchaseStats() {
+            const statsContainer = document.getElementById('supplierStatsContainer');
+    
+            if (supplierPurchases.length === 0) {
+                statsContainer.innerHTML = `
+                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+                        <p class="text-sm text-blue-800">No hay datos suficientes para generar estadísticas de compras.</p>
+                    </div>`;
+                return;
+            }
+    
+            const totalSpent = supplierPurchases.reduce((sum, purchase) => sum + purchase.cost, 0);
+            const totalPurchases = supplierPurchases.length;
+            const spendingBySupplier = supplierPurchases.reduce((acc, purchase) => {
+                const supplier = purchase.supplierName || 'No especificado';
+                acc[supplier] = (acc[supplier] || 0) + purchase.cost;
+                return acc;
+            }, {});
+            const topSuppliers = Object.entries(spendingBySupplier).sort(([, a], [, b]) => b - a).slice(0, 3);
+            const quantityByMaterial = supplierPurchases.reduce((acc, purchase) => {
+                acc[purchase.materialId] = (acc[purchase.materialId] || 0) + purchase.quantity;
+                return acc;
+            }, {});
+            
+            let topMaterialByQuantity = { name: 'N/A', quantity: 0, unit: '' };
+            if (Object.keys(quantityByMaterial).length > 0) {
+                const topMaterialId = Object.keys(quantityByMaterial).reduce((a, b) => quantityByMaterial[a] > quantityByMaterial[b] ? a : b);
+                const material = getRawMaterial(parseInt(topMaterialId));
+                if(material){
+                    topMaterialByQuantity = {
+                        name: `${material.emoji} ${material.name}`,
+                        quantity: quantityByMaterial[topMaterialId],
+                        unit: material.unit
+                    };
+                }
+            }
+    
+            statsContainer.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-green-50 p-4 rounded-lg shadow-sm">
+                        <p class="text-sm text-green-600 font-medium">💸 Gasto Total en Insumos</p>
+                        <p class="text-2xl font-bold text-green-800">$${totalSpent.toFixed(2)}</p>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg shadow-sm">
+                        <p class="text-sm text-purple-600 font-medium">🚚 Total de Compras</p>
+                        <p class="text-2xl font-bold text-purple-800">${totalPurchases}</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div class="bg-white border rounded-lg p-4 shadow-sm">
+                            <h4 class="font-bold mb-2 text-md text-gray-700">🏆 Top Proveedores (por Gasto)</h4>
+                            <div class="space-y-2">
+                                ${topSuppliers.length > 0 ? topSuppliers.map(([name, cost]) => `
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="font-medium truncate">${name}</span>
+                                        <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-semibold">$${cost.toFixed(2)}</span>
+                                    </div>
+                                `).join('') : '<p class="text-xs text-gray-500">No hay datos de proveedores.</p>'}
+                            </div>
+                        </div>
+                         <div class="bg-white border rounded-lg p-4 shadow-sm">
+                            <h4 class="font-bold mb-2 text-md text-gray-700">📦 Insumo Más Comprado (por Cantidad)</h4>
+                             <div class="space-y-2">
+                                ${topMaterialByQuantity.name !== 'N/A' ? `
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="font-medium">${topMaterialByQuantity.name}</span>
+                                         <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-semibold">${topMaterialByQuantity.quantity.toFixed(2)} ${topMaterialByQuantity.unit}</span>
+                                    </div>
+                                ` : '<p class="text-xs text-gray-500">No hay compras registradas.</p>'}
+                            </div>
+                        </div>
+                </div>`;
+        }
+        
+        function renderAdminSupplierPurchases() {
+            const listContainer = document.getElementById('adminSupplierPurchasesList');
+            
+            if (supplierPurchases.length === 0) {
+                listContainer.innerHTML = ''; // Clear list if empty, stats section will show the message
+                return;
+            }
+    
+            const sortedPurchases = [...supplierPurchases].sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+            listContainer.innerHTML = sortedPurchases.map(purchase => {
+                const material = getRawMaterial(purchase.materialId);
+                if (!material) return '';
+    
+                return `
+                    <div class="bg-white border rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs text-gray-500">${new Date(purchase.date).toLocaleString()}</p>
+                                <h4 class="font-bold text-lg">${material.emoji} ${material.name}</h4>
+                                <p class="text-sm text-gray-600">Proveedor: <span class="font-medium">${purchase.supplierName || 'No especificado'}</span></p>
+                            </div>
+                            <div class="text-right flex-shrink-0 ml-4">
+                                <p class="font-bold text-xl text-green-600">$${purchase.cost.toFixed(2)}</p>
+                                <p class="text-gray-700">${purchase.quantity} ${material.unit}</p>
+                                <div class="flex space-x-2 mt-2 justify-end">
+                                    <button onclick="editSupplierPurchase(${purchase.id})" title="Editar" class="p-2 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z"></path></svg>
+                                    </button>
+                                    <button onclick="deleteSupplierPurchase(${purchase.id})" title="Eliminar" class="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
         
         function addNewRawMaterial() {
             document.getElementById('materialModalTitle').textContent = 'Nueva Materia Prima';
@@ -1811,7 +2151,7 @@
             document.getElementById('materialUnit').readOnly = false;
             document.getElementById('rawMaterialModal').classList.remove('hidden');
         }
-
+    
         function editRawMaterial(id) {
             const material = rawMaterials.find(m => m.id === id);
             if (material) {
@@ -1825,11 +2165,11 @@
                 document.getElementById('materialName').readOnly = false;
                 document.getElementById('materialUnit').readOnly = false;
                 document.getElementById('materialDeleteContainer').classList.remove('hidden');
-
+    
                 document.getElementById('rawMaterialModal').classList.remove('hidden');
             }
         }
-
+    
         function deleteRawMaterial(id) {
             if (confirm('¿Estás seguro de que quieres eliminar esta materia prima? Se eliminará de todas las recetas.')) {
                 rawMaterials = rawMaterials.filter(m => m.id !== id);
@@ -1839,28 +2179,28 @@
                         product.materialsNeeded = product.materialsNeeded.filter(mat => mat.materialId !== id);
                     }
                 });
-
+    
                 saveState();
                 renderAdminRawMaterials();
                 closeRawMaterialModal();
                 alert('Materia prima eliminada correctamente.');
             }
         }
-
+    
         function closeRawMaterialModal() {
             document.getElementById('rawMaterialModal').classList.add('hidden');
             document.getElementById('materialDeleteContainer').classList.add('hidden');
         }
-
+    
         document.getElementById('rawMaterialForm').addEventListener('submit', function (e) {
             e.preventDefault();
-
+    
             const id = document.getElementById('materialId').value;
             const name = document.getElementById('materialName').value.trim();
             const emoji = document.getElementById('materialEmoji').value.trim();
             const stock = parseFloat(document.getElementById('materialStock').value);
             const unit = document.getElementById('materialUnit').value.trim();
-
+    
             if (id) {
                 const material = rawMaterials.find(m => m.id === parseInt(id));
                 if (material) {
@@ -1873,12 +2213,134 @@
                 const newId = Math.max(...rawMaterials.map(m => m.id), 100) + 1;
                 rawMaterials.push({ id: newId, name, stock, unit, emoji });
             }
-
+    
             saveState(); 
             renderAdminRawMaterials();
             closeRawMaterialModal();
         });
-
+    
+        function showNewPurchaseModal() {
+            document.getElementById('purchaseModalTitle').textContent = 'Registrar Compra';
+            document.getElementById('supplierPurchaseForm').reset();
+            document.getElementById('purchaseId').value = '';
+    
+            const selectEl = document.getElementById('purchaseMaterialId');
+            selectEl.innerHTML = '<option value="">Seleccionar Materia Prima</option>' + rawMaterials.map(m => 
+                `<option value="${m.id}">${m.emoji} ${m.name}</option>`
+            ).join('');
+            selectEl.disabled = false;
+    
+            document.getElementById('purchaseUnit').value = '';
+            document.getElementById('supplierPurchaseModal').classList.remove('hidden');
+        }
+    
+        function editSupplierPurchase(purchaseId) {
+            const purchase = supplierPurchases.find(p => p.id === purchaseId);
+            if (!purchase) return;
+    
+            showNewPurchaseModal(); // Re-use the modal setup
+    
+            document.getElementById('purchaseModalTitle').textContent = 'Editar Compra';
+            document.getElementById('purchaseId').value = purchase.id;
+            document.getElementById('purchaseMaterialId').value = purchase.materialId;
+            document.getElementById('purchaseMaterialId').disabled = true; // Prevent changing material on edit
+            document.getElementById('purchaseQuantity').value = purchase.quantity;
+            document.getElementById('purchaseCost').value = purchase.cost;
+            document.getElementById('supplierName').value = purchase.supplierName;
+    
+            const material = getRawMaterial(purchase.materialId);
+            if (material) {
+                document.getElementById('purchaseUnit').value = material.unit;
+            }
+        }
+    
+        function deleteSupplierPurchase(purchaseId) {
+            const purchase = supplierPurchases.find(p => p.id === purchaseId);
+            if (!purchase) return;
+    
+            if (confirm('¿Seguro que quieres eliminar este registro de compra? Esta acción descontará la cantidad del stock de materia prima.')) {
+                const material = getRawMaterial(purchase.materialId);
+                if (material) {
+                    material.stock = Math.max(0, material.stock - purchase.quantity);
+                }
+    
+                supplierPurchases = supplierPurchases.filter(p => p.id !== purchaseId);
+                
+                saveState();
+                alert('Registro de compra eliminado y stock ajustado.');
+                showAdminSupplierPurchases();
+                renderAdminRawMaterials();
+            }
+        }
+    
+        function closePurchaseModal() {
+            document.getElementById('supplierPurchaseModal').classList.add('hidden');
+        }
+    
+        document.getElementById('purchaseMaterialId').addEventListener('change', function(e) {
+            const materialId = e.target.value;
+            if (materialId) {
+                const material = getRawMaterial(parseInt(materialId));
+                if (material) {
+                    document.getElementById('purchaseUnit').value = material.unit;
+                }
+            } else {
+                document.getElementById('purchaseUnit').value = '';
+            }
+        });
+    
+        document.getElementById('supplierPurchaseForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+    
+            const purchaseId = document.getElementById('purchaseId').value;
+            const materialId = parseInt(document.getElementById('purchaseMaterialId').value);
+            const newQuantity = parseFloat(document.getElementById('purchaseQuantity').value);
+            const newCost = parseFloat(document.getElementById('purchaseCost').value);
+            const newSupplierName = document.getElementById('supplierName').value.trim();
+    
+            if (!materialId || isNaN(newQuantity) || isNaN(newCost) || newQuantity <= 0 || newCost < 0) {
+                alert("Por favor, completa los campos correctamente. La cantidad debe ser mayor a 0 y el costo no puede ser negativo.");
+                return;
+            }
+    
+            const material = getRawMaterial(materialId);
+            if (!material) {
+                alert("Error: Materia prima no encontrada.");
+                return;
+            }
+    
+            if (purchaseId) { // Editing existing purchase
+                const existingPurchase = supplierPurchases.find(p => p.id === parseInt(purchaseId));
+                if (existingPurchase) {
+                    const quantityDifference = newQuantity - existingPurchase.quantity;
+                    material.stock += quantityDifference;
+    
+                    existingPurchase.quantity = newQuantity;
+                    existingPurchase.cost = newCost;
+                    existingPurchase.supplierName = newSupplierName;
+                    alert('Compra actualizada y stock ajustado.');
+                }
+            } else { // Adding new purchase
+                material.stock += newQuantity;
+                const newPurchase = {
+                    id: (Math.max(0, ...supplierPurchases.map(p => p.id))) + 1,
+                    materialId,
+                    quantity: newQuantity,
+                    cost: newCost,
+                    supplierName: newSupplierName,
+                    date: new Date().toISOString()
+                };
+                supplierPurchases.push(newPurchase);
+                alert(`Compra registrada. El nuevo stock de ${material.name} es ${material.stock.toFixed(2)} ${material.unit}.`);
+            }
+    
+            saveState();
+            showAdminSupplierPurchases(); // This re-renders both stats and list
+            renderAdminRawMaterials();
+            renderAdminProducts();
+            closePurchaseModal();
+        });
+    
         function renderAdminOrders() {
             const adminOrdersList = document.getElementById('adminOrdersList');
             
@@ -1886,7 +2348,7 @@
                 adminOrdersList.innerHTML = '<p class="text-center text-gray-500 py-8">No hay pedidos pendientes</p>';
                 return;
             }
-
+    
             adminOrdersList.innerHTML = orders.map(order => `
                 <div class="bg-white border rounded-lg p-4 shadow-sm">
                     <div class="flex items-center justify-between mb-3">
@@ -1903,7 +2365,7 @@
                             <p class="font-bold text-lg text-blue-600">$${order.total.toFixed(2)}</p>
                         </div>
                     </div>
-
+    
                     <div class="mb-3 p-3 bg-gray-50 rounded-lg">
                         <div class="grid grid-cols-2 gap-4 text-sm">
                             <div>
@@ -1917,20 +2379,20 @@
                             ${order.user.userType === 'estudiante' ? `
                                 <div>
                                     <span class="font-medium">🎓 Carrera:</span>
-                                    <p class="text-xs">${order.user.career}</p>
+                                    <p class="text-xs">${order.user.career || ''}</p>
                                 </div>
                                 <div>
                                     <span class="font-medium">📚 Sem/Grupo:</span>
-                                    <p>${order.user.semester}°${order.user.group}</p>
+                                    <p>${order.user.semester || ''}°${order.user.group || ''}</p>
                                 </div>
                                 <div>
                                     <span class="font-medium">🔢 No. Control:</span>
-                                    <p class="font-mono text-xs">${order.user.controlNumber}</p>
+                                    <p class="font-mono text-xs">${order.user.controlNumber || ''}</p>
                                 </div>
                             ` : `
                                 <div>
                                     <span class="font-medium">📞 Teléfono:</span>
-                                    <p>${order.user.phoneNumber}</p>
+                                    <p>${order.user.phoneNumber || ''}</p>
                                 </div>
                             `}
                             <div>
@@ -2002,15 +2464,15 @@
                 adminStatsList.innerHTML = '<p class="text-center text-gray-500 py-8">No hay datos de ventas para generar estadísticas.</p>';
                 return;
             }
-
+    
             const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
-
+    
             const customerTypeCounts = orders.reduce((acc, order) => {
                 const type = order.user.userType;
                 acc[type] = (acc[type] || 0) + 1;
                 return acc;
             }, {});
-
+    
             const productSales = orders.flatMap(order => order.items).reduce((acc, item) => {
                 acc[item.name] = (acc[item.name] || 0) + item.quantity;
                 return acc;
@@ -2024,7 +2486,7 @@
                 acc[method] = (acc[method] || 0) + 1;
                 return acc;
             }, {});
-
+    
             adminStatsList.innerHTML = `
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div class="bg-blue-50 p-4 rounded-lg shadow">
@@ -2036,7 +2498,7 @@
                         <p class="text-2xl font-bold text-green-800">${orders.length}</p>
                     </div>
                 </div>
-
+    
                 <div class="space-y-6">
                     <div class="bg-white border rounded-lg p-4 shadow-sm">
                         <h4 class="font-bold mb-3 text-lg text-amber-700">🏆 Top 5 Productos Vendidos</h4>
@@ -2076,7 +2538,7 @@
                 </div>
             `;
         }
-
+    
         function renderAdminUsers() {
             const adminUsersList = document.getElementById('adminUsersList');
             
@@ -2084,7 +2546,7 @@
                 adminUsersList.innerHTML = '<p class="text-center text-gray-500 py-8">No hay usuarios registrados</p>';
                 return;
             }
-
+    
             adminUsersList.innerHTML = users.map(user => `
                 <div class="bg-white border rounded-lg p-4 shadow-sm">
                     <div class="flex items-center justify-between mb-3">
@@ -2103,10 +2565,10 @@
                         </div>
                         <div class="text-right">
                             <p class="text-xs text-gray-500">Registrado:</p>
-                            <p class="text-xs text-gray-600">${user.registrationDate}</p>
+                            <p class="text-xs text-gray-600">${user.registrationDate.toLocaleString()}</p>
                         </div>
                     </div>
-
+    
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
                             <span class="font-medium">🆔 Usuario:</span>
@@ -2115,20 +2577,20 @@
                         ${user.userType === 'estudiante' ? `
                             <div>
                                 <span class="font-medium">🎓 Carrera:</span>
-                                <p class="text-xs">${user.career}</p>
+                                <p class="text-xs">${user.career || ''}</p>
                             </div>
                             <div>
                                 <span class="font-medium">📚 Semestre:</span>
-                                <p>${user.semester}°</p>
+                                <p>${user.semester || ''}°</p>
                             </div>
                             <div>
                                 <span class="font-medium">👥 Grupo:</span>
-                                <p>${user.group}</p>
+                                <p>${user.group || ''}</p>
                             </div>
                         ` : `
                             <div>
                                 <span class="font-medium">📞 Teléfono:</span>
-                                <p>${user.phoneNumber}</p>
+                                <p>${user.phoneNumber || ''}</p>
                             </div>
                         `}
                         <div>
@@ -2139,19 +2601,249 @@
                 </div>
             `).join('');
         }
-
+    
+        // ===================== NUEVO: Datos Personales (render + edición) =====================
+    
+        function renderAdminPersonalData() {
+            const list = document.getElementById('adminPersonalDataList');
+            const q = (document.getElementById('personalSearchInput').value || '').toLowerCase().trim();
+            const type = document.getElementById('personalFilterSelect').value;
+    
+            if (!users || users.length === 0) {
+                list.innerHTML = '<p class="text-center text-gray-500 py-8">No hay usuarios registrados.</p>';
+                return;
+            }
+    
+            let filtered = users.filter(u => u.id !== 0); // excluir admin en caso de existir
+    
+            if (type !== 'all') {
+                filtered = filtered.filter(u => u.userType === type);
+            }
+    
+            if (q) {
+                filtered = filtered.filter(u => {
+                    const haystack = [
+                        u.fullName, u.username, u.phoneNumber, u.controlNumber, u.career, u.group
+                    ].filter(Boolean).join(' ').toLowerCase();
+                    return haystack.includes(q);
+                });
+            }
+    
+            if (filtered.length === 0) {
+                list.innerHTML = '<p class="text-center text-gray-500 py-8">Sin resultados para el filtro/búsqueda.</p>';
+                return;
+            }
+    
+            list.innerHTML = filtered.map(u => `
+                <div class="bg-white border rounded-lg p-4 shadow-sm">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <span class="text-xl">${u.userType === 'estudiante' ? '👨‍🎓' : (u.userType === 'docente' ? '👩‍🏫' : '👨‍💼')}</span>
+                                <h4 class="font-bold">${u.fullName}</h4>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                <div><span class="font-medium">Usuario:</span> <span class="font-mono">${u.username || ''}</span></div>
+                                <div class="capitalize"><span class="font-medium">Tipo:</span> ${u.userType}</div>
+                                ${u.userType === 'estudiante' ? `
+                                    <div><span class="font-medium">No. Control:</span> <span class="font-mono">${u.controlNumber || ''}</span></div>
+                                    <div><span class="font-medium">Carrera:</span> ${u.career || ''}</div>
+                                    <div><span class="font-medium">Semestre:</span> ${u.semester || ''}</div>
+                                    <div><span class="font-medium">Grupo:</span> ${u.group || ''}</div>
+                                ` : `
+                                    <div><span class="font-medium">Teléfono:</span> ${u.phoneNumber || ''}</div>
+                                `}
+                                <div><span class="font-medium">Credencial:</span> ${u.hasCredential ? '✅' : '❌'}</div>
+                                <div><span class="font-medium">Registro:</span> ${u.registrationDate.toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <button onclick="openEditUserModal(${u.id})" class="px-3 py-1 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-700">Editar</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    
+        document.getElementById('personalSearchInput').addEventListener('input', renderAdminPersonalData);
+        document.getElementById('personalFilterSelect').addEventListener('change', renderAdminPersonalData);
+    
+        function openEditUserModal(userId) {
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
+    
+            document.getElementById('editUserId').value = user.id;
+            document.getElementById('editUserType').value = user.userType;
+            document.getElementById('editFullName').value = user.fullName || '';
+            document.getElementById('editUsername').value = user.username || ''; // Asegura que el username se carga
+    
+            // Limpiar campos
+            document.getElementById('editControlNumber').value = user.controlNumber || '';
+            document.getElementById('editCareer').value = user.career || '';
+            document.getElementById('editSemester').value = user.semester || '';
+            document.getElementById('editGroup').value = user.group || '';
+            document.getElementById('editPhoneNumber').value = user.phoneNumber || '';
+            document.getElementById('editNewPassword').value = '';
+            document.getElementById('editConfirmPassword').value = '';
+    
+            toggleEditUserFields();
+            document.getElementById('editUserModal').classList.remove('hidden');
+        }
+    
+        function closeEditUserModal() {
+            document.getElementById('editUserModal').classList.add('hidden');
+        }
+    
+        function toggleEditUserFields() {
+            const type = document.getElementById('editUserType').value;
+            const stu = document.getElementById('editStudentFields');
+            const staff = document.getElementById('editStaffFields');
+    
+            if (type === 'estudiante') {
+                stu.classList.remove('hidden');
+                staff.classList.add('hidden');
+            } else {
+                stu.classList.add('hidden');
+                staff.classList.remove('hidden');
+            }
+        }
+    
+        function propagateUserChanges(updatedUser) {
+            // Actualiza los datos del usuario embebidos en pedidos existentes
+            orders.forEach(o => {
+                if (o.user && o.user.id === updatedUser.id) {
+                    o.user = {
+                        ...o.user,
+                        userType: updatedUser.userType,
+                        fullName: updatedUser.fullName,
+                        username: updatedUser.username,
+                        phoneNumber: updatedUser.phoneNumber,
+                        controlNumber: updatedUser.controlNumber,
+                        career: updatedUser.career,
+                        semester: updatedUser.semester,
+                        group: updatedUser.group,
+                        registrationDate: updatedUser.registrationDate // Asegurar que la fecha se propague
+                    };
+                }
+            });
+        }
+    
+        document.getElementById('editUserForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+    
+            const id = parseInt(document.getElementById('editUserId').value);
+            const type = document.getElementById('editUserType').value;
+            const fullName = document.getElementById('editFullName').value.trim();
+            const username = document.getElementById('editUsername').value.trim(); // Se permite editar el username
+    
+            const newPass = document.getElementById('editNewPassword').value;
+            const confirmPass = document.getElementById('editConfirmPassword').value;
+    
+            const user = users.find(u => u.id === id);
+            if (!user) return;
+    
+            if (!fullName || !username) {
+                alert('El nombre y el nombre de usuario no pueden estar vacíos.');
+                return;
+            }
+            
+            // prevenir duplicados de username
+            const dupUsername = users.some(u => u.id !== id && u.username.toLowerCase() === username.toLowerCase());
+            if (dupUsername) {
+                alert('Este nombre de usuario ya está registrado en otro usuario.');
+                return;
+            }
+    
+            // Aplicar cambios que aplican a todos
+            user.fullName = fullName;
+            user.username = username;
+            user.userType = type;
+    
+            // Validaciones y campos por tipo
+            if (type === 'estudiante') {
+                const controlNumber = (document.getElementById('editControlNumber').value || '').trim();
+                const career = document.getElementById('editCareer').value || '';
+                const semester = document.getElementById('editSemester').value || '';
+                const group = document.getElementById('editGroup').value || '';
+    
+                if (!controlNumber) {
+                    alert('Ingresa el número de control.');
+                    return;
+                }
+                // prevenir duplicados de No. Control
+                const dup = users.some(u => u.id !== id && u.controlNumber === controlNumber && u.userType === 'estudiante');
+                if (dup) {
+                    alert('Este número de control ya está registrado en otro estudiante.');
+                    return;
+                }
+    
+                user.controlNumber = controlNumber;
+                user.career = career;
+                user.semester = semester;
+                user.group = group;
+    
+                // Limpiar campos de personal si existían
+                delete user.phoneNumber;
+    
+            } else { // docente o administrativo
+                const phoneNumber = (document.getElementById('editPhoneNumber').value || '').trim();
+                if (!phoneNumber) {
+                    alert('Ingresa el número de teléfono.');
+                    return;
+                }
+                // prevenir duplicados de teléfono
+                const dup = users.some(u => u.id !== id && u.phoneNumber === phoneNumber);
+                if (dup) {
+                    alert('Este número de teléfono ya está registrado en otro usuario.');
+                    return;
+                }
+    
+                user.phoneNumber = phoneNumber;
+    
+                // Limpiar campos de estudiante si existían
+                delete user.controlNumber;
+                delete user.career;
+                delete user.semester;
+                delete user.group;
+            }
+    
+            if (newPass || confirmPass) {
+                if (newPass !== confirmPass) {
+                    alert('Las contraseñas no coinciden.');
+                    return;
+                }
+                user.password = newPass;
+            }
+    
+            propagateUserChanges(user);
+            saveState();
+    
+            alert('Datos actualizados correctamente.');
+            closeEditUserModal();
+            renderAdminPersonalData();
+            renderAdminUsers();
+            // Si está abierta la lista de pedidos, refrescarla
+            if (!document.getElementById('adminOrdersSection').classList.contains('hidden')) {
+                renderAdminOrders();
+            }
+        });
+    
+        // ====================================================================================
+        // (Resto de utilidades y formularios existentes)
+        // ====================================================================================
+    
         function addMaterialFieldToProductModal(materialId = '', quantity = '') {
             const container = document.getElementById('productMaterialsContainer');
             
             if (container.querySelector('.text-sm.text-gray-500')) {
                 container.innerHTML = '';
             }
-
+    
             const newIndex = container.children.length;
             const materialOptions = rawMaterials.map(m => 
                 `<option value="${m.id}" ${m.id == materialId ? 'selected' : ''}>${m.emoji} ${m.name} (${m.unit})</option>`
             ).join('');
-
+    
             const materialHtml = `
                 <div class="flex items-center space-x-2 p-2 bg-white rounded-lg border" data-index="${newIndex}">
                     <div class="flex-1">
@@ -2170,10 +2862,10 @@
                     </button>
                 </div>
             `;
-
+    
             container.insertAdjacentHTML('beforeend', materialHtml);
         }
-
+    
         function removeMaterialField(button) {
             const container = document.getElementById('productMaterialsContainer');
             button.closest('.flex').remove();
@@ -2182,11 +2874,11 @@
                 container.innerHTML = '<p class="text-sm text-gray-500">Haz clic en "Añadir Materia Prima" para empezar.</p>';
             }
         }
-
+    
         function renderProductMaterials(product) {
             const container = document.getElementById('productMaterialsContainer');
             container.innerHTML = '';
-
+    
             if (product.materialsNeeded && product.materialsNeeded.length > 0) {
                 product.materialsNeeded.forEach(mat => {
                     addMaterialFieldToProductModal(mat.materialId, mat.quantity);
@@ -2195,7 +2887,7 @@
                 container.innerHTML = '<p class="text-sm text-gray-500">Haz clic en "Añadir Materia Prima" para empezar.</p>';
             }
         }
-
+    
         function addNewProduct() {
             if (!document.getElementById('adminRawMaterialsSection').classList.contains('hidden')) {
                 alert("Para actualizar Materia Prima, usa el botón de editar en la lista. Este botón es para Productos Finales.");
@@ -2210,7 +2902,7 @@
             renderProductMaterials({ materialsNeeded: [] });
             document.getElementById('productModal').classList.remove('hidden');
         }
-
+    
         function editProduct(id) {
             const product = products.find(p => p.id === id);
             if (product) {
@@ -2239,11 +2931,11 @@
                 document.getElementById('productStock').value = product.stock;
                 
                 renderProductMaterials(product);
-
+    
                 document.getElementById('productModal').classList.remove('hidden');
             }
         }
-
+    
         function deleteProduct(id) {
             if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
                 products = products.filter(p => p.id !== id);
@@ -2251,11 +2943,11 @@
                 renderAdminProducts();
             }
         }
-
+    
         function closeModal() {
             document.getElementById('productModal').classList.add('hidden');
         }
-
+    
         function toggleOrderStatus(orderId) {
             const order = orders.find(o => o.id === orderId);
             if (order) {
@@ -2264,7 +2956,7 @@
                 renderAdminOrders();
             }
         }
-
+    
         function togglePaymentStatus(orderId) {
             const order = orders.find(o => o.id === orderId);
             if (order) {
@@ -2273,10 +2965,24 @@
                 renderAdminOrders();
             }
         }
-
+    
+        function previewLocalImage(event){
+            const file = event.target.files && event.target.files[0];
+            const status = document.getElementById('imagePreviewStatus');
+            if(!file){
+                status.textContent = 'Ningún archivo seleccionado.';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                status.textContent = 'Imagen Local Cargada ✓';
+            };
+            reader.readAsDataURL(file);
+        }
+    
         document.getElementById('productForm').addEventListener('submit', function (e) {
             e.preventDefault();
-
+    
             const id = document.getElementById('productId').value;
             const name = document.getElementById('productName').value;
             const emoji = document.getElementById('productEmoji').value.trim().substring(0, 2); 
@@ -2289,7 +2995,7 @@
             const imageFile = document.getElementById('productImageFile').files[0];
             const time = document.getElementById('productTime').value;
             const calories = document.getElementById('productCalories').value;
-
+    
             const productMaterialsContainer = document.getElementById('productMaterialsContainer');
             const materialsNeeded = [];
             
@@ -2304,7 +3010,7 @@
                     });
                 }
             });
-
+    
             const productToSave = {
                 id: id ? parseInt(id) : null,
                 name, price, category, stock, emoji,
@@ -2312,9 +3018,9 @@
                 description, time, calories,
                 imageURL: '', imageLocal: '',
             };
-
+    
             const existingProduct = id ? products.find(p => p.id === parseInt(id)) : null;
-
+    
             const finalizeSave = (localData = null) => {
                 if (localData) {
                     productToSave.imageLocal = localData;
@@ -2326,13 +3032,13 @@
                     productToSave.imageLocal = existingProduct.imageLocal || '';
                     productToSave.imageURL = existingProduct.imageURL || '';
                 }
-
+    
                  if (id) {
-                      Object.assign(products.find(p => p.id === parseInt(id)), productToSave);
+                     Object.assign(products.find(p => p.id === parseInt(id)), productToSave);
                  } else {
-                      const newId = Math.max(...products.map(p => p.id), 0) + 1;
-                      productToSave.id = newId;
-                      products.push(productToSave);
+                     const newId = Math.max(...products.map(p => p.id), 0) + 1;
+                     productToSave.id = newId;
+                     products.push(productToSave);
                  }
                 
                  saveState();
@@ -2350,14 +3056,14 @@
                 finalizeSave();
             }
         });
-
+    
         document.getElementById('cardNumber').addEventListener('input', function (e) {
             let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
             let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
             if (formattedValue.length > 19) formattedValue = formattedValue.substr(0, 19);
             e.target.value = formattedValue;
         });
-
+    
         document.getElementById('cardExpiry').addEventListener('input', function (e) {
             let value = e.target.value.replace(/\D/g, '');
             if (value.length >= 2) {
@@ -2365,13 +3071,153 @@
             }
             e.target.value = value;
         });
-
+    
         document.getElementById('cardCvv').addEventListener('input', function (e) {
             e.target.value = e.target.value.replace(/[^0-9]/g, '');
         });
-
+    
         loadState();
 
-    </script>
-</body>
+        // ========================= R E P O R T E S  (Vista previa + Copiar) =========================
+
+function showAdminReports() {
+  activateTab('reportsTab');
+  document.getElementById('adminReportsSection').classList.remove('hidden');
+  renderReportPreview(); // ← generar la vista previa al abrir la pestaña
+}
+
+function generateReportText() {
+  const now = new Date();
+  const d = (n) => String(n).padStart(2, '0');
+  const iso = `${now.getFullYear()}-${d(now.getMonth()+1)}-${d(now.getDate())} ${d(now.getHours())}:${d(now.getMinutes())}:${d(now.getSeconds())}`;
+
+  // Asegurar arrays existentes
+  const usersSafe = Array.isArray(users) ? users : [];
+  const productsSafe = Array.isArray(products) ? products : [];
+
+  // Encabezado
+  const lines = [];
+  lines.push("==============================================");
+  lines.push("            CAFE-TEC — REPORTE TXT            ");
+  lines.push("==============================================");
+  lines.push(`Generado: ${iso}`);
+  lines.push("");
+
+  // Usuarios
+  lines.push("USUARIOS");
+  lines.push("--------");
+  if (usersSafe.length === 0) {
+    lines.push("(sin usuarios)");
+  } else {
+    // Excluir admin (id 0) si existiera
+    usersSafe
+      .filter(u => u && u.id !== 0)
+      .forEach((u, idx) => {
+        const regDate = (u.registrationDate instanceof Date)
+          ? u.registrationDate
+          : (u.registrationDate ? new Date(u.registrationDate) : null);
+        const regStr = regDate ? regDate.toLocaleString() : "N/D";
+        lines.push(`#${idx + 1}`);
+        lines.push(`- Nombre: ${u.fullName || "N/D"}`);
+        lines.push(`- Usuario: ${u.username || "N/D"}`);
+        lines.push(`- Tipo: ${u.userType || "N/D"}`);
+        if (u.userType === 'estudiante') {
+          lines.push(`- No. Control: ${u.controlNumber || "N/D"}`);
+          lines.push(`- Carrera: ${u.career || "N/D"}`);
+          lines.push(`- Semestre: ${u.semester || "N/D"}`);
+          lines.push(`- Grupo: ${u.group || "N/D"}`);
+        } else {
+          lines.push(`- Teléfono: ${u.phoneNumber || "N/D"}`);
+        }
+        lines.push(`- Credencial: ${u.hasCredential ? "Sí" : "No"}`);
+        lines.push(`- Fecha Registro: ${regStr}`);
+        lines.push("");
+      });
+  }
+
+  // Productos
+  lines.push("");
+  lines.push("PRODUCTOS");
+  lines.push("---------");
+  if (productsSafe.length === 0) {
+    lines.push("(sin productos)");
+  } else {
+    productsSafe.forEach((p, idx) => {
+      lines.push(`#${idx + 1}`);
+      lines.push(`- Nombre: ${p.name || "N/D"}`);
+      lines.push(`- Emoji: ${p.emoji || "—"}`);
+      lines.push(`- Categoría: ${p.category || "N/D"}`);
+      lines.push(`- Precio: $${(p.price ?? 0).toFixed(2)}`);
+      lines.push(`- Stock: ${p.stock ?? 0}`);
+      if (p.time) lines.push(`- Tiempo: ${p.time}`);
+      if (p.calories) lines.push(`- Calorías: ${p.calories}`);
+      if (p.description) lines.push(`- Descripción: ${p.description}`);
+
+      // Receta (Materia Prima)
+      if (Array.isArray(p.materialsNeeded) && p.materialsNeeded.length > 0) {
+        lines.push("- Receta por unidad:");
+        p.materialsNeeded.forEach(mat => {
+          const rm = getRawMaterial(mat.materialId);
+          if (rm) {
+            lines.push(`   • ${mat.quantity} ${rm.unit} de ${rm.name}`);
+          } else {
+            lines.push(`   • ${mat.quantity} (MP id ${mat.materialId})`);
+          }
+        });
+      } else {
+        lines.push("- Receta por unidad: (sin receta vinculada)");
+      }
+      lines.push("");
+    });
+  }
+
+  return lines.join("\n");
+}
+
+function renderReportPreview() {
+  const previewEl = document.getElementById('reportPreview');
+  const summaryEl = document.getElementById('reportSummary');
+  if (!previewEl) return;
+
+  const text = generateReportText();
+  previewEl.value = text;
+
+  const usersCount = (Array.isArray(users) ? users.filter(u => u && u.id !== 0).length : 0);
+  const productsCount = (Array.isArray(products) ? products.length : 0);
+  summaryEl.textContent = `${usersCount} usuarios, ${productsCount} productos — generado ${new Date().toLocaleString()}`;
+}
+
+function copyReportToClipboard() {
+  const previewEl = document.getElementById('reportPreview');
+  if (!previewEl) return;
+  const text = previewEl.value || "";
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text)
+      .then(() => alert("Reporte copiado al portapapeles."))
+      .catch(() => fallbackCopy(previewEl));
+  } else {
+    fallbackCopy(previewEl);
+  }
+
+  function fallbackCopy(el) {
+    el.removeAttribute('readonly');
+    el.select();
+    el.setSelectionRange(0, el.value.length);
+    const ok = document.execCommand('copy');
+    el.setAttribute('readonly', 'readonly');
+    window.getSelection().removeAllRanges();
+    alert(ok ? "Reporte copiado al portapapeles." : "No se pudo copiar. Selecciona y copia manualmente.");
+  }
+}
+// Si la pestaña de reportes está visible, refrescar la vista previa
+const reports = document.getElementById('adminReportsSection');
+if (reports && !reports.classList.contains('hidden')) {
+  renderReportPreview();
+}
+    
+        </script>
+    </body>
+
 </html>
+
