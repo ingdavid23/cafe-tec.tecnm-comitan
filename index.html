@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,68 +8,122 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Poppins', sans-serif; }
-        .fade-in { animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .slide-up { animation: slideUp 0.3s ease-out; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .bg-preview { background-size: cover; background-position: center; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {  
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-up {
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .bg-preview {
+            background-size: cover;
+            background-position: center;
+        }
     </style>
 </head>
+
 <body class="bg-gray-50 max-w-md mx-auto min-h-screen">
-    <div id="loginScreen" class="h-screen bg-gradient-to-br from-blue-600 to-indigo-700 flex flex-col items-center justify-start pt-12 text-white relative overflow-y-auto">
+    <div id="loginScreen"
+        class="h-screen bg-gradient-to-br from-blue-600 to-indigo-700 flex flex-col items-center justify-start pt-12 text-white relative overflow-y-auto">
         <div class="absolute inset-0 opacity-10">
             <svg class="w-full h-full" viewBox="0 0 100 100" fill="currentColor">
-                <circle cx="20" cy="20" r="2"/>
-                <circle cx="80" cy="30" r="1.5"/>
-                <circle cx="60" cy="70" r="1"/>
-                <circle cx="30" cy="80" r="2.5"/>
-                <circle cx="90" cy="60" r="1"/>
+                <circle cx="20" cy="20" r="2" />
+                <circle cx="80" cy="30" r="1.5" />
+                <circle cx="60" cy="70" r="1" />
+                <circle cx="30" cy="80" r="2.5" />
+                <circle cx="90" cy="60" r="1" />
             </svg>
         </div>
-        
+
         <div class="text-center z-10 fade-in w-full max-w-sm px-6">
             <div class="mb-8">
                 <svg class="w-24 h-24 mx-auto mb-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M18.5 3H6c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h12.5c.8 0 1.5-.7 1.5-1.5v-15c0-.8-.7-1.5-1.5-1.5zM18 19H6V5h12v14zM8 15h8v2H8v-2zm0-4h8v2H8v-2zm0-4h5v2H8V7z"/>
+                    <path
+                        d="M18.5 3H6c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h12.5c.8 0 1.5-.7 1.5-1.5v-15c0-.8-.7-1.5-1.5-1.5zM18 19H6V5h12v14zM8 15h8v2H8v-2zm0-4h8v2H8v-2zm0-4h5v2H8V7z" />
                 </svg>
             </div>
             <h1 class="text-4xl font-bold mb-2 tracking-wide">CAFE-TEC</h1>
             <p class="text-lg opacity-90 mb-8">Bienvenido a tu cafetería tecnológica</p>
-            
+
             <div id="loginForm" class="space-y-4">
                 <div>
-                    <input type="text" id="loginUser" class="w-full px-4 py-3 rounded-lg text-gray-800 placeholder-gray-500" placeholder="Usuario, No. Control o Teléfono">
+                    <input type="text" id="loginUser"
+                        class="w-full px-4 py-3 rounded-lg text-gray-800 placeholder-gray-500"
+                        placeholder="Usuario, No. Control o Teléfono">
                 </div>
                 <div class="relative">
-                    <input type="password" id="loginPassword" class="w-full pl-4 pr-10 py-3 rounded-lg text-gray-800 placeholder-gray-500" placeholder="Contraseña">
-                    <button type="button" onclick="togglePasswordVisibility('loginPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
-                        <svg class="h-5 w-5 hidden" id="eye-icon-loginPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
-                        <svg class="h-5 w-5" id="eye-slash-icon-loginPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <input type="password" id="loginPassword"
+                        class="w-full pl-4 pr-10 py-3 rounded-lg text-gray-800 placeholder-gray-500"
+                        placeholder="Contraseña">
+                    <button type="button" onclick="togglePasswordVisibility('loginPassword')"
+                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                        <svg class="h-5 w-5 hidden" id="eye-icon-loginPassword" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        <svg class="h-5 w-5" id="eye-slash-icon-loginPassword" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20" />
                         </svg>
                     </button>
                 </div>
-                <button onclick="login()" class="w-full bg-white text-blue-700 py-3 px-6 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                <button onclick="login()"
+                    class="w-full bg-white text-blue-700 py-3 px-6 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
                     🔐 Iniciar Sesión
                 </button>
-                <button onclick="showRegister()" class="w-full bg-blue-800 text-white py-3 px-6 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 border-2 border-white">
+                <button onclick="showRegister()"
+                    class="w-full bg-blue-800 text-white py-3 px-6 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 border-2 border-white">
                     📝 Registrarse
                 </button>
-                <button onclick="showPasswordResetModal()" class="w-full bg-blue-800 bg-opacity-70 text-white py-2 px-6 rounded-lg font-medium text-sm hover:shadow-xl transform hover:scale-105 transition-all duration-200 border border-white">
+                <button onclick="showPasswordResetModal()"
+                    class="w-full bg-blue-800 bg-opacity-70 text-white py-2 px-6 rounded-lg font-medium text-sm hover:shadow-xl transform hover:scale-105 transition-all duration-200 border border-white">
                     🔑 ¿Olvidaste tu Contraseña?
                 </button>
-                </div>
             </div>
+        </div>
     </div>
-    
-    <div id="registerScreen" class="hidden h-screen bg-gradient-to-br from-green-600 to-teal-700 text-white flex flex-col">
+
+    <div id="registerScreen"
+        class="hidden h-screen bg-gradient-to-br from-green-600 to-teal-700 text-white flex flex-col">
         <div class="p-6 overflow-y-auto flex-grow">
             <div class="flex items-center mb-6">
-                <button onclick="showLogin()" class="p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors mr-4">
+                <button onclick="showLogin()"
+                    class="p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors mr-4">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
                 </button>
                 <h2 class="text-2xl font-bold">Registro de Usuario</h2>
@@ -77,7 +132,8 @@
             <form id="registerForm" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-2">Tipo de Usuario</label>
-                    <select id="userType" class="w-full px-4 py-3 rounded-lg text-gray-800" onchange="toggleUserFields()" required>
+                    <select id="userType" class="w-full px-4 py-3 rounded-lg text-gray-800"
+                        onchange="toggleUserFields()" required>
                         <option value="">Seleccionar tipo</option>
                         <option value="estudiante">👨‍🎓 Estudiante</option>
                         <option value="docente">👩‍🏫 Docente</option>
@@ -92,16 +148,27 @@
 
                 <div>
                     <label class="block text-sm font-medium mb-2">Nombre de Usuario (Único)</label>
-                    <input type="text" id="username" class="w-full px-4 py-3 rounded-lg text-gray-800" placeholder="Ej: miusuario_cafetec" required>
+                    <input type="text" id="username" class="w-full px-4 py-3 rounded-lg text-gray-800"
+                        placeholder="Ej: miusuario_cafetec" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-2">Contraseña</label>
                     <div class="relative">
-                        <input type="password" id="password" class="w-full pl-4 pr-10 py-3 rounded-lg text-gray-800" required>
-                        <button type="button" onclick="togglePasswordVisibility('password')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
-                            <svg class="h-5 w-5 hidden" id="eye-icon-password" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
-                            <svg class="h-5 w-5" id="eye-slash-icon-password" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <input type="password" id="password" class="w-full pl-4 pr-10 py-3 rounded-lg text-gray-800"
+                            required>
+                        <button type="button" onclick="togglePasswordVisibility('password')"
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                            <svg class="h-5 w-5 hidden" id="eye-icon-password" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            <svg class="h-5 w-5" id="eye-slash-icon-password" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20" />
                             </svg>
                         </button>
@@ -111,11 +178,21 @@
                 <div>
                     <label class="block text-sm font-medium mb-2">Confirmar Contraseña</label>
                     <div class="relative">
-                        <input type="password" id="confirmPassword" class="w-full pl-4 pr-10 py-3 rounded-lg text-gray-800" required>
-                        <button type="button" onclick="togglePasswordVisibility('confirmPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
-                            <svg class="h-5 w-5 hidden" id="eye-icon-confirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
-                            <svg class="h-5 w-5" id="eye-slash-icon-confirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <input type="password" id="confirmPassword"
+                            class="w-full pl-4 pr-10 py-3 rounded-lg text-gray-800" required>
+                        <button type="button" onclick="togglePasswordVisibility('confirmPassword')"
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                            <svg class="h-5 w-5 hidden" id="eye-icon-confirmPassword" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            <svg class="h-5 w-5" id="eye-slash-icon-confirmPassword" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20" />
                             </svg>
                         </button>
@@ -125,13 +202,15 @@
                 <div id="studentFields" class="hidden space-y-4">
                     <div>
                         <label class="block text-sm font-medium mb-2">Número de Control</label>
-                        <input type="text" id="controlNumber" class="w-full px-4 py-3 rounded-lg text-gray-800" placeholder="Ej: 20230001">
+                        <input type="text" id="controlNumber" class="w-full px-4 py-3 rounded-lg text-gray-800"
+                            placeholder="Ej: 20230001">
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-2">Carrera</label>
                         <select id="career" class="w-full px-4 py-3 rounded-lg text-gray-800">
                             <option value="">Seleccionar carrera</option>
-                            <option value="Ingeniería en Sistemas Computacionales">Ingeniería en Sistemas Computacionales</option>
+                            <option value="Ingeniería en Sistemas Computacionales">Ingeniería en Sistemas
+                                Computacionales</option>
                             <option value="Ingeniería Industrial">Ingeniería Industrial</option>
                             <option value="Ingeniería Electrónica">Ingeniería Electrónica</option>
                             <option value="Ingeniería Mecánica">Ingeniería Mecánica</option>
@@ -173,55 +252,64 @@
                 <div id="staffFields" class="hidden space-y-4">
                     <div>
                         <label class="block text-sm font-medium mb-2">Número de Teléfono</label>
-                        <input type="tel" id="phoneNumber" class="w-full px-4 py-3 rounded-lg text-gray-800" placeholder="Ej: 5551234567">
+                        <input type="tel" id="phoneNumber" class="w-full px-4 py-3 rounded-lg text-gray-800"
+                            placeholder="Ej: 5551234567">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium mb-2">Credencial Escolar</label>
                     <div class="border-2 border-dashed border-white border-opacity-50 rounded-lg p-4 text-center">
-                        <input type="file" id="credentialFile" accept="image/*" class="hidden" onchange="previewCredential()">
-                        <button type="button" onclick="document.getElementById('credentialFile').click()" class="w-full py-3 px-4 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-colors">
+                        <input type="file" id="credentialFile" accept="image/*" class="hidden"
+                            onchange="previewCredential()">
+                        <button type="button" onclick="document.getElementById('credentialFile').click()"
+                            class="w-full py-3 px-4 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-colors">
                             📷 Subir Credencial
                         </button>
                         <div id="credentialPreview" class="hidden mt-4">
-                            <img id="credentialImage" class="w-32 h-20 object-cover mx-auto rounded-lg border-2 border-white">
+                            <img id="credentialImage"
+                                class="w-32 h-20 object-cover mx-auto rounded-lg border-2 border-white">
                             <p class="text-sm mt-2 opacity-75">Credencial cargada ✓</p>
                         </div>
                     </div>
                 </div>
 
-                <button type="submit" class="w-full bg-white text-green-700 py-3 px-6 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                <button type="submit"
+                    class="w-full bg-white text-green-700 py-3 px-6 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
                     ✅ Registrarse
                 </button>
             </form>
         </div>
     </div>
-    <div id="welcomeScreen" class="hidden min-h-screen bg-gradient-to-br from-amber-600 to-orange-700 flex flex-col items-center justify-center text-white relative overflow-hidden">
+    <div id="welcomeScreen"
+        class="hidden min-h-screen bg-gradient-to-br from-amber-600 to-orange-700 flex flex-col items-center justify-center text-white relative overflow-hidden">
         <div class="absolute inset-0 opacity-10">
             <svg class="w-full h-full" viewBox="0 0 100 100" fill="currentColor">
-                <circle cx="20" cy="20" r="2"/>
-                <circle cx="80" cy="30" r="1.5"/>
-                <circle cx="60" cy="70" r="1"/>
-                <circle cx="30" cy="80" r="2.5"/>
-                <circle cx="90" cy="60" r="1"/>
+                <circle cx="20" cy="20" r="2" />
+                <circle cx="80" cy="30" r="1.5" />
+                <circle cx="60" cy="70" r="1" />
+                <circle cx="30" cy="80" r="2.5" />
+                <circle cx="90" cy="60" r="1" />
             </svg>
         </div>
-        
+
         <div class="text-center z-10 fade-in">
             <div class="mb-8">
                 <svg class="w-24 h-24 mx-auto mb-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M18.5 3H6c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h12.5c.8 0 1.5-.7 1.5-1.5v-15c0-.8-.7-1.5-1.5-1.5zM18 19H6V5h12v14zM8 15h8v2H8v-2zm0-4h8v2H8v-2zm0-4h5v2H8V7z"/>
+                    <path
+                        d="M18.5 3H6c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h12.5c.8 0 1.5-.7 1.5-1.5v-15c0-.8-.7-1.5-1.5-1.5zM18 19H6V5h12v14zM8 15h8v2H8v-2zm0-4h8v2H8v-2zm0-4h5v2H8V7z" />
                 </svg>
             </div>
             <h1 class="text-5xl font-bold mb-2 tracking-wide">CAFE-TEC</h1>
             <p class="text-xl opacity-90 mb-2">¡Bienvenido/a!</p>
             <p id="welcomeUserName" class="text-lg opacity-75 mb-8"></p>
             <div class="space-y-4">
-                <button onclick="showCustomerMenu()" class="w-64 bg-white text-amber-700 py-4 px-8 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                <button onclick="showCustomerMenu()"
+                    class="w-64 bg-white text-amber-700 py-4 px-8 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
                     🍽️ Menú Cliente
                 </button>
-                <button onclick="logout()" class="w-64 bg-amber-800 text-white py-4 px-8 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 border-2 border-white">
+                <button onclick="logout()"
+                    class="w-64 bg-amber-800 text-white py-4 px-8 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 border-2 border-white">
                     🚪 Cerrar Sesión
                 </button>
             </div>
@@ -230,32 +318,40 @@
     <div id="customerMenu" class="hidden h-screen bg-white flex flex-col">
         <div class="bg-gradient-to-r from-amber-600 to-orange-600 text-white p-4 shadow-lg">
             <div class="flex items-center justify-between">
-                <button onclick="showWelcome()" class="p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors">
+                <button onclick="showWelcome()"
+                    class="p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
                 </button>
                 <h2 class="text-xl font-bold">CAFE-TEC Menú</h2>
-                <button onclick="showCart()" class="relative p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors">
+                <button onclick="showCart()"
+                    class="relative p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
                     </svg>
-                    <span id="cartCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                    <span id="cartCount"
+                        class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
                 </button>
             </div>
         </div>
         <div class="p-4 flex-grow overflow-y-auto">
             <div class="flex space-x-2 mb-6 overflow-x-auto">
-                <button onclick="filterCategory('all')" class="category-btn bg-amber-600 text-white px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                <button onclick="filterCategory('all')"
+                    class="category-btn bg-amber-600 text-white px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     Todos
                 </button>
-                <button onclick="filterCategory('bebidas')" class="category-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                <button onclick="filterCategory('bebidas')"
+                    class="category-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     ☕ Bebidas
                 </button>
-                <button onclick="filterCategory('comida')" class="category-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                <button onclick="filterCategory('comida')"
+                    class="category-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     🍽️ Comida
                 </button>
-                <button onclick="filterCategory('postres')" class="category-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                <button onclick="filterCategory('postres')"
+                    class="category-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     🧁 Postres
                 </button>
             </div>
@@ -266,9 +362,10 @@
     <div id="cartScreen" class="hidden h-screen bg-white flex flex-col">
         <div class="bg-gradient-to-r from-amber-600 to-orange-600 text-white p-4 shadow-lg">
             <div class="flex items-center justify-between">
-                <button onclick="showCustomerMenu()" class="p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors">
+                <button onclick="showCustomerMenu()"
+                    class="p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
                 </button>
                 <h2 class="text-xl font-bold">Tu Pedido</h2>
@@ -280,7 +377,8 @@
             </div>
             <div class="mb-6">
                 <h3 class="text-lg font-semibold mb-3">📝 Notas Especiales</h3>
-                <textarea id="orderNotes" class="w-full border rounded-lg px-3 py-2 h-20 resize-none" placeholder="Agrega cualquier nota especial para tu pedido (opcional)"></textarea>
+                <textarea id="orderNotes" class="w-full border rounded-lg px-3 py-2 h-20 resize-none"
+                    placeholder="Agrega cualquier nota especial para tu pedido (opcional)"></textarea>
             </div>
             <div class="border-t pt-4 mb-6">
                 <div class="flex justify-between items-center text-xl font-bold">
@@ -365,7 +463,8 @@
                 <h3 class="text-lg font-semibold mb-3">💳 Método de Pago</h3>
                 <div class="space-y-2">
                     <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="payment" value="efectivo" class="mr-3" checked onchange="showPaymentDetails()">
+                        <input type="radio" name="payment" value="efectivo" class="mr-3" checked
+                            onchange="showPaymentDetails()">
                         <span>💵 Efectivo</span>
                     </label>
                     <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
@@ -373,7 +472,8 @@
                         <span>💳 Tarjeta</span>
                     </label>
                     <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="payment" value="transferencia" class="mr-3" onchange="showPaymentDetails()">
+                        <input type="radio" name="payment" value="transferencia" class="mr-3"
+                            onchange="showPaymentDetails()">
                         <span>📱 Transferencia</span>
                     </label>
                 </div>
@@ -382,21 +482,25 @@
                     <div class="space-y-3">
                         <div>
                             <label class="block text-sm font-medium mb-1">Número de Tarjeta</label>
-                            <input type="text" id="cardNumber" class="w-full border rounded-lg px-3 py-2" placeholder="1234 5678 9012 3456" maxlength="19">
+                            <input type="text" id="cardNumber" class="w-full border rounded-lg px-3 py-2"
+                                placeholder="1234 5678 9012 3456" maxlength="19">
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-sm font-medium mb-1">Fecha de Vencimiento</label>
-                                <input type="text" id="cardExpiry" class="w-full border rounded-lg px-3 py-2" placeholder="MM/AA" maxlength="5">
+                                <input type="text" id="cardExpiry" class="w-full border rounded-lg px-3 py-2"
+                                    placeholder="MM/AA" maxlength="5">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-1">CVV</label>
-                                <input type="text" id="cardCvv" class="w-full border rounded-lg px-3 py-2" placeholder="123" maxlength="3">
+                                <input type="text" id="cardCvv" class="w-full border rounded-lg px-3 py-2"
+                                    placeholder="123" maxlength="3">
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-1">Nombre del Titular</label>
-                            <input type="text" id="cardHolder" class="w-full border rounded-lg px-3 py-2" placeholder="Nombre como aparece en la tarjeta">
+                            <input type="text" id="cardHolder" class="w-full border rounded-lg px-3 py-2"
+                                placeholder="Nombre como aparece en la tarjeta">
                         </div>
                     </div>
                 </div>
@@ -425,58 +529,74 @@
                     </div>
                 </div>
             </div>
-            <button onclick="confirmOrder()" class="w-full bg-green-600 text-white py-4 rounded-lg font-semibold text-lg hover:bg-green-700 transition-colors">
+            <button onclick="confirmOrder()"
+                class="w-full bg-green-600 text-white py-4 rounded-lg font-semibold text-lg hover:bg-green-700 transition-colors">
                 Confirmar Pedido
             </button>
         </div>
     </div>
-    
+
     <div id="adminPanel" class="hidden min-h-screen bg-white">
         <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 shadow-lg">
             <div class="flex items-center justify-between">
-                <button onclick="adminLogout()" class="p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors">
+                <button onclick="adminLogout()"
+                    class="p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                        </path>
                     </svg>
                 </button>
                 <h2 class="text-xl font-bold">Panel Administrador</h2>
-                <button onclick="addNewProduct()" class="p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors">
+                <button onclick="addNewProduct()"
+                    class="p-2 hover:bg-white hover:bg-opacity-20 rounded-full transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
                 </button>
             </div>
         </div>
         <div class="p-4">
             <div class="flex space-x-2 mb-6 overflow-x-auto">
-                <button onclick="showAdminStock()" id="stockTab" class="admin-tab bg-blue-600 text-white px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                <button onclick="showAdminStock()" id="stockTab"
+                    class="admin-tab bg-blue-600 text-white px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     🍽️ Stock Productos
                 </button>
-                <button onclick="showAdminRawMaterials()" id="rawMaterialsTab" class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                <button onclick="showAdminRawMaterials()" id="rawMaterialsTab"
+                    class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     📦 Stock Materia Prima
                 </button>
-                <button onclick="showAdminSupplierPurchases()" id="supplierPurchasesTab" class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                <button onclick="showAdminSupplierPurchases()" id="supplierPurchasesTab"
+                    class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     🚚 Compras a Proveedor
                 </button>
-                <button onclick="showAdminOrders()" id="ordersTab" class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                <button onclick="showAdminOrders()" id="ordersTab"
+                    class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     📋 Pedidos
                 </button>
-                <button onclick="showAdminStats()" id="statsTab" class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                <button onclick="showAdminStats()" id="statsTab"
+                    class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     📊 Estadísticas
                 </button>
-                <button onclick="showAdminPersonalData()" id="personalDataTab" class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                <button onclick="showAdminPersonalData()" id="personalDataTab"
+                    class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     🧾 Datos Personales
                 </button>
-                <button onclick="showAdminUsers()" id="usersTab" class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                <button onclick="showAdminUsers()" id="usersTab"
+                    class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     👥 Usuarios
                 </button>
-                <button onclick="showAdminMemory()" id="memoryTab" class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                <button onclick="showAdminMemory()" id="memoryTab"
+                    class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     🗃️ Memoria Local
                 </button>
-                <button onclick="showAdminReports()" id="reportsTab" class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                <button onclick="showAdminReports()" id="reportsTab"
+                    class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     📄 Reportes
                 </button>
-                <button onclick="adminLogout()" class="admin-tab bg-red-200 text-red-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                <button onclick="adminLogout()"
+                    class="admin-tab bg-red-200 text-red-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     🚪 Cerrar Sesión
                 </button>
             </div>
@@ -488,8 +608,12 @@
             <div id="adminRawMaterialsSection" class="hidden mb-6">
                 <div class="flex justify-between items-center mb-3">
                     <h3 class="text-lg font-semibold">Gestión de Materia Prima</h3>
-                    <button onclick="addNewRawMaterial()" class="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                    <button onclick="addNewRawMaterial()"
+                        class="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
                         Nueva MP
                     </button>
                 </div>
@@ -499,8 +623,12 @@
             <div id="adminSupplierPurchasesSection" class="hidden mb-6">
                 <div class="flex justify-between items-center mb-3">
                     <h3 class="text-lg font-semibold">Control de Compras a Proveedor</h3>
-                    <button onclick="showNewPurchaseModal()" class="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                    <button onclick="showNewPurchaseModal()"
+                        class="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
                         Registrar Compra
                     </button>
                 </div>
@@ -515,7 +643,7 @@
                 <div id="adminOrdersList" class="space-y-3">
                 </div>
             </div>
-            
+
             <div id="adminStatsSection" class="hidden mb-6">
                 <h3 class="text-lg font-semibold mb-3">📊 Estadísticas de Ventas</h3>
                 <div id="adminStatsList" class="space-y-3">
@@ -527,7 +655,8 @@
                     <h3 class="text-lg font-semibold">🧾 Datos Personales</h3>
                 </div>
                 <div class="grid grid-cols-1 gap-2 mb-3">
-                    <input id="personalSearchInput" type="text" class="border rounded-lg px-3 py-2" placeholder="🔎 Buscar por nombre, usuario, teléfono o No. control">
+                    <input id="personalSearchInput" type="text" class="border rounded-lg px-3 py-2"
+                        placeholder="🔎 Buscar por nombre, usuario, teléfono o No. control">
                     <select id="personalFilterSelect" class="border rounded-lg px-3 py-2">
                         <option value="all">Todos los tipos</option>
                         <option value="estudiante">Estudiantes</option>
@@ -546,32 +675,35 @@
                 <h3 class="text-lg font-semibold mb-3">🗃️ Datos Guardados Localmente</h3>
                 <div id="memoryList" class="space-y-4">
                 </div>
-                <button onclick="clearLocalMemory()" class="w-full bg-red-500 text-white py-2 rounded-lg font-medium mt-4 hover:bg-red-600 transition-colors">
+                <button onclick="clearLocalMemory()"
+                    class="w-full bg-red-500 text-white py-2 rounded-lg font-medium mt-4 hover:bg-red-600 transition-colors">
                     ⚠️ Borrar Todos los Datos Locales
                 </button>
             </div>
             <div id="adminReportsSection" class="hidden mb-6">
                 <h3 class="text-lg font-semibold mb-3">📄 Reporte (Vista previa & Copiar)</h3>
                 <div class="space-y-3 p-4 bg-gray-50 rounded-lg shadow-inner">
-                  <p class="text-sm text-gray-700">
-                    Vista previa de <b>Usuarios</b> y <b>Productos</b> en texto plano. Copia y pégalo donde necesites.
-                  </p>
-              
-                  <div class="flex items-center justify-between text-xs text-gray-600">
-                    <span id="reportSummary">—</span>
-                    <div class="flex gap-2">
-                      <button onclick="copyReportToClipboard()" class="px-3 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700">
-                        📋 Copiar texto
-                      </button>
+                    <p class="text-sm text-gray-700">
+                        Vista previa de <b>Usuarios</b> y <b>Productos</b> en texto plano. Copia y pégalo donde
+                        necesites.
+                    </p>
+
+                    <div class="flex items-center justify-between text-xs text-gray-600">
+                        <span id="reportSummary">—</span>
+                        <div class="flex gap-2">
+                            <button onclick="copyReportToClipboard()"
+                                class="px-3 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700">
+                                📋 Copiar texto
+                            </button>
+                        </div>
                     </div>
-                  </div>
-              
-                  <textarea id="reportPreview"
-                    class="w-full h-72 md:h-96 font-mono text-xs border rounded-lg p-3 bg-white"
-                    readonly></textarea>
+
+                    <textarea id="reportPreview"
+                        class="w-full h-72 md:h-96 font-mono text-xs border rounded-lg p-3 bg-white"
+                        readonly></textarea>
                 </div>
-              </div>
             </div>
+        </div>
     </div>
 
     <div id="productModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -585,17 +717,21 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Emoji (Ej: ☕, 🥪)</label>
-                    <input type="text" id="productEmoji" class="w-full border rounded-lg px-3 py-2" maxlength="2" required>
+                    <input type="text" id="productEmoji" class="w-full border rounded-lg px-3 py-2" maxlength="2"
+                        required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Descripción</label>
-                    <textarea id="productDescription" class="w-full border rounded-lg px-3 py-2 resize-none h-16"></textarea>
+                    <textarea id="productDescription"
+                        class="w-full border rounded-lg px-3 py-2 resize-none h-16"></textarea>
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-medium mb-1">Imagen de Vista Previa</label>
-                    <input type="url" id="productImageURL" class="w-full border rounded-lg px-3 py-2 mb-2 text-gray-800" placeholder="Opcional: Enlace URL a la imagen" onchange="document.getElementById('productImageFile').value = ''; document.getElementById('imagePreviewStatus').textContent = this.value ? 'Usando URL ✓' : 'Ningún archivo seleccionado.';">
-                    
+                    <input type="url" id="productImageURL" class="w-full border rounded-lg px-3 py-2 mb-2 text-gray-800"
+                        placeholder="Opcional: Enlace URL a la imagen"
+                        onchange="document.getElementById('productImageFile').value = ''; document.getElementById('imagePreviewStatus').textContent = this.value ? 'Usando URL ✓' : 'Ningún archivo seleccionado.';">
+
                     <div class="flex items-center space-x-2">
                         <span class="text-gray-500 text-xs">O</span>
                         <div class="flex-grow border-t border-gray-300"></div>
@@ -603,8 +739,10 @@
                     </div>
 
                     <div class="border-2 border-dashed border-gray-300 rounded-lg p-3 mt-2 text-center">
-                        <input type="file" id="productImageFile" accept="image/*" class="hidden" onchange="previewLocalImage(event)">
-                        <button type="button" onclick="document.getElementById('productImageFile').click()" class="w-full py-2 px-4 bg-gray-100 text-blue-600 rounded-lg hover:bg-gray-200 transition-colors">
+                        <input type="file" id="productImageFile" accept="image/*" class="hidden"
+                            onchange="previewLocalImage(event)">
+                        <button type="button" onclick="document.getElementById('productImageFile').click()"
+                            class="w-full py-2 px-4 bg-gray-100 text-blue-600 rounded-lg hover:bg-gray-200 transition-colors">
                             📁 Cargar desde Dispositivo
                         </button>
                         <p id="imagePreviewStatus" class="text-xs mt-2 text-gray-600">Ningún archivo seleccionado.</p>
@@ -613,16 +751,19 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium mb-1">Tiempo (Ej: 5 min)</label>
-                        <input type="text" id="productTime" class="w-full border rounded-lg px-3 py-2" placeholder="Ej: 5 min">
+                        <input type="text" id="productTime" class="w-full border rounded-lg px-3 py-2"
+                            placeholder="Ej: 5 min">
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">Calorías (Ej: 150 Cal)</label>
-                        <input type="text" id="productCalories" class="w-full border rounded-lg px-3 py-2" placeholder="Ej: 150 Cal">
+                        <input type="text" id="productCalories" class="w-full border rounded-lg px-3 py-2"
+                            placeholder="Ej: 150 Cal">
                     </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Precio</label>
-                    <input type="number" id="productPrice" step="0.01" class="w-full border rounded-lg px-3 py-2" required>
+                    <input type="number" id="productPrice" step="0.01" class="w-full border rounded-lg px-3 py-2"
+                        required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Categoría</label>
@@ -636,18 +777,20 @@
                     <label class="block text-sm font-medium mb-1">Stock de Producto Final</label>
                     <input type="number" id="productStock" class="w-full border rounded-lg px-3 py-2" required>
                 </div>
-                
+
                 <div class="border-t pt-4">
                     <h4 class="font-bold mb-2 text-md text-blue-700">Receta (Materia Prima por 1 unidad)</h4>
                     <div id="productMaterialsContainer" class="space-y-2 border p-3 rounded-lg bg-gray-50">
                         <p class="text-sm text-gray-500">Haz clic en "Añadir Materia Prima" para empezar.</p>
                     </div>
-                    <button type="button" onclick="addMaterialFieldToProductModal()" class="w-full mt-2 py-2 px-4 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600 transition-colors text-sm">
+                    <button type="button" onclick="addMaterialFieldToProductModal()"
+                        class="w-full mt-2 py-2 px-4 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600 transition-colors text-sm">
                         + Añadir Materia Prima
                     </button>
                 </div>
                 <div class="flex space-x-3">
-                    <button type="button" onclick="closeModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-medium">
+                    <button type="button" onclick="closeModal()"
+                        class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-medium">
                         Cancelar
                     </button>
                     <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium">
@@ -657,8 +800,9 @@
             </form>
         </div>
     </div>
-    
-    <div id="rawMaterialModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+
+    <div id="rawMaterialModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up">
             <h3 id="materialModalTitle" class="text-lg font-bold mb-4">Editar Materia Prima</h3>
             <form id="rawMaterialForm" class="space-y-4">
@@ -669,12 +813,14 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Emoji (Ej: ☕, 🍚)</label>
-                    <input type="text" id="materialEmoji" class="w-full border rounded-lg px-3 py-2" maxlength="2" required>
+                    <input type="text" id="materialEmoji" class="w-full border rounded-lg px-3 py-2" maxlength="2"
+                        required>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium mb-1">Stock Actual</label>
-                        <input type="number" id="materialStock" step="0.01" class="w-full border rounded-lg px-3 py-2" required>
+                        <input type="number" id="materialStock" step="0.01" class="w-full border rounded-lg px-3 py-2"
+                            required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">Unidad (Ej: kg, L, pzas)</label>
@@ -682,7 +828,8 @@
                     </div>
                 </div>
                 <div class="flex space-x-3">
-                    <button type="button" onclick="closeRawMaterialModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-medium">
+                    <button type="button" onclick="closeRawMaterialModal()"
+                        class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-medium">
                         Cancelar
                     </button>
                     <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium">
@@ -691,14 +838,16 @@
                 </div>
             </form>
             <div id="materialDeleteContainer" class="mt-4 hidden">
-                <button type="button" onclick="deleteRawMaterial(parseInt(document.getElementById('materialId').value))" class="w-full bg-red-500 text-white py-2 rounded-lg font-medium hover:bg-red-600">
+                <button type="button" onclick="deleteRawMaterial(parseInt(document.getElementById('materialId').value))"
+                    class="w-full bg-red-500 text-white py-2 rounded-lg font-medium hover:bg-red-600">
                     Eliminar Materia Prima
                 </button>
             </div>
         </div>
     </div>
 
-    <div id="supplierPurchaseModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="supplierPurchaseModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up">
             <h3 id="purchaseModalTitle" class="text-lg font-bold mb-4">Registrar Compra</h3>
             <form id="supplierPurchaseForm" class="space-y-4">
@@ -711,23 +860,28 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium mb-1">Cantidad Comprada</label>
-                        <input type="number" id="purchaseQuantity" step="0.01" class="w-full border rounded-lg px-3 py-2" required>
+                        <input type="number" id="purchaseQuantity" step="0.01"
+                            class="w-full border rounded-lg px-3 py-2" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">Unidad</label>
-                        <input type="text" id="purchaseUnit" class="w-full border rounded-lg px-3 py-2 bg-gray-100" readonly>
+                        <input type="text" id="purchaseUnit" class="w-full border rounded-lg px-3 py-2 bg-gray-100"
+                            readonly>
                     </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Costo Total ($)</label>
-                    <input type="number" id="purchaseCost" step="0.01" class="w-full border rounded-lg px-3 py-2" placeholder="Ej: 550.50" required>
+                    <input type="number" id="purchaseCost" step="0.01" class="w-full border rounded-lg px-3 py-2"
+                        placeholder="Ej: 550.50" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Nombre del Proveedor (Opcional)</label>
-                    <input type="text" id="supplierName" class="w-full border rounded-lg px-3 py-2" placeholder="Ej: Proveedora del Sur">
+                    <input type="text" id="supplierName" class="w-full border rounded-lg px-3 py-2"
+                        placeholder="Ej: Proveedora del Sur">
                 </div>
                 <div class="flex space-x-3">
-                    <button type="button" onclick="closePurchaseModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-medium">
+                    <button type="button" onclick="closePurchaseModal()"
+                        class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-medium">
                         Cancelar
                     </button>
                     <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium">
@@ -738,20 +892,24 @@
         </div>
     </div>
 
-    <div id="productPreviewModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50">
+    <div id="productPreviewModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50">
         <div class="bg-white rounded-t-3xl w-full max-w-md slide-up max-h-[90vh] overflow-y-auto">
-            
-            <div id="previewImageContainer" class="relative h-64 w-full bg-preview rounded-t-3xl" style="background-image: url('https://images.unsplash.com/photo-1541167760496-1628856ab22d?q=80&w=2047&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')">
-                <button onclick="closeProductPreview()" class="absolute top-4 left-4 p-2 bg-white bg-opacity-80 rounded-full shadow-lg z-10 hover:bg-opacity-100 transition-colors">
+
+            <div id="previewImageContainer" class="relative h-64 w-full bg-preview rounded-t-3xl"
+                style="background-image: url('https://images.unsplash.com/photo-1541167760496-1628856ab22d?q=80&w=2047&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')">
+                <button onclick="closeProductPreview()"
+                    class="absolute top-4 left-4 p-2 bg-white bg-opacity-80 rounded-full shadow-lg z-10 hover:bg-opacity-100 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
             <div class="p-6">
                 <h2 id="previewProductName" class="text-3xl font-bold mb-2">Nombre del Producto</h2>
                 <p id="previewProductDescription" class="text-gray-600 mb-4">Descripción breve.</p>
-                
+
                 <div class="flex space-x-6 text-center text-sm mb-6 p-4 bg-gray-50 rounded-lg">
                     <div class="flex-1">
                         <span class="block text-amber-500 text-lg">🕒</span>
@@ -770,43 +928,60 @@
                     </div>
                 </div>
                 <h3 class="text-xl font-bold mb-4">🛒 Opciones de Pedido</h3>
-                
+
                 <div class="flex items-center justify-between border-t pt-4">
                     <span class="text-2xl font-bold text-green-600" id="previewProductPrice">$0.00</span>
                     <div class="flex items-center space-x-2">
-                        <button onclick="updatePreviewQuantity(-1)" class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center font-bold text-lg">-</button>
+                        <button onclick="updatePreviewQuantity(-1)"
+                            class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center font-bold text-lg">-</button>
                         <span class="w-10 text-center text-xl font-semibold" id="previewQuantity">1</span>
-                        <button onclick="updatePreviewQuantity(1)" class="w-10 h-10 bg-amber-600 text-white rounded-full flex items-center justify-center font-bold text-lg">+</button>
+                        <button onclick="updatePreviewQuantity(1)"
+                            class="w-10 h-10 bg-amber-600 text-white rounded-full flex items-center justify-center font-bold text-lg">+</button>
                     </div>
                 </div>
-                <button onclick="addToCartFromPreview()" id="previewAddToCartButton" class="w-full mt-4 bg-green-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-700 transition-colors">
+                <button onclick="addToCartFromPreview()" id="previewAddToCartButton"
+                    class="w-full mt-4 bg-green-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-700 transition-colors">
                     Agregar al Carrito
                 </button>
             </div>
         </div>
     </div>
-    
-    <div id="passwordResetModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+
+    <div id="passwordResetModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up">
             <h3 class="text-xl font-bold mb-4 text-blue-700">🔑 Restablecer Contraseña</h3>
             <form id="passwordResetForm" class="space-y-4">
-                <p class="text-sm text-gray-600">Ingresa tus datos de verificación para establecer una nueva contraseña.</p>
+                <p class="text-sm text-gray-600">Ingresa tus datos de verificación para establecer una nueva contraseña.
+                </p>
                 <div>
                     <label class="block text-sm font-medium mb-1">Usuario, No. Control o Teléfono</label>
-                    <input type="text" id="resetUser" class="w-full border rounded-lg px-3 py-2 text-gray-800" placeholder="Usuario, No. Control o Teléfono" required>
+                    <input type="text" id="resetUser" class="w-full border rounded-lg px-3 py-2 text-gray-800"
+                        placeholder="Usuario, No. Control o Teléfono" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Teléfono Registrado</label>
-                    <input type="tel" id="resetPhone" class="w-full border rounded-lg px-3 py-2 text-gray-800" placeholder="Número de Teléfono (sin guiones)" required>
+                    <input type="tel" id="resetPhone" class="w-full border rounded-lg px-3 py-2 text-gray-800"
+                        placeholder="Número de Teléfono (sin guiones)" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Nueva Contraseña</label>
                     <div class="relative">
-                        <input type="password" id="resetNewPassword" class="w-full border rounded-lg pl-3 pr-10 py-2 text-gray-800" required>
-                        <button type="button" onclick="togglePasswordVisibility('resetNewPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
-                            <svg class="h-5 w-5 hidden" id="eye-icon-resetNewPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
-                            <svg class="h-5 w-5" id="eye-slash-icon-resetNewPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <input type="password" id="resetNewPassword"
+                            class="w-full border rounded-lg pl-3 pr-10 py-2 text-gray-800" required>
+                        <button type="button" onclick="togglePasswordVisibility('resetNewPassword')"
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                            <svg class="h-5 w-5 hidden" id="eye-icon-resetNewPassword" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            <svg class="h-5 w-5" id="eye-slash-icon-resetNewPassword" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20" />
                             </svg>
                         </button>
@@ -815,18 +990,29 @@
                 <div>
                     <label class="block text-sm font-medium mb-1">Confirmar Nueva Contraseña</label>
                     <div class="relative">
-                        <input type="password" id="resetConfirmPassword" class="w-full border rounded-lg pl-3 pr-10 py-2 text-gray-800" required>
-                        <button type="button" onclick="togglePasswordVisibility('resetConfirmPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
-                            <svg class="h-5 w-5 hidden" id="eye-icon-resetConfirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
-                            <svg class="h-5 w-5" id="eye-slash-icon-resetConfirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <input type="password" id="resetConfirmPassword"
+                            class="w-full border rounded-lg pl-3 pr-10 py-2 text-gray-800" required>
+                        <button type="button" onclick="togglePasswordVisibility('resetConfirmPassword')"
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                            <svg class="h-5 w-5 hidden" id="eye-icon-resetConfirmPassword" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            <svg class="h-5 w-5" id="eye-slash-icon-resetConfirmPassword" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20" />
                             </svg>
                         </button>
                     </div>
                 </div>
                 <div class="flex space-x-3 pt-2">
-                    <button type="button" onclick="closePasswordResetModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-medium">
+                    <button type="button" onclick="closePasswordResetModal()"
+                        class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-medium">
                         Cancelar
                     </button>
                     <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium">
@@ -838,120 +1024,149 @@
     </div>
 
     <div id="editUserModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up max-h-[90vh] overflow-y-auto">
-        <h3 class="text-lg font-bold mb-4">Editar Datos Personales</h3>
-        <form id="editUserForm" class="space-y-4">
-          <input type="hidden" id="editUserId">
-          <div>
-            <label class="block text-sm font-medium mb-1">Tipo de Usuario</label>
-            <select id="editUserType" class="w-full border rounded-lg px-3 py-2" onchange="toggleEditUserFields()" required>
-              <option value="estudiante">👨‍🎓 Estudiante</option>
-              <option value="docente">👩‍🏫 Docente</option>
-              <option value="administrativo">👨‍💼 Administrativo</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Nombre Completo</label>
-            <input type="text" id="editFullName" class="w-full border rounded-lg px-3 py-2" required>
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Nombre de Usuario (Único)</label>
-            <input type="text" id="editUsername" class="w-full border rounded-lg px-3 py-2" required>
-          </div>
+        <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up max-h-[90vh] overflow-y-auto">
+            <h3 class="text-lg font-bold mb-4">Editar Datos Personales</h3>
+            <form id="editUserForm" class="space-y-4">
+                <input type="hidden" id="editUserId">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Tipo de Usuario</label>
+                    <select id="editUserType" class="w-full border rounded-lg px-3 py-2"
+                        onchange="toggleEditUserFields()" required>
+                        <option value="estudiante">👨‍🎓 Estudiante</option>
+                        <option value="docente">👩‍🏫 Docente</option>
+                        <option value="administrativo">👨‍💼 Administrativo</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Nombre Completo</label>
+                    <input type="text" id="editFullName" class="w-full border rounded-lg px-3 py-2" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Nombre de Usuario (Único)</label>
+                    <input type="text" id="editUsername" class="w-full border rounded-lg px-3 py-2" required>
+                </div>
 
-          <div id="editStudentFields" class="hidden space-y-3">
-            <div>
-              <label class="block text-sm font-medium mb-1">Número de Control</label>
-              <input type="text" id="editControlNumber" class="w-full border rounded-lg px-3 py-2" placeholder="Ej: 20230001">
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1">Carrera</label>
-              <select id="editCareer" class="w-full border rounded-lg px-3 py-2">
-                <option value="">Seleccionar carrera</option>
-                <option value="Ingeniería en Sistemas Computacionales">Ingeniería en Sistemas Computacionales</option>
-                <option value="Ingeniería Industrial">Ingeniería Industrial</option>
-                <option value="Ingeniería Electrónica">Ingeniería Electrónica</option>
-                <option value="Ingeniería Mecánica">Ingeniería Mecánica</option>
-                <option value="Ingeniería Civil">Ingeniería Civil</option>
-                <option value="Licenciatura en Administración">Licenciatura en Administración</option>
-                <option value="Contador Público">Contador Público</option>
-              </select>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-sm font-medium mb-1">Semestre</label>
-                <select id="editSemester" class="w-full border rounded-lg px-3 py-2">
-                  <option value="">Seleccionar</option>
-                  <option value="1">1°</option>
-                  <option value="2">2°</option>
-                  <option value="3">3°</option>
-                  <option value="4">4°</option>
-                  <option value="5">5°</option>
-                  <option value="6">6°</option>
-                  <option value="7">7°</option>
-                  <option value="8">8°</option>
-                  <option value="9">9°</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium mb-1">Grupo</label>
-                <select id="editGroup" class="w-full border rounded-lg px-3 py-2">
-                  <option value="">Seleccionar</option>
-                  <option value="A">A</option>
-                  <option value="B">B</option>
-                  <option value="C">C</option>
-                  <option value="D">D</option>
-                  <option value="E">E</option>
-                </select>
-              </div>
-            </div>
-          </div>
+                <div id="editStudentFields" class="hidden space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Número de Control</label>
+                        <input type="text" id="editControlNumber" class="w-full border rounded-lg px-3 py-2"
+                            placeholder="Ej: 20230001">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Carrera</label>
+                        <select id="editCareer" class="w-full border rounded-lg px-3 py-2">
+                            <option value="">Seleccionar carrera</option>
+                            <option value="Ingeniería en Sistemas Computacionales">Ingeniería en Sistemas
+                                Computacionales</option>
+                            <option value="Ingeniería Industrial">Ingeniería Industrial</option>
+                            <option value="Ingeniería Electrónica">Ingeniería Electrónica</option>
+                            <option value="Ingeniería Mecánica">Ingeniería Mecánica</option>
+                            <option value="Ingeniería Civil">Ingeniería Civil</option>
+                            <option value="Licenciatura en Administración">Licenciatura en Administración</option>
+                            <option value="Contador Público">Contador Público</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Semestre</label>
+                            <select id="editSemester" class="w-full border rounded-lg px-3 py-2">
+                                <option value="">Seleccionar</option>
+                                <option value="1">1°</option>
+                                <option value="2">2°</option>
+                                <option value="3">3°</option>
+                                <option value="4">4°</option>
+                                <option value="5">5°</option>
+                                <option value="6">6°</option>
+                                <option value="7">7°</option>
+                                <option value="8">8°</option>
+                                <option value="9">9°</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Grupo</label>
+                            <select id="editGroup" class="w-full border rounded-lg px-3 py-2">
+                                <option value="">Seleccionar</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                                <option value="E">E</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
-          <div id="editStaffFields" class="hidden space-y-3">
-            <div>
-              <label class="block text-sm font-medium mb-1">Número de Teléfono</label>
-              <input type="tel" id="editPhoneNumber" class="w-full border rounded-lg px-3 py-2" placeholder="Ej: 5551234567">
-            </div>
-          </div>
+                <div id="editStaffFields" class="hidden space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Número de Teléfono</label>
+                        <input type="tel" id="editPhoneNumber" class="w-full border rounded-lg px-3 py-2"
+                            placeholder="Ej: 5551234567">
+                    </div>
+                </div>
 
-          <div class="border-t pt-3">
-            <label class="block text-sm font-semibold mb-1">Cambiar Contraseña (opcional)</label>
-            <div class="grid grid-cols-1 gap-3">
-              <div class="relative">
-                <input type="password" id="editNewPassword" class="w-full border rounded-lg pl-3 pr-10 py-2" placeholder="Nueva contraseña">
-                <button type="button" onclick="togglePasswordVisibility('editNewPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
-                    <svg class="h-5 w-5 hidden" id="eye-icon-editNewPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
-                    <svg class="h-5 w-5" id="eye-slash-icon-editNewPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20" />
-                    </svg>
-                </button>
-              </div>
-              <div class="relative">
-                <input type="password" id="editConfirmPassword" class="w-full border rounded-lg pl-3 pr-10 py-2" placeholder="Confirmar nueva contraseña">
-                <button type="button" onclick="togglePasswordVisibility('editConfirmPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
-                    <svg class="h-5 w-5 hidden" id="eye-icon-editConfirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
-                    <svg class="h-5 w-5" id="eye-slash-icon-editConfirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20" />
-                    </svg>
-                </button>
-              </div>
-            </div>
-          </div>
+                <div class="border-t pt-3">
+                    <label class="block text-sm font-semibold mb-1">Cambiar Contraseña (opcional)</label>
+                    <div class="grid grid-cols-1 gap-3">
+                        <div class="relative">
+                            <input type="password" id="editNewPassword" class="w-full border rounded-lg pl-3 pr-10 py-2"
+                                placeholder="Nueva contraseña">
+                            <button type="button" onclick="togglePasswordVisibility('editNewPassword')"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                                <svg class="h-5 w-5 hidden" id="eye-icon-editNewPassword" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                <svg class="h-5 w-5" id="eye-slash-icon-editNewPassword" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2 2l20 20" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="relative">
+                            <input type="password" id="editConfirmPassword"
+                                class="w-full border rounded-lg pl-3 pr-10 py-2"
+                                placeholder="Confirmar nueva contraseña">
+                            <button type="button" onclick="togglePasswordVisibility('editConfirmPassword')"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                                <svg class="h-5 w-5 hidden" id="eye-icon-editConfirmPassword" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                <svg class="h-5 w-5" id="eye-slash-icon-editConfirmPassword" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2 2l20 20" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-          <div class="flex space-x-3">
-            <button type="button" onclick="closeEditUserModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-medium">Cancelar</button>
-            <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium">Guardar</button>
-          </div>
-        </form>
-      </div>
+                <div class="flex space-x-3">
+                    <button type="button" onclick="closeEditUserModal()"
+                        class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-medium">Cancelar</button>
+                    <button type="submit"
+                        class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium">Guardar</button>
+                </div>
+            </form>
+        </div>
     </div>
     <script>
         // ====================================================================================
         // G E S T I Ó N  D E  M E M O R I A  L O C A L
         // ====================================================================================
-        
+
         const STORAGE_KEYS = {
             PRODUCTS: 'cafetec_products',
             MATERIALS: 'cafetec_materials',
@@ -961,7 +1176,7 @@
             CURRENT_USER: 'cafetec_current_user',
             ORDER_ID_COUNTER: 'cafetec_order_id_counter'
         };
-        
+
         function saveState() {
             localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
             localStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(rawMaterials));
@@ -971,7 +1186,7 @@
             localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
             localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
         }
-        
+
         function loadState() {
             const storedProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
             const storedMaterials = localStorage.getItem(STORAGE_KEYS.MATERIALS);
@@ -980,7 +1195,7 @@
             const storedUsers = localStorage.getItem(STORAGE_KEYS.USERS);
             const storedCurrentUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
             const storedOrderIdCounter = localStorage.getItem(STORAGE_KEYS.ORDER_ID_COUNTER);
-        
+
             if (storedProducts) products = JSON.parse(storedProducts);
             if (storedMaterials) rawMaterials = JSON.parse(storedMaterials);
             if (storedPurchases) supplierPurchases = JSON.parse(storedPurchases);
@@ -996,7 +1211,7 @@
             }
             if (storedCurrentUser) currentUser = JSON.parse(storedCurrentUser);
             if (storedOrderIdCounter) orderIdCounter = parseInt(storedOrderIdCounter);
-        
+
             if (currentUser) {
                 if (currentUser.userType === 'admin') {
                     showAdminPanel();
@@ -1008,13 +1223,13 @@
                 showLogin();
             }
         }
-        
+
         // ====================================================================================
         // E S T A D O S  I N I C I A L E S 
         // ====================================================================================
-        
+
         let rawMaterials = [
-            { id: 101, name: 'Granos de Café', stock: 5.0, unit: 'kg', emoji: '☕' }, 
+            { id: 101, name: 'Granos de Café', stock: 5.0, unit: 'kg', emoji: '☕' },
             { id: 102, name: 'Leche', stock: 20.0, unit: 'L', emoji: '🥛' },
             { id: 103, name: 'Azúcar', stock: 15.0, unit: 'kg', emoji: '🍚' },
             { id: 104, name: 'Pan Club', stock: 30.0, unit: 'pzas', emoji: '🍞' },
@@ -1024,14 +1239,14 @@
             { id: 108, name: 'Queso Crema', stock: 12.0, unit: 'kg', emoji: '🧀' },
             { id: 109, name: 'Chocolate', stock: 18.0, unit: 'kg', emoji: '🍫' }
         ];
-        
+
         let products = [
             {
                 id: 1, name: 'Café Americano', price: 25.00, category: 'bebidas', stock: 50, emoji: '☕',
                 materialsNeeded: [
-                    { materialId: 101, quantity: 0.02 }, 
+                    { materialId: 101, quantity: 0.02 },
                     { materialId: 103, quantity: 0.01 }
-                ], 
+                ],
                 imageURL: 'https://images.unsplash.com/photo-1509785116905-f370a1a0fb84?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
                 description: 'El clásico café, simple y aromático. Perfecto para iniciar la mañana o recargar energías.',
                 time: '2 min', calories: '5 Cal'
@@ -1039,9 +1254,9 @@
             {
                 id: 2, name: 'Cappuccino', price: 35.00, category: 'bebidas', stock: 30, emoji: '☕',
                 materialsNeeded: [
-                    { materialId: 101, quantity: 0.015 }, 
+                    { materialId: 101, quantity: 0.015 },
                     { materialId: 102, quantity: 0.2 }
-                ], 
+                ],
                 imageURL: 'https://images.unsplash.com/photo-1517454238596-f947477610c4?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
                 description: 'Espresso con leche espumada, suave y cremoso. Una delicia para los amantes del café con leche.',
                 time: '5 min', calories: '120 Cal'
@@ -1049,8 +1264,8 @@
             {
                 id: 3, name: 'Sandwich Club', price: 65.00, category: 'comida', stock: 20, emoji: '🥪',
                 materialsNeeded: [
-                    { materialId: 104, quantity: 3 }, 
-                    { materialId: 105, quantity: 0.1 }, 
+                    { materialId: 104, quantity: 3 },
+                    { materialId: 105, quantity: 0.1 },
                     { materialId: 106, quantity: 0.05 }
                 ],
                 imageURL: 'https://images.unsplash.com/photo-1627915570889-019688b13958?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
@@ -1089,7 +1304,7 @@
                 time: '3 min', calories: '290 Cal'
             }
         ];
-        
+
         let cart = [];
         let currentCategory = 'all';
         let orders = [];
@@ -1098,25 +1313,25 @@
         let users = [];
         let currentUser = null;
         let previewProduct = null;
-        
+
         if (!localStorage.getItem(STORAGE_KEYS.PRODUCTS)) {
-                 localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
-                 localStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(rawMaterials));
-                 localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
-                 localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-                 localStorage.setItem(STORAGE_KEYS.SUPPLIER_PURCHASES, JSON.stringify(supplierPurchases));
-                 localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
+            localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
+            localStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(rawMaterials));
+            localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
+            localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+            localStorage.setItem(STORAGE_KEYS.SUPPLIER_PURCHASES, JSON.stringify(supplierPurchases));
+            localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
         }
-        
+
         // ====================================================================================
         // F U N C I O N E S  D E  A U T E N T I C A C I Ó N
         // ====================================================================================
-        
+
         function togglePasswordVisibility(inputId) {
             const input = document.getElementById(inputId);
             const eyeIcon = document.getElementById(`eye-icon-${inputId}`);
             const eyeSlashIcon = document.getElementById(`eye-slash-icon-${inputId}`);
-        
+
             if (input.type === 'password') {
                 input.type = 'text';
                 eyeIcon.classList.remove('hidden');
@@ -1127,44 +1342,44 @@
                 eyeSlashIcon.classList.remove('hidden');
             }
         }
-        
+
         function clearLoginFields() {
             document.getElementById('loginUser').value = '';
             document.getElementById('loginPassword').value = '';
         }
-        
+
         function showPasswordResetModal() {
             document.getElementById('passwordResetModal').classList.remove('hidden');
         }
-        
+
         function closePasswordResetModal() {
             document.getElementById('passwordResetModal').classList.add('hidden');
             document.getElementById('passwordResetForm').reset();
         }
-        
-        document.getElementById('passwordResetForm').addEventListener('submit', function(e) {
+
+        document.getElementById('passwordResetForm').addEventListener('submit', function (e) {
             e.preventDefault();
-            
+
             const loginIdentifier = document.getElementById('resetUser').value.trim(); // Puede ser username, No. Control o Teléfono
             const phone = document.getElementById('resetPhone').value.trim();
             const newPassword = document.getElementById('resetNewPassword').value;
             const confirmPassword = document.getElementById('resetConfirmPassword').value;
-        
+
             if (newPassword !== confirmPassword) {
                 alert('Las nuevas contraseñas no coinciden.');
                 return;
             }
-        
-            let user = users.find(u => 
-                u.username === loginIdentifier || 
+
+            let user = users.find(u =>
+                u.username === loginIdentifier ||
                 u.controlNumber === loginIdentifier ||
                 u.phoneNumber === loginIdentifier
             );
-        
+
             if (user) {
                 // Verificar que el teléfono coincida con el registrado para el restablecimiento.
                 const isPhoneMatch = (user.phoneNumber && user.phoneNumber === phone) || (user.userType === 'estudiante' && user.controlNumber && user.controlNumber === phone);
-                
+
                 if (isPhoneMatch) {
                     user.password = newPassword;
                     alert(`Contraseña restablecida exitosamente para ${user.fullName}. Por favor inicia sesión.`);
@@ -1174,10 +1389,10 @@
                     return;
                 }
             }
-        
+
             alert('Error: Identificador (Usuario/No. Control/Teléfono) o Teléfono registrado no coinciden. Inténtalo de nuevo.');
         });
-        
+
         function showLogin() {
             document.getElementById('loginScreen').classList.remove('hidden');
             document.getElementById('registerScreen').classList.add('hidden');
@@ -1188,19 +1403,19 @@
             document.getElementById('productPreviewModal').classList.add('hidden');
             document.getElementById('passwordResetModal').classList.add('hidden');
         }
-        
+
         function showRegister() {
             document.getElementById('registerScreen').classList.remove('hidden');
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('productPreviewModal').classList.add('hidden');
             document.getElementById('passwordResetModal').classList.add('hidden');
         }
-        
+
         function toggleUserFields() {
             const userType = document.getElementById('userType').value;
             const studentFields = document.getElementById('studentFields');
             const staffFields = document.getElementById('staffFields');
-            
+
             // Si el usuario es estudiante, los campos de staff no son requeridos y viceversa
             if (userType === 'estudiante') {
                 studentFields.classList.remove('hidden');
@@ -1223,39 +1438,39 @@
                 staffFields.classList.add('hidden');
             }
         }
-        
+
         function previewCredential() {
             const file = document.getElementById('credentialFile').files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     document.getElementById('credentialImage').src = e.target.result;
                     document.getElementById('credentialPreview').classList.remove('hidden');
                 };
                 reader.readAsDataURL(file);
             }
         }
-        
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
+
+        document.getElementById('registerForm').addEventListener('submit', function (e) {
             e.preventDefault();
-            
+
             const userType = document.getElementById('userType').value;
             const fullName = document.getElementById('fullName').value;
             const username = document.getElementById('username').value.trim(); // Nuevo campo de usuario
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
-            
+
             if (password !== confirmPassword) {
                 alert('Las contraseñas no coinciden');
                 return;
             }
-        
+
             // Validación de nombre de usuario único
             if (users.some(user => user.username && user.username.toLowerCase() === username.toLowerCase())) {
                 alert('Este nombre de usuario ya está registrado. Por favor, elige otro.');
                 return;
             }
-            
+
             const now = new Date();
             const newUser = {
                 id: users.length + 1,
@@ -1264,100 +1479,113 @@
                 username: username, // Almacenar el nombre de usuario
                 password: password,
                 // ALMACENA LA FECHA DE REGISTRO COMO UN OBJETO Date para fácil comparación
-                registrationDate: now 
+                registrationDate: now
             };
-            
+
             if (userType === 'estudiante') {
                 const controlNumber = document.getElementById('controlNumber').value.trim();
-                
+
                 if (users.some(user => user.controlNumber === controlNumber && user.controlNumber)) {
                     alert('Este número de control ya está registrado');
                     return;
                 }
-                
+
                 newUser.controlNumber = controlNumber;
                 newUser.career = document.getElementById('career').value;
                 newUser.semester = document.getElementById('semester').value;
                 newUser.group = document.getElementById('group').value;
-                
+
                 // Antes: newUser.username = controlNumber;
             } else {
                 const phoneNumber = document.getElementById('phoneNumber').value.trim();
-                
+
                 if (users.some(user => user.phoneNumber === phoneNumber && user.phoneNumber)) {
                     alert('Este número de teléfono ya está registrado');
                     return;
                 }
-                
+
                 newUser.phoneNumber = phoneNumber;
                 // Antes: newUser.username = phoneNumber;
             }
-            
+
             const credentialFile = document.getElementById('credentialFile').files[0];
             if (credentialFile) {
                 newUser.hasCredential = true;
                 newUser.credentialName = credentialFile.name;
             }
-            
+
             users.push(newUser);
-            
+
             alert(`¡Registro exitoso! Ya puedes iniciar sesión con tu nombre de usuario: ${username}.`);
-            
+
             document.getElementById('registerForm').reset();
             document.getElementById('credentialPreview').classList.add('hidden');
             toggleUserFields();
             saveState();
             showLogin();
         });
-        
+
         function login() {
             const loginIdentifier = document.getElementById('loginUser').value.trim(); // Puede ser username, No. Control o Teléfono
             const password = document.getElementById('loginPassword').value;
-            
+
             if (!loginIdentifier || !password) {
                 alert('Por favor ingresa tu identificador y contraseña');
                 return;
             }
-        
+
             if (loginIdentifier.toUpperCase() === 'ADMIN' && password === 'ADMIN') {
                 currentUser = { id: 0, userType: 'admin', fullName: 'Administrador', username: 'ADMIN' };
                 saveState();
                 showAdminPanel();
                 return;
             }
-            
+
             // Búsqueda de usuario:
-            const user = users.find(u => 
+            const user = users.find(u =>
                 (u.username && u.username.toLowerCase() === loginIdentifier.toLowerCase() && u.password === password) ||
                 (u.controlNumber && u.controlNumber === loginIdentifier && u.password === password) ||
                 (u.phoneNumber && u.phoneNumber === loginIdentifier && u.password === password)
             );
-            
+
             if (user) {
                 // OBTENER FECHAS: La fecha de registro ya se cargó como un objeto Date en loadState
                 const registrationDate = user.registrationDate instanceof Date ? user.registrationDate : new Date(user.registrationDate);
                 const currentDate = new Date();
-        
-                // NORMALIZAR FECHAS A SÓLO DÍA (IGNORAR HORA) para la comparación
-                const regDay = new Date(registrationDate.getFullYear(), registrationDate.getMonth(), registrationDate.getDate());
-                const currentDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-        
-                // VALIDACIÓN DE FECHA
-                if (currentDay.getTime() < regDay.getTime()) {
+
+                // ---- INICIO DE LA MODIFICACIÓN (Validación Estricta de Horas) ----
+
+                // 1. VALIDACIÓN PASADO (Anti-manipulación hacia atrás)
+                // Si la hora actual es estrictamente anterior a la hora de registro.
+                if (currentDate.getTime() < registrationDate.getTime()) {
+
                     alert('🚫 Acceso Bloqueado: La fecha y hora de tu computadora es anterior a tu fecha de registro. Por favor, actualiza la fecha para continuar.');
                     return; // Bloquea el ingreso
                 }
-                // FIN VALIDACIÓN DE FECHA
-        
+
+                // 2. VALIDACIÓN FUTURO (Límite de 1 día)
+                // Calculamos el límite de 1 día (24 horas) en milisegundos.
+                const futureLimitMs = 24 * 60 * 60 * 1000; // 1 DÍA
+               const registrationTime = registrationDate.getTime();
+
+                // Si la fecha actual del sistema es MÁS de 1 día posterior a la fecha de registro.
+                if (currentDate.getTime() > (registrationTime + futureLimitMs)) {
+                    alert('🚫 Acceso Bloqueado: Tu acceso ha superado el límite de 1 día desde el registro. Contacta al administrador.');
+                    return;
+                }
+                // ---- FIN DE LA MODIFICACIÓN ----
+
                 currentUser = user;
                 document.getElementById('welcomeUserName').textContent = user.fullName;
                 saveState();
                 showWelcome();
             } else {
                 alert('Usuario, número de control o contraseña incorrectos');
+                section: 2
             }
         }
-        
+
+
         function logout() {
             currentUser = null;
             cart = [];
@@ -1366,14 +1594,14 @@
             clearLoginFields();
             showLogin();
         }
-        
+
         function adminLogout() {
             currentUser = null;
             saveState();
             clearLoginFields();
             showLogin();
         }
-        
+
         function showWelcome() {
             document.getElementById('welcomeScreen').classList.remove('hidden');
             document.getElementById('loginScreen').classList.add('hidden');
@@ -1382,7 +1610,7 @@
             document.getElementById('adminPanel').classList.add('hidden');
             document.getElementById('productPreviewModal').classList.add('hidden');
         }
-        
+
         function showCustomerMenu() {
             document.getElementById('welcomeScreen').classList.add('hidden');
             document.getElementById('customerMenu').classList.remove('hidden');
@@ -1392,14 +1620,14 @@
             renderProducts();
             updateCartCount();
         }
-        
+
         function showCart() {
             document.getElementById('cartScreen').classList.remove('hidden');
             document.getElementById('customerMenu').classList.add('hidden');
             document.getElementById('productPreviewModal').classList.add('hidden');
             renderCart();
         }
-        
+
         function showAdminPanel() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('adminPanel').classList.remove('hidden');
@@ -1408,40 +1636,40 @@
             document.getElementById('productPreviewModal').classList.add('hidden');
             showAdminStock();
         }
-        
+
         // ====================================================================================
         // F U N C I O N E S  D E  S T O C K  Y  R E C E T A S
         // ====================================================================================
-        
+
         function getRawMaterial(id) {
             return rawMaterials.find(m => m.id === id);
         }
-        
+
         function checkRawMaterialStock(product, quantity) {
             if (!product.materialsNeeded || product.materialsNeeded.length === 0) return true;
-            
+
             for (const material of product.materialsNeeded) {
                 const rawMaterial = getRawMaterial(material.materialId);
                 if (!rawMaterial) {
                     console.warn(`Materia prima ID ${material.materialId} no encontrada.`);
-                    continue; 
+                    continue;
                 }
-        
+
                 const required = material.quantity * quantity;
-                
-                if (rawMaterial.stock < required - 0.001) { 
+
+                if (rawMaterial.stock < required - 0.001) {
                     console.log(`Falta MP para ${product.name}. Stock de ${rawMaterial.name}: ${rawMaterial.stock}, requerido: ${required}.`);
                     return false;
                 }
             }
             return true;
         }
-        
+
         function depleteRawMaterialStock(items) {
             items.forEach(cartItem => {
                 const product = products.find(p => p.id === cartItem.id);
                 if (!product || !product.materialsNeeded) return;
-        
+
                 product.materialsNeeded.forEach(material => {
                     const rawMaterial = getRawMaterial(material.materialId);
                     if (rawMaterial) {
@@ -1451,12 +1679,12 @@
                 });
             });
         }
-        
-        
+
+
         // ====================================================================================
         // F U N C I O N E S  P A N E L  A D M I N I S T R A D O R  ( V I S T A S )
         // ====================================================================================
-        
+
         function activateTab(targetId) {
             document.querySelectorAll('.admin-tab').forEach(tab => {
                 tab.classList.remove('bg-blue-600', 'text-white');
@@ -1464,59 +1692,59 @@
             });
             document.getElementById(targetId).classList.remove('bg-gray-200', 'text-gray-700');
             document.getElementById(targetId).classList.add('bg-blue-600', 'text-white');
-        
+
             // Oculta todas las secciones admin
             const sections = [
-                'adminStockSection','adminRawMaterialsSection','adminSupplierPurchasesSection',
-                'adminOrdersSection','adminStatsSection','adminUsersSection','adminMemorySection',
+                'adminStockSection', 'adminRawMaterialsSection', 'adminSupplierPurchasesSection',
+                'adminOrdersSection', 'adminStatsSection', 'adminUsersSection', 'adminMemorySection',
                 'adminPersonalDataSection', 'adminReportsSection' // <<< AÑADIDO: Sección de Reportes
             ];
             sections.forEach(id => document.getElementById(id).classList.add('hidden'));
         }
-        
+
         function showAdminStock() {
             activateTab('stockTab');
             document.getElementById('adminStockSection').classList.remove('hidden');
             renderAdminProducts();
         }
-        
+
         function showAdminRawMaterials() {
             activateTab('rawMaterialsTab');
             document.getElementById('adminRawMaterialsSection').classList.remove('hidden');
             renderAdminRawMaterials();
         }
-        
+
         function showAdminSupplierPurchases() {
             activateTab('supplierPurchasesTab');
             document.getElementById('adminSupplierPurchasesSection').classList.remove('hidden');
             renderSupplierPurchaseStats();
             renderAdminSupplierPurchases();
         }
-        
+
         function showAdminOrders() {
             activateTab('ordersTab');
             document.getElementById('adminOrdersSection').classList.remove('hidden');
             renderAdminOrders();
         }
-        
+
         function showAdminStats() {
             activateTab('statsTab');
             document.getElementById('adminStatsSection').classList.remove('hidden');
             renderSalesStats();
         }
-        
+
         function showAdminUsers() {
             activateTab('usersTab');
             document.getElementById('adminUsersSection').classList.remove('hidden');
             renderAdminUsers();
         }
-        
+
         function showAdminMemory() {
             activateTab('memoryTab');
             document.getElementById('adminMemorySection').classList.remove('hidden');
             renderLocalMemory();
         }
-        
+
         // NUEVO: mostrar Datos Personales
         function showAdminPersonalData() {
             activateTab('personalDataTab');
@@ -1529,18 +1757,18 @@
             activateTab('reportsTab');
             document.getElementById('adminReportsSection').classList.remove('hidden');
         }
-        
+
         function renderLocalMemory() {
             const memoryList = document.getElementById('memoryList');
             let html = '';
             let totalSize = 0;
-        
+
             for (const key in localStorage) {
                 if (localStorage.hasOwnProperty(key) && key.startsWith('cafetec_')) {
                     const value = localStorage.getItem(key);
                     const size = value.length;
                     totalSize += size;
-                    
+
                     let displayValue = value;
                     try {
                         const parsed = JSON.parse(value);
@@ -1548,7 +1776,7 @@
                     } catch {
                         displayValue = value.substring(0, 500) + '...';
                     }
-                    
+
                     html += `
                         <div class="bg-white border rounded-lg p-4 shadow-sm">
                             <h4 class="font-bold text-lg">${key.replace('cafetec_', '').toUpperCase()}</h4>
@@ -1558,16 +1786,16 @@
                     `;
                 }
             }
-        
+
             if (totalSize > 0) {
                 html = `<p class="text-sm font-medium mb-4">Total de datos almacenados: ${(totalSize / 1024).toFixed(2)} KB</p>` + html;
             } else {
                 html = `<p class="text-center text-gray-500 py-8">No hay datos de CAFE-TEC guardados en la memoria local.</p>`;
             }
-        
+
             memoryList.innerHTML = html;
         }
-        
+
         function clearLocalMemory() {
             if (confirm("¡ADVERTENCIA! ¿Estás seguro de que deseas borrar TODOS los datos guardados localmente (productos, usuarios, pedidos, etc.)? Esta acción es irreversible.")) {
                 for (const key in localStorage) {
@@ -1575,31 +1803,31 @@
                         localStorage.removeItem(key);
                     }
                 }
-                
+
                 products = [];
                 rawMaterials = [];
                 orders = [];
                 users = [];
                 currentUser = null;
                 orderIdCounter = 1;
-                
-                location.reload(); 
+
+                location.reload();
             }
         }
-        
+
         // ====================================================================================
         // F U N C I O N E S  M E N Ú  C L I E N T E
         // ====================================================================================
-        
+
         function renderProducts() {
             const productList = document.getElementById('productList');
-            const filteredProducts = currentCategory === 'all' 
-                ? products 
+            const filteredProducts = currentCategory === 'all'
+                ? products
                 : products.filter(p => p.category === currentCategory);
-        
+
             productList.innerHTML = filteredProducts.map(product => {
                 const isOutOfStock = product.stock === 0 || !checkRawMaterialStock(product, 1);
-                
+
                 return `
                     <div 
                         class="bg-white border rounded-lg p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
@@ -1617,11 +1845,10 @@
                             <button 
                                 onclick="event.stopPropagation(); addToCart(${product.id})" 
                                 ${isOutOfStock ? 'disabled' : ''}
-                                class="px-4 py-2 rounded-lg font-medium transition-colors ${
-                                    isOutOfStock 
-                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                                        : 'bg-amber-600 text-white hover:bg-amber-700'
-                                    }"
+                                class="px-4 py-2 rounded-lg font-medium transition-colors ${isOutOfStock
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-amber-600 text-white hover:bg-amber-700'
+                    }"
                             >
                                 ${isOutOfStock ? 'Agotado' : 'Agregar'}
                             </button>
@@ -1630,26 +1857,26 @@
                 `;
             }).join('');
         }
-        
+
         function showProductPreview(productId) {
             const product = products.find(p => p.id === productId);
             if (!product) return;
-        
+
             previewProduct = product;
-            
+
             document.getElementById('previewProductName').textContent = product.name;
             document.getElementById('previewProductDescription').textContent = product.description;
             document.getElementById('previewProductPrice').textContent = `$${product.price.toFixed(2)}`;
             document.getElementById('previewTime').textContent = product.time || 'N/A';
             document.getElementById('previewCalories').textContent = product.calories || 'N/A';
-            
+
             const isOutOfStock = product.stock === 0 || !checkRawMaterialStock(product, 1);
             document.getElementById('previewStock').textContent = isOutOfStock ? 'Agotado' : `${product.stock} disp.`;
-            
+
             const imageContainer = document.getElementById('previewImageContainer');
             const imageSource = product.imageLocal || product.imageURL || 'https://images.unsplash.com/photo-1541167760496-1628856ab22d?q=80&w=2047&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
             imageContainer.style.backgroundImage = `url(${imageSource})`;
-            
+
             const addButton = document.getElementById('previewAddToCartButton');
             document.getElementById('previewQuantity').textContent = 1;
             addButton.disabled = isOutOfStock;
@@ -1657,23 +1884,23 @@
             addButton.classList.toggle('bg-green-600', !isOutOfStock);
             addButton.classList.toggle('hover:bg-green-700', !isOutOfStock);
             addButton.classList.toggle('bg-gray-400', isOutOfStock);
-            
+
             document.getElementById('productPreviewModal').classList.remove('hidden');
         }
-        
+
         function closeProductPreview() {
             document.getElementById('productPreviewModal').classList.add('hidden');
             previewProduct = null;
         }
-        
+
         function updatePreviewQuantity(change) {
             if (!previewProduct) return;
             const quantityEl = document.getElementById('previewQuantity');
             let currentQuantity = parseInt(quantityEl.textContent);
             let newQuantity = currentQuantity + change;
-            
+
             if (newQuantity < 1) newQuantity = 1;
-        
+
             if (newQuantity > previewProduct.stock) {
                 alert(`Stock limitado a ${previewProduct.stock} unidades.`);
                 newQuantity = previewProduct.stock;
@@ -1681,88 +1908,88 @@
                 alert('Materia prima insuficiente para esta cantidad.');
                 newQuantity = currentQuantity;
             }
-            
+
             quantityEl.textContent = newQuantity;
         }
-        
+
         function addToCartFromPreview() {
             if (!previewProduct) return;
             const quantity = parseInt(document.getElementById('previewQuantity').textContent);
-            
+
             const existingItem = cart.find(item => item.id === previewProduct.id);
             const totalNewQuantity = (existingItem ? existingItem.quantity : 0) + quantity;
-        
+
             if (totalNewQuantity > previewProduct.stock) {
                 alert(`Solo hay ${previewProduct.stock - (existingItem ? existingItem.quantity : 0)} unidades más disponibles.`);
                 return;
             }
-            
+
             if (!checkRawMaterialStock(previewProduct, totalNewQuantity)) {
                 alert('Materia prima insuficiente para completar la cantidad deseada en el carrito.');
                 return;
             }
-            
+
             if (existingItem) {
                 existingItem.quantity = totalNewQuantity;
             } else {
-                cart.push({...previewProduct, quantity: quantity});
+                cart.push({ ...previewProduct, quantity: quantity });
             }
-            
+
             updateCartCount();
             closeProductPreview();
             renderProducts();
             alert(`${quantity}x ${previewProduct.name} agregado al carrito.`);
         }
-        
+
         function filterCategory(category) {
             currentCategory = category;
-            
+
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.classList.remove('bg-amber-600', 'text-white');
                 btn.classList.add('bg-gray-200', 'text-gray-700');
             });
-            
+
             const targetButton = Array.from(document.querySelectorAll('.category-btn')).find(btn => btn.textContent.toLowerCase().includes(category.toLowerCase()) || (category === 'all' && btn.textContent.toLowerCase().includes('todos')));
-            
+
             if (targetButton) {
                 targetButton.classList.remove('bg-gray-200', 'text-gray-700');
                 targetButton.classList.add('bg-amber-600', 'text-white');
             }
-            
+
             renderProducts();
         }
-        
+
         function addToCart(productId) {
             const product = products.find(p => p.id === productId);
             if (!product || product.stock === 0) return;
-        
+
             const existingItem = cart.find(item => item.id === productId);
             const quantityToAdd = existingItem ? existingItem.quantity + 1 : 1;
-            
+
             if (quantityToAdd > product.stock) {
                 alert('Stock del producto final agotado o límite alcanzado.');
                 return;
             }
-            
+
             if (!checkRawMaterialStock(product, quantityToAdd)) {
                 alert('Stock de materia prima insuficiente para añadir más unidades de este producto.');
                 return;
             }
-        
+
             if (existingItem) {
                 existingItem.quantity++;
             } else {
-                cart.push({...product, quantity: 1});
+                cart.push({ ...product, quantity: 1 });
             }
-            
+
             updateCartCount();
             renderProducts();
         }
-        
+
         function updateCartCount() {
             const count = cart.reduce((sum, item) => sum + item.quantity, 0);
             const cartCountEl = document.getElementById('cartCount');
-            
+
             if (count > 0) {
                 cartCountEl.textContent = count;
                 cartCountEl.classList.remove('hidden');
@@ -1770,17 +1997,17 @@
                 cartCountEl.classList.add('hidden');
             }
         }
-        
+
         function renderCart() {
             const cartItems = document.getElementById('cartItems');
             const totalPrice = document.getElementById('totalPrice');
-            
+
             if (cart.length === 0) {
                 cartItems.innerHTML = '<p class="text-center text-gray-500 py-8">Tu carrito está vacío</p>';
                 totalPrice.textContent = '$0.00';
                 return;
             }
-        
+
             cartItems.innerHTML = cart.map(item => `
                 <div class="flex items-center justify-between bg-gray-50 p-4 rounded-lg">
                     <div class="flex items-center">
@@ -1797,55 +2024,55 @@
                     </div>
                 </div>
             `).join('');
-        
+
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             totalPrice.textContent = `$${total.toFixed(2)}`;
         }
-        
+
         function updateQuantity(productId, change) {
             const cartItem = cart.find(item => item.id === productId);
             const product = products.find(p => p.id === productId);
-            
+
             if (cartItem) {
                 const newQuantity = cartItem.quantity + change;
-                
+
                 if (newQuantity <= 0) {
                     cart = cart.filter(item => item.id !== productId);
                 } else if (newQuantity <= product.stock) {
                     if (change > 0 && !checkRawMaterialStock(product, newQuantity)) {
                         alert('Stock de materia prima insuficiente para aumentar la cantidad.');
-                        return; 
+                        return;
                     }
                     cartItem.quantity = newQuantity;
                 }
-                
+
                 updateCartCount();
                 renderCart();
             }
         }
-        
+
         function showPaymentDetails() {
             const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
             const cardDetails = document.getElementById('cardPaymentDetails');
             const transferDetails = document.getElementById('transferDetails');
-            
+
             cardDetails.classList.add('hidden');
             transferDetails.classList.add('hidden');
-            
+
             if (paymentMethod === 'tarjeta') {
                 cardDetails.classList.remove('hidden');
             } else if (paymentMethod === 'transferencia') {
                 transferDetails.classList.remove('hidden');
             }
         }
-        
+
         function validatePaymentInfo(paymentMethod) {
             if (paymentMethod === 'tarjeta') {
                 const cardNumber = document.getElementById('cardNumber').value.trim();
                 const cardExpiry = document.getElementById('cardExpiry').value.trim();
                 const cardCvv = document.getElementById('cardCvv').value.trim();
                 const cardHolder = document.getElementById('cardHolder').value.trim();
-                
+
                 if (!cardNumber || !cardExpiry || !cardCvv || !cardHolder) {
                     alert('Por favor completa todos los datos de la tarjeta');
                     return false;
@@ -1853,39 +2080,39 @@
             }
             return true;
         }
-        
+
         function generateReferenceNumber() {
             const timestamp = Date.now().toString();
             const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
             return `CT${timestamp.slice(-6)}${random}`;
         }
-        
+
         function confirmOrder() {
             if (cart.length === 0) {
                 alert('Tu carrito está vacío');
                 return;
             }
-        
+
             const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
-            
+
             if (!validatePaymentInfo(paymentMethod)) {
                 return;
             }
-            
+
             for (const item of cart) {
                 if (!checkRawMaterialStock(products.find(p => p.id === item.id), item.quantity)) {
                     alert(`ERROR: Materia prima insuficiente para preparar ${item.name} x${item.quantity}. Por favor reduce la cantidad.`);
                     return;
                 }
             }
-        
+
             const pickupTime = document.querySelector('input[name="pickup-time"]:checked').value;
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             const orderNotes = document.getElementById('orderNotes').value.trim();
             const referenceNumber = generateReferenceNumber();
-            
+
             const timeFormatted = formatTime(pickupTime);
-            
+
             const newOrder = {
                 id: orderIdCounter++,
                 referenceNumber: referenceNumber,
@@ -1901,20 +2128,20 @@
                 timestamp: new Date().toLocaleString(),
                 date: new Date().toISOString().slice(0, 10),
             };
-            
+
             orders.push(newOrder);
-            
+
             cart.forEach(cartItem => {
                 const product = products.find(p => p.id === cartItem.id);
                 if (product) {
                     product.stock -= cartItem.quantity;
                 }
             });
-            
+
             depleteRawMaterialStock(cart);
-        
+
             alert(`¡Pedido confirmado!\n\nPedido #${newOrder.id}\nReferencia: ${referenceNumber}\nCliente: ${currentUser.fullName}\nTotal: $${total.toFixed(2)}\nHorario de recogida: ${timeFormatted}\nMétodo de pago: ${paymentMethod}\n\n¡Tu pedido estará listo a la hora seleccionada!\n¡Gracias por tu compra!`);
-            
+
             cart = [];
             document.getElementById('orderNotes').value = '';
             document.getElementById('cardNumber').value = '';
@@ -1925,7 +2152,7 @@
             saveState();
             showCustomerMenu();
         }
-        
+
         function formatTime(time) {
             const [hours, minutes] = time.split(':');
             const hour = parseInt(hours);
@@ -1933,20 +2160,20 @@
             const displayHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
             return `${displayHour}:${minutes} ${ampm}`;
         }
-        
-         // ====================================================================================
+
+        // ====================================================================================
         // F U N C I O N E S  P A N E L  A D M I N I S T R A D O R  ( G E S T I Ó N )
         // ====================================================================================
-        
+
         function renderAdminProducts() {
             const adminProductList = document.getElementById('adminProductList');
-            
+
             adminProductList.innerHTML = products.map(product => {
                 const getMaterialInfo = (id) => {
                     const material = getRawMaterial(id);
                     return material ? `${material.emoji} ${material.name} (${material.unit})` : 'MP Desconocida';
                 };
-    
+
                 const recipeHtml = product.materialsNeeded && product.materialsNeeded.length > 0
                     ? product.materialsNeeded.map(mat => {
                         const material = getRawMaterial(mat.materialId);
@@ -1955,10 +2182,10 @@
                         return `<span class="text-xs ${isStockLow ? 'text-red-500 font-semibold' : 'text-gray-600'} block">
                                     ${mat.quantity} ${material.unit} de ${material.name}
                                 </span>`;
-                        }).join('')
+                    }).join('')
                     : '<span class="text-xs text-red-500 italic">⚠️ Sin Receta Vinculada</span>';
-    
-    
+
+
                 return `
                     <div class="bg-gray-50 border rounded-lg p-4">
                         <div class="flex items-center justify-between">
@@ -1998,10 +2225,10 @@
                 `;
             }).join('');
         }
-        
+
         function renderAdminRawMaterials() {
             const adminRawMaterialsList = document.getElementById('adminRawMaterialsList');
-            
+
             adminRawMaterialsList.innerHTML = rawMaterials.map(material => `
                 <div class="bg-gray-50 border rounded-lg p-4">
                     <div class="flex items-center justify-between">
@@ -2027,10 +2254,10 @@
                 </div>
             `).join('');
         }
-    
+
         function renderSupplierPurchaseStats() {
             const statsContainer = document.getElementById('supplierStatsContainer');
-    
+
             if (supplierPurchases.length === 0) {
                 statsContainer.innerHTML = `
                     <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
@@ -2038,7 +2265,7 @@
                     </div>`;
                 return;
             }
-    
+
             const totalSpent = supplierPurchases.reduce((sum, purchase) => sum + purchase.cost, 0);
             const totalPurchases = supplierPurchases.length;
             const spendingBySupplier = supplierPurchases.reduce((acc, purchase) => {
@@ -2051,12 +2278,12 @@
                 acc[purchase.materialId] = (acc[purchase.materialId] || 0) + purchase.quantity;
                 return acc;
             }, {});
-            
+
             let topMaterialByQuantity = { name: 'N/A', quantity: 0, unit: '' };
             if (Object.keys(quantityByMaterial).length > 0) {
                 const topMaterialId = Object.keys(quantityByMaterial).reduce((a, b) => quantityByMaterial[a] > quantityByMaterial[b] ? a : b);
                 const material = getRawMaterial(parseInt(topMaterialId));
-                if(material){
+                if (material) {
                     topMaterialByQuantity = {
                         name: `${material.emoji} ${material.name}`,
                         quantity: quantityByMaterial[topMaterialId],
@@ -2064,7 +2291,7 @@
                     };
                 }
             }
-    
+
             statsContainer.innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-green-50 p-4 rounded-lg shadow-sm">
@@ -2101,21 +2328,21 @@
                         </div>
                 </div>`;
         }
-        
+
         function renderAdminSupplierPurchases() {
             const listContainer = document.getElementById('adminSupplierPurchasesList');
-            
+
             if (supplierPurchases.length === 0) {
                 listContainer.innerHTML = ''; // Clear list if empty, stats section will show the message
                 return;
             }
-    
+
             const sortedPurchases = [...supplierPurchases].sort((a, b) => new Date(b.date) - new Date(a.date));
-    
+
             listContainer.innerHTML = sortedPurchases.map(purchase => {
                 const material = getRawMaterial(purchase.materialId);
                 if (!material) return '';
-    
+
                 return `
                     <div class="bg-white border rounded-lg p-4 shadow-sm">
                         <div class="flex justify-between items-start">
@@ -2141,7 +2368,7 @@
                 `;
             }).join('');
         }
-        
+
         function addNewRawMaterial() {
             document.getElementById('materialModalTitle').textContent = 'Nueva Materia Prima';
             document.getElementById('rawMaterialForm').reset();
@@ -2151,7 +2378,7 @@
             document.getElementById('materialUnit').readOnly = false;
             document.getElementById('rawMaterialModal').classList.remove('hidden');
         }
-    
+
         function editRawMaterial(id) {
             const material = rawMaterials.find(m => m.id === id);
             if (material) {
@@ -2161,46 +2388,46 @@
                 document.getElementById('materialEmoji').value = material.emoji;
                 document.getElementById('materialStock').value = material.stock;
                 document.getElementById('materialUnit').value = material.unit;
-                
+
                 document.getElementById('materialName').readOnly = false;
                 document.getElementById('materialUnit').readOnly = false;
                 document.getElementById('materialDeleteContainer').classList.remove('hidden');
-    
+
                 document.getElementById('rawMaterialModal').classList.remove('hidden');
             }
         }
-    
+
         function deleteRawMaterial(id) {
             if (confirm('¿Estás seguro de que quieres eliminar esta materia prima? Se eliminará de todas las recetas.')) {
                 rawMaterials = rawMaterials.filter(m => m.id !== id);
-                
+
                 products.forEach(product => {
                     if (product.materialsNeeded) {
                         product.materialsNeeded = product.materialsNeeded.filter(mat => mat.materialId !== id);
                     }
                 });
-    
+
                 saveState();
                 renderAdminRawMaterials();
                 closeRawMaterialModal();
                 alert('Materia prima eliminada correctamente.');
             }
         }
-    
+
         function closeRawMaterialModal() {
             document.getElementById('rawMaterialModal').classList.add('hidden');
             document.getElementById('materialDeleteContainer').classList.add('hidden');
         }
-    
+
         document.getElementById('rawMaterialForm').addEventListener('submit', function (e) {
             e.preventDefault();
-    
+
             const id = document.getElementById('materialId').value;
             const name = document.getElementById('materialName').value.trim();
             const emoji = document.getElementById('materialEmoji').value.trim();
             const stock = parseFloat(document.getElementById('materialStock').value);
             const unit = document.getElementById('materialUnit').value.trim();
-    
+
             if (id) {
                 const material = rawMaterials.find(m => m.id === parseInt(id));
                 if (material) {
@@ -2213,33 +2440,33 @@
                 const newId = Math.max(...rawMaterials.map(m => m.id), 100) + 1;
                 rawMaterials.push({ id: newId, name, stock, unit, emoji });
             }
-    
-            saveState(); 
+
+            saveState();
             renderAdminRawMaterials();
             closeRawMaterialModal();
         });
-    
+
         function showNewPurchaseModal() {
             document.getElementById('purchaseModalTitle').textContent = 'Registrar Compra';
             document.getElementById('supplierPurchaseForm').reset();
             document.getElementById('purchaseId').value = '';
-    
+
             const selectEl = document.getElementById('purchaseMaterialId');
-            selectEl.innerHTML = '<option value="">Seleccionar Materia Prima</option>' + rawMaterials.map(m => 
+            selectEl.innerHTML = '<option value="">Seleccionar Materia Prima</option>' + rawMaterials.map(m =>
                 `<option value="${m.id}">${m.emoji} ${m.name}</option>`
             ).join('');
             selectEl.disabled = false;
-    
+
             document.getElementById('purchaseUnit').value = '';
             document.getElementById('supplierPurchaseModal').classList.remove('hidden');
         }
-    
+
         function editSupplierPurchase(purchaseId) {
             const purchase = supplierPurchases.find(p => p.id === purchaseId);
             if (!purchase) return;
-    
+
             showNewPurchaseModal(); // Re-use the modal setup
-    
+
             document.getElementById('purchaseModalTitle').textContent = 'Editar Compra';
             document.getElementById('purchaseId').value = purchase.id;
             document.getElementById('purchaseMaterialId').value = purchase.materialId;
@@ -2247,37 +2474,37 @@
             document.getElementById('purchaseQuantity').value = purchase.quantity;
             document.getElementById('purchaseCost').value = purchase.cost;
             document.getElementById('supplierName').value = purchase.supplierName;
-    
+
             const material = getRawMaterial(purchase.materialId);
             if (material) {
                 document.getElementById('purchaseUnit').value = material.unit;
             }
         }
-    
+
         function deleteSupplierPurchase(purchaseId) {
             const purchase = supplierPurchases.find(p => p.id === purchaseId);
             if (!purchase) return;
-    
+
             if (confirm('¿Seguro que quieres eliminar este registro de compra? Esta acción descontará la cantidad del stock de materia prima.')) {
                 const material = getRawMaterial(purchase.materialId);
                 if (material) {
                     material.stock = Math.max(0, material.stock - purchase.quantity);
                 }
-    
+
                 supplierPurchases = supplierPurchases.filter(p => p.id !== purchaseId);
-                
+
                 saveState();
                 alert('Registro de compra eliminado y stock ajustado.');
                 showAdminSupplierPurchases();
                 renderAdminRawMaterials();
             }
         }
-    
+
         function closePurchaseModal() {
             document.getElementById('supplierPurchaseModal').classList.add('hidden');
         }
-    
-        document.getElementById('purchaseMaterialId').addEventListener('change', function(e) {
+
+        document.getElementById('purchaseMaterialId').addEventListener('change', function (e) {
             const materialId = e.target.value;
             if (materialId) {
                 const material = getRawMaterial(parseInt(materialId));
@@ -2288,33 +2515,33 @@
                 document.getElementById('purchaseUnit').value = '';
             }
         });
-    
-        document.getElementById('supplierPurchaseForm').addEventListener('submit', function(e) {
+
+        document.getElementById('supplierPurchaseForm').addEventListener('submit', function (e) {
             e.preventDefault();
-    
+
             const purchaseId = document.getElementById('purchaseId').value;
             const materialId = parseInt(document.getElementById('purchaseMaterialId').value);
             const newQuantity = parseFloat(document.getElementById('purchaseQuantity').value);
             const newCost = parseFloat(document.getElementById('purchaseCost').value);
             const newSupplierName = document.getElementById('supplierName').value.trim();
-    
+
             if (!materialId || isNaN(newQuantity) || isNaN(newCost) || newQuantity <= 0 || newCost < 0) {
                 alert("Por favor, completa los campos correctamente. La cantidad debe ser mayor a 0 y el costo no puede ser negativo.");
                 return;
             }
-    
+
             const material = getRawMaterial(materialId);
             if (!material) {
                 alert("Error: Materia prima no encontrada.");
                 return;
             }
-    
+
             if (purchaseId) { // Editing existing purchase
                 const existingPurchase = supplierPurchases.find(p => p.id === parseInt(purchaseId));
                 if (existingPurchase) {
                     const quantityDifference = newQuantity - existingPurchase.quantity;
                     material.stock += quantityDifference;
-    
+
                     existingPurchase.quantity = newQuantity;
                     existingPurchase.cost = newCost;
                     existingPurchase.supplierName = newSupplierName;
@@ -2333,30 +2560,29 @@
                 supplierPurchases.push(newPurchase);
                 alert(`Compra registrada. El nuevo stock de ${material.name} es ${material.stock.toFixed(2)} ${material.unit}.`);
             }
-    
+
             saveState();
             showAdminSupplierPurchases(); // This re-renders both stats and list
             renderAdminRawMaterials();
             renderAdminProducts();
             closePurchaseModal();
         });
-    
+
         function renderAdminOrders() {
             const adminOrdersList = document.getElementById('adminOrdersList');
-            
+
             if (orders.length === 0) {
                 adminOrdersList.innerHTML = '<p class="text-center text-gray-500 py-8">No hay pedidos pendientes</p>';
                 return;
             }
-    
+
             adminOrdersList.innerHTML = orders.map(order => `
                 <div class="bg-white border rounded-lg p-4 shadow-sm">
                     <div class="flex items-center justify-between mb-3">
                         <div class="flex items-center space-x-2">
                             <h4 class="font-bold text-lg">Pedido #${order.id}</h4>
-                            <span class="px-2 py-1 rounded-full text-xs font-medium ${
-                                order.status === 'pendiente' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
-                            }">
+                            <span class="px-2 py-1 rounded-full text-xs font-medium ${order.status === 'pendiente' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
+                }">
                                 ${order.status === 'pendiente' ? '⏳ Pendiente' : '✅ Listo'}
                             </span>
                         </div>
@@ -2434,21 +2660,18 @@
                     <div class="flex items-center justify-between pt-3 border-t">
                         <div class="flex items-center space-x-2">
                             <span class="text-sm font-medium">Estado del pago:</span>
-                            <span class="px-2 py-1 rounded-full text-xs font-medium ${
-                                order.isPaid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                            }">
+                            <span class="px-2 py-1 rounded-full text-xs font-medium ${order.isPaid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }">
                                 ${order.isPaid ? '✅ Pagado' : '❌ Pendiente'}
                             </span>
                         </div>
                         <div class="flex space-x-2">
-                            <button onclick="toggleOrderStatus(${order.id})" class="px-3 py-1 rounded-lg text-sm font-medium ${
-                                order.status === 'pendiente' ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-yellow-600 text-white hover:bg-yellow-700'
-                            }">
+                            <button onclick="toggleOrderStatus(${order.id})" class="px-3 py-1 rounded-lg text-sm font-medium ${order.status === 'pendiente' ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-yellow-600 text-white hover:bg-yellow-700'
+                }">
                                 ${order.status === 'pendiente' ? 'Marcar Listo' : 'Marcar Pendiente'}
                             </button>
-                            <button onclick="togglePaymentStatus(${order.id})" class="px-3 py-1 rounded-lg text-sm font-medium ${
-                                order.isPaid ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-blue-600 text-white hover:bg-blue-700'
-                            }">
+                            <button onclick="togglePaymentStatus(${order.id})" class="px-3 py-1 rounded-lg text-sm font-medium ${order.isPaid ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-blue-600 text-white hover:bg-blue-700'
+                }">
                                 ${order.isPaid ? 'Marcar No Pagado' : 'Marcar Pagado'}
                             </button>
                         </div>
@@ -2456,23 +2679,23 @@
                 </div>
             `).join('');
         }
-        
+
         function renderSalesStats() {
             const adminStatsList = document.getElementById('adminStatsList');
-            
+
             if (orders.length === 0) {
                 adminStatsList.innerHTML = '<p class="text-center text-gray-500 py-8">No hay datos de ventas para generar estadísticas.</p>';
                 return;
             }
-    
+
             const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
-    
+
             const customerTypeCounts = orders.reduce((acc, order) => {
                 const type = order.user.userType;
                 acc[type] = (acc[type] || 0) + 1;
                 return acc;
             }, {});
-    
+
             const productSales = orders.flatMap(order => order.items).reduce((acc, item) => {
                 acc[item.name] = (acc[item.name] || 0) + item.quantity;
                 return acc;
@@ -2480,13 +2703,13 @@
             const topProducts = Object.entries(productSales)
                 .sort(([, a], [, b]) => b - a)
                 .slice(0, 5);
-                
+
             const paymentMethodSales = orders.reduce((acc, order) => {
                 const method = order.paymentMethod;
                 acc[method] = (acc[method] || 0) + 1;
                 return acc;
             }, {});
-    
+
             adminStatsList.innerHTML = `
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div class="bg-blue-50 p-4 rounded-lg shadow">
@@ -2538,24 +2761,24 @@
                 </div>
             `;
         }
-    
+
         function renderAdminUsers() {
             const adminUsersList = document.getElementById('adminUsersList');
-            
+
             if (users.length === 0) {
                 adminUsersList.innerHTML = '<p class="text-center text-gray-500 py-8">No hay usuarios registrados</p>';
                 return;
             }
-    
+
             adminUsersList.innerHTML = users.map(user => `
                 <div class="bg-white border rounded-lg p-4 shadow-sm">
                     <div class="flex items-center justify-between mb-3">
                         <div class="flex items-center space-x-3">
                             <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                                 <span class="text-lg">
-                                    ${user.userType === 'estudiante' ? '👨‍🎓' : 
-                                    user.userType === 'profesor' ? '👨‍🏫' : 
-                                    user.userType === 'docente' ? '👩‍🏫' : '👨‍💼'}
+                                    ${user.userType === 'estudiante' ? '👨‍🎓' :
+                    user.userType === 'profesor' ? '👨‍🏫' :
+                        user.userType === 'docente' ? '👩‍🏫' : '👨‍💼'}
                                 </span>
                             </div>
                             <div>
@@ -2601,25 +2824,25 @@
                 </div>
             `).join('');
         }
-    
+
         // ===================== NUEVO: Datos Personales (render + edición) =====================
-    
+
         function renderAdminPersonalData() {
             const list = document.getElementById('adminPersonalDataList');
             const q = (document.getElementById('personalSearchInput').value || '').toLowerCase().trim();
             const type = document.getElementById('personalFilterSelect').value;
-    
+
             if (!users || users.length === 0) {
                 list.innerHTML = '<p class="text-center text-gray-500 py-8">No hay usuarios registrados.</p>';
                 return;
             }
-    
+
             let filtered = users.filter(u => u.id !== 0); // excluir admin en caso de existir
-    
+
             if (type !== 'all') {
                 filtered = filtered.filter(u => u.userType === type);
             }
-    
+
             if (q) {
                 filtered = filtered.filter(u => {
                     const haystack = [
@@ -2628,12 +2851,12 @@
                     return haystack.includes(q);
                 });
             }
-    
+
             if (filtered.length === 0) {
                 list.innerHTML = '<p class="text-center text-gray-500 py-8">Sin resultados para el filtro/búsqueda.</p>';
                 return;
             }
-    
+
             list.innerHTML = filtered.map(u => `
                 <div class="bg-white border rounded-lg p-4 shadow-sm">
                     <div class="flex items-start justify-between">
@@ -2664,19 +2887,19 @@
                 </div>
             `).join('');
         }
-    
+
         document.getElementById('personalSearchInput').addEventListener('input', renderAdminPersonalData);
         document.getElementById('personalFilterSelect').addEventListener('change', renderAdminPersonalData);
-    
+
         function openEditUserModal(userId) {
             const user = users.find(u => u.id === userId);
             if (!user) return;
-    
+
             document.getElementById('editUserId').value = user.id;
             document.getElementById('editUserType').value = user.userType;
             document.getElementById('editFullName').value = user.fullName || '';
             document.getElementById('editUsername').value = user.username || ''; // Asegura que el username se carga
-    
+
             // Limpiar campos
             document.getElementById('editControlNumber').value = user.controlNumber || '';
             document.getElementById('editCareer').value = user.career || '';
@@ -2685,20 +2908,20 @@
             document.getElementById('editPhoneNumber').value = user.phoneNumber || '';
             document.getElementById('editNewPassword').value = '';
             document.getElementById('editConfirmPassword').value = '';
-    
+
             toggleEditUserFields();
             document.getElementById('editUserModal').classList.remove('hidden');
         }
-    
+
         function closeEditUserModal() {
             document.getElementById('editUserModal').classList.add('hidden');
         }
-    
+
         function toggleEditUserFields() {
             const type = document.getElementById('editUserType').value;
             const stu = document.getElementById('editStudentFields');
             const staff = document.getElementById('editStaffFields');
-    
+
             if (type === 'estudiante') {
                 stu.classList.remove('hidden');
                 staff.classList.add('hidden');
@@ -2707,7 +2930,7 @@
                 staff.classList.remove('hidden');
             }
         }
-    
+
         function propagateUserChanges(updatedUser) {
             // Actualiza los datos del usuario embebidos en pedidos existentes
             orders.forEach(o => {
@@ -2727,45 +2950,45 @@
                 }
             });
         }
-    
-        document.getElementById('editUserForm').addEventListener('submit', function(e) {
+
+        document.getElementById('editUserForm').addEventListener('submit', function (e) {
             e.preventDefault();
-    
+
             const id = parseInt(document.getElementById('editUserId').value);
             const type = document.getElementById('editUserType').value;
             const fullName = document.getElementById('editFullName').value.trim();
             const username = document.getElementById('editUsername').value.trim(); // Se permite editar el username
-    
+
             const newPass = document.getElementById('editNewPassword').value;
             const confirmPass = document.getElementById('editConfirmPassword').value;
-    
+
             const user = users.find(u => u.id === id);
             if (!user) return;
-    
+
             if (!fullName || !username) {
                 alert('El nombre y el nombre de usuario no pueden estar vacíos.');
                 return;
             }
-            
+
             // prevenir duplicados de username
             const dupUsername = users.some(u => u.id !== id && u.username.toLowerCase() === username.toLowerCase());
             if (dupUsername) {
                 alert('Este nombre de usuario ya está registrado en otro usuario.');
                 return;
             }
-    
+
             // Aplicar cambios que aplican a todos
             user.fullName = fullName;
             user.username = username;
             user.userType = type;
-    
+
             // Validaciones y campos por tipo
             if (type === 'estudiante') {
                 const controlNumber = (document.getElementById('editControlNumber').value || '').trim();
                 const career = document.getElementById('editCareer').value || '';
                 const semester = document.getElementById('editSemester').value || '';
                 const group = document.getElementById('editGroup').value || '';
-    
+
                 if (!controlNumber) {
                     alert('Ingresa el número de control.');
                     return;
@@ -2776,15 +2999,15 @@
                     alert('Este número de control ya está registrado en otro estudiante.');
                     return;
                 }
-    
+
                 user.controlNumber = controlNumber;
                 user.career = career;
                 user.semester = semester;
                 user.group = group;
-    
+
                 // Limpiar campos de personal si existían
                 delete user.phoneNumber;
-    
+
             } else { // docente o administrativo
                 const phoneNumber = (document.getElementById('editPhoneNumber').value || '').trim();
                 if (!phoneNumber) {
@@ -2797,16 +3020,16 @@
                     alert('Este número de teléfono ya está registrado en otro usuario.');
                     return;
                 }
-    
+
                 user.phoneNumber = phoneNumber;
-    
+
                 // Limpiar campos de estudiante si existían
                 delete user.controlNumber;
                 delete user.career;
                 delete user.semester;
                 delete user.group;
             }
-    
+
             if (newPass || confirmPass) {
                 if (newPass !== confirmPass) {
                     alert('Las contraseñas no coinciden.');
@@ -2814,10 +3037,10 @@
                 }
                 user.password = newPass;
             }
-    
+
             propagateUserChanges(user);
             saveState();
-    
+
             alert('Datos actualizados correctamente.');
             closeEditUserModal();
             renderAdminPersonalData();
@@ -2827,23 +3050,23 @@
                 renderAdminOrders();
             }
         });
-    
+
         // ====================================================================================
         // (Resto de utilidades y formularios existentes)
         // ====================================================================================
-    
+
         function addMaterialFieldToProductModal(materialId = '', quantity = '') {
             const container = document.getElementById('productMaterialsContainer');
-            
+
             if (container.querySelector('.text-sm.text-gray-500')) {
                 container.innerHTML = '';
             }
-    
+
             const newIndex = container.children.length;
-            const materialOptions = rawMaterials.map(m => 
+            const materialOptions = rawMaterials.map(m =>
                 `<option value="${m.id}" ${m.id == materialId ? 'selected' : ''}>${m.emoji} ${m.name} (${m.unit})</option>`
             ).join('');
-    
+
             const materialHtml = `
                 <div class="flex items-center space-x-2 p-2 bg-white rounded-lg border" data-index="${newIndex}">
                     <div class="flex-1">
@@ -2862,23 +3085,23 @@
                     </button>
                 </div>
             `;
-    
+
             container.insertAdjacentHTML('beforeend', materialHtml);
         }
-    
+
         function removeMaterialField(button) {
             const container = document.getElementById('productMaterialsContainer');
             button.closest('.flex').remove();
-            
+
             if (container.children.length === 0) {
                 container.innerHTML = '<p class="text-sm text-gray-500">Haz clic en "Añadir Materia Prima" para empezar.</p>';
             }
         }
-    
+
         function renderProductMaterials(product) {
             const container = document.getElementById('productMaterialsContainer');
             container.innerHTML = '';
-    
+
             if (product.materialsNeeded && product.materialsNeeded.length > 0) {
                 product.materialsNeeded.forEach(mat => {
                     addMaterialFieldToProductModal(mat.materialId, mat.quantity);
@@ -2887,22 +3110,22 @@
                 container.innerHTML = '<p class="text-sm text-gray-500">Haz clic en "Añadir Materia Prima" para empezar.</p>';
             }
         }
-    
+
         function addNewProduct() {
             if (!document.getElementById('adminRawMaterialsSection').classList.contains('hidden')) {
                 alert("Para actualizar Materia Prima, usa el botón de editar en la lista. Este botón es para Productos Finales.");
                 return;
             }
-            
+
             document.getElementById('modalTitle').textContent = 'Agregar Producto';
             document.getElementById('productForm').reset();
             document.getElementById('productId').value = '';
-            document.getElementById('productEmoji').value = ''; 
+            document.getElementById('productEmoji').value = '';
             document.getElementById('imagePreviewStatus').textContent = 'Ningún archivo seleccionado.';
             renderProductMaterials({ materialsNeeded: [] });
             document.getElementById('productModal').classList.remove('hidden');
         }
-    
+
         function editProduct(id) {
             const product = products.find(p => p.id === id);
             if (product) {
@@ -2910,10 +3133,10 @@
                 document.getElementById('productId').value = product.id;
                 document.getElementById('productName').value = product.name;
                 document.getElementById('productEmoji').value = product.emoji || '';
-                
+
                 document.getElementById('productDescription').value = product.description || '';
                 document.getElementById('productImageURL').value = product.imageURL || '';
-                
+
                 if (product.imageLocal) {
                     document.getElementById('imagePreviewStatus').textContent = 'Imagen Local Cargada ✓';
                 } else if (product.imageURL) {
@@ -2921,21 +3144,21 @@
                 } else {
                     document.getElementById('imagePreviewStatus').textContent = 'Ningún archivo seleccionado.';
                 }
-                document.getElementById('productImageFile').value = null; 
-                
+                document.getElementById('productImageFile').value = null;
+
                 document.getElementById('productTime').value = product.time || '';
                 document.getElementById('productCalories').value = product.calories || '';
-                
+
                 document.getElementById('productPrice').value = product.price;
                 document.getElementById('productCategory').value = product.category;
                 document.getElementById('productStock').value = product.stock;
-                
+
                 renderProductMaterials(product);
-    
+
                 document.getElementById('productModal').classList.remove('hidden');
             }
         }
-    
+
         function deleteProduct(id) {
             if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
                 products = products.filter(p => p.id !== id);
@@ -2943,11 +3166,11 @@
                 renderAdminProducts();
             }
         }
-    
+
         function closeModal() {
             document.getElementById('productModal').classList.add('hidden');
         }
-    
+
         function toggleOrderStatus(orderId) {
             const order = orders.find(o => o.id === orderId);
             if (order) {
@@ -2956,7 +3179,7 @@
                 renderAdminOrders();
             }
         }
-    
+
         function togglePaymentStatus(orderId) {
             const order = orders.find(o => o.id === orderId);
             if (order) {
@@ -2965,11 +3188,11 @@
                 renderAdminOrders();
             }
         }
-    
-        function previewLocalImage(event){
+
+        function previewLocalImage(event) {
             const file = event.target.files && event.target.files[0];
             const status = document.getElementById('imagePreviewStatus');
-            if(!file){
+            if (!file) {
                 status.textContent = 'Ningún archivo seleccionado.';
                 return;
             }
@@ -2979,30 +3202,30 @@
             };
             reader.readAsDataURL(file);
         }
-    
+
         document.getElementById('productForm').addEventListener('submit', function (e) {
             e.preventDefault();
-    
+
             const id = document.getElementById('productId').value;
             const name = document.getElementById('productName').value;
-            const emoji = document.getElementById('productEmoji').value.trim().substring(0, 2); 
+            const emoji = document.getElementById('productEmoji').value.trim().substring(0, 2);
             const price = parseFloat(document.getElementById('productPrice').value);
             const category = document.getElementById('productCategory').value;
             const stock = parseInt(document.getElementById('productStock').value);
-            
+
             const description = document.getElementById('productDescription').value;
             const imageURL = document.getElementById('productImageURL').value;
             const imageFile = document.getElementById('productImageFile').files[0];
             const time = document.getElementById('productTime').value;
             const calories = document.getElementById('productCalories').value;
-    
+
             const productMaterialsContainer = document.getElementById('productMaterialsContainer');
             const materialsNeeded = [];
-            
+
             productMaterialsContainer.querySelectorAll('.flex[data-index]').forEach((item, index) => {
                 const materialId = item.querySelector(`[name="material_id_${index}"]`).value;
                 const quantity = item.querySelector(`[name="material_quantity_${index}"]`).value;
-                
+
                 if (materialId && quantity > 0) {
                     materialsNeeded.push({
                         materialId: parseInt(materialId),
@@ -3010,7 +3233,7 @@
                     });
                 }
             });
-    
+
             const productToSave = {
                 id: id ? parseInt(id) : null,
                 name, price, category, stock, emoji,
@@ -3018,9 +3241,9 @@
                 description, time, calories,
                 imageURL: '', imageLocal: '',
             };
-    
+
             const existingProduct = id ? products.find(p => p.id === parseInt(id)) : null;
-    
+
             const finalizeSave = (localData = null) => {
                 if (localData) {
                     productToSave.imageLocal = localData;
@@ -3032,20 +3255,20 @@
                     productToSave.imageLocal = existingProduct.imageLocal || '';
                     productToSave.imageURL = existingProduct.imageURL || '';
                 }
-    
-                 if (id) {
-                     Object.assign(products.find(p => p.id === parseInt(id)), productToSave);
-                 } else {
-                     const newId = Math.max(...products.map(p => p.id), 0) + 1;
-                     productToSave.id = newId;
-                     products.push(productToSave);
-                 }
-                
-                 saveState();
-                 renderAdminProducts();
-                 closeModal();
+
+                if (id) {
+                    Object.assign(products.find(p => p.id === parseInt(id)), productToSave);
+                } else {
+                    const newId = Math.max(...products.map(p => p.id), 0) + 1;
+                    productToSave.id = newId;
+                    products.push(productToSave);
+                }
+
+                saveState();
+                renderAdminProducts();
+                closeModal();
             };
-            
+
             if (imageFile) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -3056,14 +3279,14 @@
                 finalizeSave();
             }
         });
-    
+
         document.getElementById('cardNumber').addEventListener('input', function (e) {
             let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
             let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
             if (formattedValue.length > 19) formattedValue = formattedValue.substr(0, 19);
             e.target.value = formattedValue;
         });
-    
+
         document.getElementById('cardExpiry').addEventListener('input', function (e) {
             let value = e.target.value.replace(/\D/g, '');
             if (value.length >= 2) {
@@ -3071,153 +3294,152 @@
             }
             e.target.value = value;
         });
-    
+
         document.getElementById('cardCvv').addEventListener('input', function (e) {
             e.target.value = e.target.value.replace(/[^0-9]/g, '');
         });
-    
+
         loadState();
 
         // ========================= R E P O R T E S  (Vista previa + Copiar) =========================
 
-function showAdminReports() {
-  activateTab('reportsTab');
-  document.getElementById('adminReportsSection').classList.remove('hidden');
-  renderReportPreview(); // ← generar la vista previa al abrir la pestaña
-}
-
-function generateReportText() {
-  const now = new Date();
-  const d = (n) => String(n).padStart(2, '0');
-  const iso = `${now.getFullYear()}-${d(now.getMonth()+1)}-${d(now.getDate())} ${d(now.getHours())}:${d(now.getMinutes())}:${d(now.getSeconds())}`;
-
-  // Asegurar arrays existentes
-  const usersSafe = Array.isArray(users) ? users : [];
-  const productsSafe = Array.isArray(products) ? products : [];
-
-  // Encabezado
-  const lines = [];
-  lines.push("==============================================");
-  lines.push("            CAFE-TEC — REPORTE TXT            ");
-  lines.push("==============================================");
-  lines.push(`Generado: ${iso}`);
-  lines.push("");
-
-  // Usuarios
-  lines.push("USUARIOS");
-  lines.push("--------");
-  if (usersSafe.length === 0) {
-    lines.push("(sin usuarios)");
-  } else {
-    // Excluir admin (id 0) si existiera
-    usersSafe
-      .filter(u => u && u.id !== 0)
-      .forEach((u, idx) => {
-        const regDate = (u.registrationDate instanceof Date)
-          ? u.registrationDate
-          : (u.registrationDate ? new Date(u.registrationDate) : null);
-        const regStr = regDate ? regDate.toLocaleString() : "N/D";
-        lines.push(`#${idx + 1}`);
-        lines.push(`- Nombre: ${u.fullName || "N/D"}`);
-        lines.push(`- Usuario: ${u.username || "N/D"}`);
-        lines.push(`- Tipo: ${u.userType || "N/D"}`);
-        if (u.userType === 'estudiante') {
-          lines.push(`- No. Control: ${u.controlNumber || "N/D"}`);
-          lines.push(`- Carrera: ${u.career || "N/D"}`);
-          lines.push(`- Semestre: ${u.semester || "N/D"}`);
-          lines.push(`- Grupo: ${u.group || "N/D"}`);
-        } else {
-          lines.push(`- Teléfono: ${u.phoneNumber || "N/D"}`);
+        function showAdminReports() {
+            activateTab('reportsTab');
+            document.getElementById('adminReportsSection').classList.remove('hidden');
+            renderReportPreview(); // ← generar la vista previa al abrir la pestaña
         }
-        lines.push(`- Credencial: ${u.hasCredential ? "Sí" : "No"}`);
-        lines.push(`- Fecha Registro: ${regStr}`);
-        lines.push("");
-      });
-  }
 
-  // Productos
-  lines.push("");
-  lines.push("PRODUCTOS");
-  lines.push("---------");
-  if (productsSafe.length === 0) {
-    lines.push("(sin productos)");
-  } else {
-    productsSafe.forEach((p, idx) => {
-      lines.push(`#${idx + 1}`);
-      lines.push(`- Nombre: ${p.name || "N/D"}`);
-      lines.push(`- Emoji: ${p.emoji || "—"}`);
-      lines.push(`- Categoría: ${p.category || "N/D"}`);
-      lines.push(`- Precio: $${(p.price ?? 0).toFixed(2)}`);
-      lines.push(`- Stock: ${p.stock ?? 0}`);
-      if (p.time) lines.push(`- Tiempo: ${p.time}`);
-      if (p.calories) lines.push(`- Calorías: ${p.calories}`);
-      if (p.description) lines.push(`- Descripción: ${p.description}`);
+        function generateReportText() {
+            const now = new Date();
+            const d = (n) => String(n).padStart(2, '0');
+            const iso = `${now.getFullYear()}-${d(now.getMonth() + 1)}-${d(now.getDate())} ${d(now.getHours())}:${d(now.getMinutes())}:${d(now.getSeconds())}`;
 
-      // Receta (Materia Prima)
-      if (Array.isArray(p.materialsNeeded) && p.materialsNeeded.length > 0) {
-        lines.push("- Receta por unidad:");
-        p.materialsNeeded.forEach(mat => {
-          const rm = getRawMaterial(mat.materialId);
-          if (rm) {
-            lines.push(`   • ${mat.quantity} ${rm.unit} de ${rm.name}`);
-          } else {
-            lines.push(`   • ${mat.quantity} (MP id ${mat.materialId})`);
-          }
-        });
-      } else {
-        lines.push("- Receta por unidad: (sin receta vinculada)");
-      }
-      lines.push("");
-    });
-  }
+            // Asegurar arrays existentes
+            const usersSafe = Array.isArray(users) ? users : [];
+            const productsSafe = Array.isArray(products) ? products : [];
 
-  return lines.join("\n");
-}
+            // Encabezado
+            const lines = [];
+            lines.push("==============================================");
+            lines.push("            CAFE-TEC — REPORTE TXT            ");
+            lines.push("==============================================");
+            lines.push(`Generado: ${iso}`);
+            lines.push("");
 
-function renderReportPreview() {
-  const previewEl = document.getElementById('reportPreview');
-  const summaryEl = document.getElementById('reportSummary');
-  if (!previewEl) return;
+            // Usuarios
+            lines.push("USUARIOS");
+            lines.push("--------");
+            if (usersSafe.length === 0) {
+                lines.push("(sin usuarios)");
+            } else {
+                // Excluir admin (id 0) si existiera
+                usersSafe
+                    .filter(u => u && u.id !== 0)
+                    .forEach((u, idx) => {
+                        const regDate = (u.registrationDate instanceof Date)
+                            ? u.registrationDate
+                            : (u.registrationDate ? new Date(u.registrationDate) : null);
+                        const regStr = regDate ? regDate.toLocaleString() : "N/D";
+                        lines.push(`#${idx + 1}`);
+                        lines.push(`- Nombre: ${u.fullName || "N/D"}`);
+                        lines.push(`- Usuario: ${u.username || "N/D"}`);
+                        lines.push(`- Tipo: ${u.userType || "N/D"}`);
+                        if (u.userType === 'estudiante') {
+                            lines.push(`- No. Control: ${u.controlNumber || "N/D"}`);
+                            lines.push(`- Carrera: ${u.career || "N/D"}`);
+                            lines.push(`- Semestre: ${u.semester || "N/D"}`);
+                            lines.push(`- Grupo: ${u.group || "N/D"}`);
+                        } else {
+                            lines.push(`- Teléfono: ${u.phoneNumber || "N/D"}`);
+                        }
+                        lines.push(`- Credencial: ${u.hasCredential ? "Sí" : "No"}`);
+                        lines.push(`- Fecha Registro: ${regStr}`);
+                        lines.push("");
+                    });
+            }
 
-  const text = generateReportText();
-  previewEl.value = text;
+            // Productos
+            lines.push("");
+            lines.push("PRODUCTOS");
+            lines.push("---------");
+            if (productsSafe.length === 0) {
+                lines.push("(sin productos)");
+            } else {
+                productsSafe.forEach((p, idx) => {
+                    lines.push(`#${idx + 1}`);
+                    lines.push(`- Nombre: ${p.name || "N/D"}`);
+                    lines.push(`- Emoji: ${p.emoji || "—"}`);
+                    lines.push(`- Categoría: ${p.category || "N/D"}`);
+                    lines.push(`- Precio: $${(p.price ?? 0).toFixed(2)}`);
+                    lines.push(`- Stock: ${p.stock ?? 0}`);
+                    if (p.time) lines.push(`- Tiempo: ${p.time}`);
+                    if (p.calories) lines.push(`- Calorías: ${p.calories}`);
+                    if (p.description) lines.push(`- Descripción: ${p.description}`);
 
-  const usersCount = (Array.isArray(users) ? users.filter(u => u && u.id !== 0).length : 0);
-  const productsCount = (Array.isArray(products) ? products.length : 0);
-  summaryEl.textContent = `${usersCount} usuarios, ${productsCount} productos — generado ${new Date().toLocaleString()}`;
-}
+                    // Receta (Materia Prima)
+                    if (Array.isArray(p.materialsNeeded) && p.materialsNeeded.length > 0) {
+                        lines.push("- Receta por unidad:");
+                        p.materialsNeeded.forEach(mat => {
+                            const rm = getRawMaterial(mat.materialId);
+                            if (rm) {
+                                lines.push(`   • ${mat.quantity} ${rm.unit} de ${rm.name}`);
+                            } else {
+                                lines.push(`   • ${mat.quantity} (MP id ${mat.materialId})`);
+                            }
+                        });
+                    } else {
+                        lines.push("- Receta por unidad: (sin receta vinculada)");
+                    }
+                    lines.push("");
+                });
+            }
 
-function copyReportToClipboard() {
-  const previewEl = document.getElementById('reportPreview');
-  if (!previewEl) return;
-  const text = previewEl.value || "";
+            return lines.join("\n");
+        }
 
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text)
-      .then(() => alert("Reporte copiado al portapapeles."))
-      .catch(() => fallbackCopy(previewEl));
-  } else {
-    fallbackCopy(previewEl);
-  }
+        function renderReportPreview() {
+            const previewEl = document.getElementById('reportPreview');
+            const summaryEl = document.getElementById('reportSummary');
+            if (!previewEl) return;
 
-  function fallbackCopy(el) {
-    el.removeAttribute('readonly');
-    el.select();
-    el.setSelectionRange(0, el.value.length);
-    const ok = document.execCommand('copy');
-    el.setAttribute('readonly', 'readonly');
-    window.getSelection().removeAllRanges();
-    alert(ok ? "Reporte copiado al portapapeles." : "No se pudo copiar. Selecciona y copia manualmente.");
-  }
-}
-// Si la pestaña de reportes está visible, refrescar la vista previa
-const reports = document.getElementById('adminReportsSection');
-if (reports && !reports.classList.contains('hidden')) {
-  renderReportPreview();
-}
-    
-        </script>
-    </body>
+            const text = generateReportText();
+            previewEl.value = text;
+
+            const usersCount = (Array.isArray(users) ? users.filter(u => u && u.id !== 0).length : 0);
+            const productsCount = (Array.isArray(products) ? products.length : 0);
+            summaryEl.textContent = `${usersCount} usuarios, ${productsCount} productos — generado ${new Date().toLocaleString()}`;
+        }
+
+        function copyReportToClipboard() {
+            const previewEl = document.getElementById('reportPreview');
+            if (!previewEl) return;
+            const text = previewEl.value || "";
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text)
+                    .then(() => alert("Reporte copiado al portapapeles."))
+                    .catch(() => fallbackCopy(previewEl));
+            } else {
+                fallbackCopy(previewEl);
+            }
+
+            function fallbackCopy(el) {
+                el.removeAttribute('readonly');
+                el.select();
+                el.setSelectionRange(0, el.value.length);
+                const ok = document.execCommand('copy');
+                el.setAttribute('readonly', 'readonly');
+                window.getSelection().removeAllRanges();
+                alert(ok ? "Reporte copiado al portapapeles." : "No se pudo copiar. Selecciona y copia manualmente.");
+            }
+        }
+        // Si la pestaña de reportes está visible, refrescar la vista previa
+        const reports = document.getElementById('adminReportsSection');
+        if (reports && !reports.classList.contains('hidden')) {
+            renderReportPreview();
+        }
+
+    </script>
+</body>
 
 </html>
-
