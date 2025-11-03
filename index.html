@@ -652,7 +652,8 @@
 
             <div id="adminPersonalDataSection" class="hidden mb-6">
                 <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-lg font-semibold">🧾 Datos Personales</h3>
+                    <h3 class="text-lg font-semibold">🧾 Datos Personales y EdoCta</h3>
+                   
                 </div>
                 <div class="grid grid-cols-1 gap-2 mb-3">
                     <input id="personalSearchInput" type="text" class="border rounded-lg px-3 py-2"
@@ -1105,6 +1106,19 @@
                 </div>
 
                 <div class="border-t pt-3">
+                    <label class="block text-sm font-semibold mb-1">Periodo de Actividad de la Cuenta</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Activa Desde (Registro)</label>
+                            <input type="datetime-local" id="editRegistrationDate" class="w-full border rounded-lg px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Activa Hasta</label>
+                            <input type="datetime-local" id="editAccountActiveUntil" class="w-full border rounded-lg px-3 py-2 text-sm">
+                        </div>
+                    </div>
+                </div>
+                <div class="border-t pt-3">
                     <label class="block text-sm font-semibold mb-1">Cambiar Contraseña (opcional)</label>
                     <div class="grid grid-cols-1 gap-3">
                         <div class="relative">
@@ -1203,11 +1217,21 @@
             // NOTA: Se actualiza el formato de la fecha de registro de los usuarios al cargar,
             // ya que en el registro se guarda como un string local.
             if (storedUsers) {
-                users = JSON.parse(storedUsers).map(u => ({
-                    ...u,
-                    // Asegurar que registrationDate sea parseable como objeto Date
-                    registrationDate: u.registrationDate ? new Date(u.registrationDate) : new Date(0) // Usar new Date(0) si no hay fecha para evitar errores
-                }));
+                users = JSON.parse(storedUsers).map(u => {
+                    const registrationDate = u.registrationDate ? new Date(u.registrationDate) : new Date(0);
+                    let accountActiveUntil = u.accountActiveUntil ? new Date(u.accountActiveUntil) : null;
+
+                    // Migration for old users: if accountActiveUntil is not set, create it based on registration date + 1 day.
+                    if (!accountActiveUntil && u.registrationDate) {
+                        accountActiveUntil = new Date(registrationDate.getTime() + 24 * 60 * 60 * 1000);
+                    }
+
+                    return {
+                        ...u,
+                        registrationDate: registrationDate,
+                        accountActiveUntil: accountActiveUntil
+                    };
+                });
             }
             if (storedCurrentUser) currentUser = JSON.parse(storedCurrentUser);
             if (storedOrderIdCounter) orderIdCounter = parseInt(storedOrderIdCounter);
@@ -1554,23 +1578,20 @@
                 const currentDate = new Date();
 
                 // ---- INICIO DE LA MODIFICACIÓN (Validación Estricta de Horas) ----
+                const accountActiveUntil = user.accountActiveUntil instanceof Date ? user.accountActiveUntil : new Date(user.accountActiveUntil);
 
                 // 1. VALIDACIÓN PASADO (Anti-manipulación hacia atrás)
                 // Si la hora actual es estrictamente anterior a la hora de registro.
                 if (currentDate.getTime() < registrationDate.getTime()) {
 
-                    alert('🚫 Acceso Bloqueado: La fecha y hora de tu computadora es anterior a tu fecha de registro. Por favor, actualiza la fecha para continuar.');
+                    alert(`🚫 Acceso Bloqueado: La fecha y hora de tu computadora es anterior a tu fecha de registro (${registrationDate.toLocaleString()}). Por favor, actualiza la fecha para continuar.`);
                     return; // Bloquea el ingreso
                 }
 
-                // 2. VALIDACIÓN FUTURO (Límite de 1 día)
-                // Calculamos el límite de 1 día (24 horas) en milisegundos.
-                const futureLimitMs = 24 * 60 * 60 * 1000; // 1 DÍA
-               const registrationTime = registrationDate.getTime();
-
-                // Si la fecha actual del sistema es MÁS de 1 día posterior a la fecha de registro.
-                if (currentDate.getTime() > (registrationTime + futureLimitMs)) {
-                    alert('🚫 Acceso Bloqueado: Tu acceso ha superado el límite de 1 día desde el registro. Contacta al administrador.');
+                // 2. VALIDACIÓN FUTURO (Límite de "Activa Hasta")
+                // Si la fecha actual del sistema es posterior a la fecha de expiración de la cuenta.
+                if (accountActiveUntil && currentDate.getTime() > accountActiveUntil.getTime()) {
+                    alert(`🚫 Acceso Bloqueado: Tu cuenta ha expirado el ${accountActiveUntil.toLocaleString()}. Contacta al administrador para reactivarla.`);
                     return;
                 }
                 // ---- FIN DE LA MODIFICACIÓN ----
@@ -2908,6 +2929,27 @@
             document.getElementById('editPhoneNumber').value = user.phoneNumber || '';
             document.getElementById('editNewPassword').value = '';
             document.getElementById('editConfirmPassword').value = '';
+            
+            // Cargar fechas de activación
+            const regDate = user.registrationDate ? new Date(user.registrationDate) : null;
+            const activeUntilDate = user.accountActiveUntil ? new Date(user.accountActiveUntil) : null;
+
+            if (regDate) {
+                // Formato para datetime-local: YYYY-MM-DDTHH:mm
+                document.getElementById('editRegistrationDate').value = new Date(regDate.getTime() - (regDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+            }
+            if (activeUntilDate) {
+                document.getElementById('editAccountActiveUntil').value = new Date(activeUntilDate.getTime() - (activeUntilDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+            }
+
+            // Solo el ADMIN principal puede modificar las fechas de activación.
+            const isAdmin = currentUser && currentUser.username === 'ADMIN';
+            document.getElementById('editRegistrationDate').disabled = !isAdmin;
+            document.getElementById('editAccountActiveUntil').disabled = !isAdmin;
+            
+
+
+
 
             toggleEditUserFields();
             document.getElementById('editUserModal').classList.remove('hidden');
@@ -2961,6 +3003,9 @@
 
             const newPass = document.getElementById('editNewPassword').value;
             const confirmPass = document.getElementById('editConfirmPassword').value;
+
+            const regDateValue = document.getElementById('editRegistrationDate').value;
+            const activeUntilValue = document.getElementById('editAccountActiveUntil').value;
 
             const user = users.find(u => u.id === id);
             if (!user) return;
@@ -3038,6 +3083,10 @@
                 user.password = newPass;
             }
 
+            // Guardar fechas
+            user.registrationDate = regDateValue ? new Date(regDateValue) : user.registrationDate;
+            user.accountActiveUntil = activeUntilValue ? new Date(activeUntilValue) : user.accountActiveUntil;
+
             propagateUserChanges(user);
             saveState();
 
@@ -3050,6 +3099,20 @@
                 renderAdminOrders();
             }
         });
+
+        // ===================== NUEVO: Sincronización Forzada de Datos de Usuario en Pedidos =====================
+        function forcePropagateAllUsers() {
+            if (!confirm("¿Estás seguro de que quieres sincronizar los datos de TODOS los usuarios con sus pedidos existentes? Esto actualizará la información del cliente en cada pedido. Esta acción no se puede deshacer.")) {
+                return;
+            }
+
+            users.forEach(user => {
+                propagateUserChanges(user);
+            });
+
+            saveState();
+            alert("Sincronización completada. Los datos de los usuarios han sido actualizados en todos los pedidos.");
+        }
 
         // ====================================================================================
         // (Resto de utilidades y formularios existentes)
