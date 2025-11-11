@@ -1665,6 +1665,8 @@
                 showWelcome();
             } else {
                 setLoginMessage('Usuario, número de control o contraseña incorrectos', 'error');
+                document.getElementById('loginUser').value = '';
+                document.getElementById('loginPassword').value = '';
             }
         }
 
