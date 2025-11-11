@@ -18,7 +18,7 @@
         }
 
         @keyframes fadeIn {
-            from {  
+            from {
                 opacity: 0;
                 transform: translateY(20px);
             }
@@ -112,6 +112,9 @@
                     class="w-full bg-blue-800 bg-opacity-70 text-white py-2 px-6 rounded-lg font-medium text-sm hover:shadow-xl transform hover:scale-105 transition-all duration-200 border border-white">
                     🔑 ¿Olvidaste tu Contraseña?
                 </button>
+
+                <!-- MENSAJE DE LOGIN (para cuenta desactivada, etc.) -->
+                <div id="loginMessage" class="mt-4 hidden rounded-lg px-4 py-3 text-sm font-medium"></div>
             </div>
         </div>
     </div>
@@ -653,7 +656,6 @@
             <div id="adminPersonalDataSection" class="hidden mb-6">
                 <div class="flex items-center justify-between mb-3">
                     <h3 class="text-lg font-semibold">🧾 Datos Personales y EdoCta</h3>
-                   
                 </div>
                 <div class="grid grid-cols-1 gap-2 mb-3">
                     <input id="personalSearchInput" type="text" class="border rounded-lg px-3 py-2"
@@ -829,8 +831,8 @@
                     </div>
                 </div>
                 <div class="flex space-x-3">
-                    <button type="button" onclick="closeRawMaterialModal()"
-                        class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-medium">
+                    <button type="button" onclick="closeRawMaterialModal()
+                        " class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-medium">
                         Cancelar
                     </button>
                     <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium">
@@ -1053,6 +1055,8 @@
                         <input type="text" id="editControlNumber" class="w-full border rounded-lg px-3 py-2"
                             placeholder="Ej: 20230001">
                     </div>
+
+                    
                     <div>
                         <label class="block text-sm font-medium mb-1">Carrera</label>
                         <select id="editCareer" class="w-full border rounded-lg px-3 py-2">
@@ -1110,11 +1114,13 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-medium mb-1">Activa Desde (Registro)</label>
-                            <input type="datetime-local" id="editRegistrationDate" class="w-full border rounded-lg px-3 py-2 text-sm">
+                            <input type="datetime-local" id="editRegistrationDate"
+                                class="w-full border rounded-lg px-3 py-2 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-medium mb-1">Activa Hasta</label>
-                            <input type="datetime-local" id="editAccountActiveUntil" class="w-full border rounded-lg px-3 py-2 text-sm">
+                            <input type="datetime-local" id="editAccountActiveUntil"
+                                class="w-full border rounded-lg px-3 py-2 text-sm">
                         </div>
                     </div>
                 </div>
@@ -1177,8 +1183,12 @@
         </div>
     </div>
     <script>
+        
+
+
+
         // ====================================================================================
-        // G E S T I Ó N  D E  M E M O R I A  L O C A L
+        // G E S T I Ó N  D E  M E M O R I A  L O C A L
         // ====================================================================================
 
         const STORAGE_KEYS = {
@@ -1214,33 +1224,61 @@
             if (storedMaterials) rawMaterials = JSON.parse(storedMaterials);
             if (storedPurchases) supplierPurchases = JSON.parse(storedPurchases);
             if (storedOrders) orders = JSON.parse(storedOrders);
-            // NOTA: Se actualiza el formato de la fecha de registro de los usuarios al cargar,
-            // ya que en el registro se guarda como un string local.
+
             if (storedUsers) {
                 users = JSON.parse(storedUsers).map(u => {
                     const registrationDate = u.registrationDate ? new Date(u.registrationDate) : new Date(0);
                     let accountActiveUntil = u.accountActiveUntil ? new Date(u.accountActiveUntil) : null;
 
-                    // Migration for old users: if accountActiveUntil is not set, create it based on registration date + 1 day.
                     if (!accountActiveUntil && u.registrationDate) {
                         accountActiveUntil = new Date(registrationDate.getTime() + 24 * 60 * 60 * 1000);
                     }
 
+                    // NUEVO: valor por defecto de estado de cuenta (activa)
+                    const isActive = (typeof u.isActive === 'boolean') ? u.isActive : true;
+
                     return {
                         ...u,
-                        registrationDate: registrationDate,
-                        accountActiveUntil: accountActiveUntil
+                        isActive,
+                        registrationDate,
+                        accountActiveUntil
                     };
                 });
             }
             if (storedCurrentUser) currentUser = JSON.parse(storedCurrentUser);
             if (storedOrderIdCounter) orderIdCounter = parseInt(storedOrderIdCounter);
 
+            // Si hay sesión previa, validar estado de cuenta/expiración antes de entrar directo
             if (currentUser) {
                 if (currentUser.userType === 'admin') {
                     showAdminPanel();
                 } else {
-                    document.getElementById('welcomeUserName').textContent = currentUser.fullName;
+                    // buscar al usuario real por id
+                    const cu = users.find(u => u.id === currentUser.id);
+                    const now = new Date();
+                    if (!cu) {
+                        currentUser = null;
+                        saveState();
+                        showLogin();
+                        setLoginMessage('🚫 Tu usuario ya no existe. Contacta al administrador.', 'error');
+                        return;
+                    }
+                    if (cu.isActive === false) {
+                        currentUser = null;
+                        saveState();
+                        showLogin();
+                        setLoginMessage('🚫 Cuenta desactivada. Contacta al administrador.', 'error');
+                        return;
+                    }
+                    if (cu.accountActiveUntil && now.getTime() > new Date(cu.accountActiveUntil).getTime()) {
+                        currentUser = null;
+                        saveState();
+                        showLogin();
+                        setLoginMessage('🚫 Acceso bloqueado: tu cuenta ha expirado. Contacta al administrador.', 'error');
+                        return;
+                    }
+
+                    document.getElementById('welcomeUserName').textContent = cu.fullName;
                     showWelcome();
                 }
             } else {
@@ -1249,7 +1287,7 @@
         }
 
         // ====================================================================================
-        // E S T A D O S  I N I C I A L E S 
+        // E S T A D O S  I N I C I A L E S 
         // ====================================================================================
 
         let rawMaterials = [
@@ -1348,7 +1386,7 @@
         }
 
         // ====================================================================================
-        // F U N C I O N E S  D E  A U T E N T I C A C I Ó N
+        // F U N C I O N E S  D E  A U T E N T I C A C I Ó N
         // ====================================================================================
 
         function togglePasswordVisibility(inputId) {
@@ -1367,9 +1405,29 @@
             }
         }
 
+        function setLoginMessage(msg, type = 'error') {
+            const el = document.getElementById('loginMessage');
+            if (!el) return;
+            el.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-yellow-100', 'text-yellow-800', 'bg-red-100', 'text-red-800');
+            if (type === 'success') {
+                el.classList.add('bg-green-100', 'text-green-800');
+            } else if (type === 'warning') {
+                el.classList.add('bg-yellow-100', 'text-yellow-800');
+            } else {
+                el.classList.add('bg-red-100', 'text-red-800');
+            }
+            el.textContent = msg;
+        }
+
+        function clearLoginMessage() {
+            const el = document.getElementById('loginMessage');
+            if (el) el.classList.add('hidden');
+        }
+
         function clearLoginFields() {
             document.getElementById('loginUser').value = '';
             document.getElementById('loginPassword').value = '';
+            clearLoginMessage();
         }
 
         function showPasswordResetModal() {
@@ -1384,7 +1442,7 @@
         document.getElementById('passwordResetForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
-            const loginIdentifier = document.getElementById('resetUser').value.trim(); // Puede ser username, No. Control o Teléfono
+            const loginIdentifier = document.getElementById('resetUser').value.trim();
             const phone = document.getElementById('resetPhone').value.trim();
             const newPassword = document.getElementById('resetNewPassword').value;
             const confirmPassword = document.getElementById('resetConfirmPassword').value;
@@ -1401,7 +1459,6 @@
             );
 
             if (user) {
-                // Verificar que el teléfono coincida con el registrado para el restablecimiento.
                 const isPhoneMatch = (user.phoneNumber && user.phoneNumber === phone) || (user.userType === 'estudiante' && user.controlNumber && user.controlNumber === phone);
 
                 if (isPhoneMatch) {
@@ -1440,7 +1497,6 @@
             const studentFields = document.getElementById('studentFields');
             const staffFields = document.getElementById('staffFields');
 
-            // Si el usuario es estudiante, los campos de staff no son requeridos y viceversa
             if (userType === 'estudiante') {
                 studentFields.classList.remove('hidden');
                 staffFields.classList.add('hidden');
@@ -1480,7 +1536,7 @@
 
             const userType = document.getElementById('userType').value;
             const fullName = document.getElementById('fullName').value;
-            const username = document.getElementById('username').value.trim(); // Nuevo campo de usuario
+            const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
 
@@ -1489,7 +1545,6 @@
                 return;
             }
 
-            // Validación de nombre de usuario único
             if (users.some(user => user.username && user.username.toLowerCase() === username.toLowerCase())) {
                 alert('Este nombre de usuario ya está registrado. Por favor, elige otro.');
                 return;
@@ -1500,10 +1555,10 @@
                 id: users.length + 1,
                 userType: userType,
                 fullName: fullName,
-                username: username, // Almacenar el nombre de usuario
+                username: username,
                 password: password,
-                // ALMACENA LA FECHA DE REGISTRO COMO UN OBJETO Date para fácil comparación
-                registrationDate: now
+                registrationDate: now,
+                isActive: true // NUEVO: por defecto activa
             };
 
             if (userType === 'estudiante') {
@@ -1519,7 +1574,6 @@
                 newUser.semester = document.getElementById('semester').value;
                 newUser.group = document.getElementById('group').value;
 
-                // Antes: newUser.username = controlNumber;
             } else {
                 const phoneNumber = document.getElementById('phoneNumber').value.trim();
 
@@ -1529,7 +1583,6 @@
                 }
 
                 newUser.phoneNumber = phoneNumber;
-                // Antes: newUser.username = phoneNumber;
             }
 
             const credentialFile = document.getElementById('credentialFile').files[0];
@@ -1550,11 +1603,13 @@
         });
 
         function login() {
-            const loginIdentifier = document.getElementById('loginUser').value.trim(); // Puede ser username, No. Control o Teléfono
+            clearLoginMessage();
+
+            const loginIdentifier = document.getElementById('loginUser').value.trim();
             const password = document.getElementById('loginPassword').value;
 
             if (!loginIdentifier || !password) {
-                alert('Por favor ingresa tu identificador y contraseña');
+                setLoginMessage('Por favor ingresa tu identificador y contraseña', 'warning');
                 return;
             }
 
@@ -1565,7 +1620,6 @@
                 return;
             }
 
-            // Búsqueda de usuario:
             const user = users.find(u =>
                 (u.username && u.username.toLowerCase() === loginIdentifier.toLowerCase() && u.password === password) ||
                 (u.controlNumber && u.controlNumber === loginIdentifier && u.password === password) ||
@@ -1573,36 +1627,32 @@
             );
 
             if (user) {
-                // OBTENER FECHAS: La fecha de registro ya se cargó como un objeto Date en loadState
-                const registrationDate = user.registrationDate instanceof Date ? user.registrationDate : new Date(user.registrationDate);
-                const currentDate = new Date();
-
-                // ---- INICIO DE LA MODIFICACIÓN (Validación Estricta de Horas) ----
-                const accountActiveUntil = user.accountActiveUntil instanceof Date ? user.accountActiveUntil : new Date(user.accountActiveUntil);
-
-                // 1. VALIDACIÓN PASADO (Anti-manipulación hacia atrás)
-                // Si la hora actual es estrictamente anterior a la hora de registro.
-                if (currentDate.getTime() < registrationDate.getTime()) {
-
-                    alert(`🚫 Acceso Bloqueado: La fecha y hora de tu computadora es anterior a tu fecha de registro (${registrationDate.toLocaleString()}). Por favor, actualiza la fecha para continuar.`);
-                    return; // Bloquea el ingreso
+                // NUEVO: bloqueo si está desactivada
+                if (user.isActive === false) {
+                    setLoginMessage('🚫 Cuenta desactivada. Contacta al administrador.', 'error');
+                    return;
                 }
 
-                // 2. VALIDACIÓN FUTURO (Límite de "Activa Hasta")
-                // Si la fecha actual del sistema es posterior a la fecha de expiración de la cuenta.
+                const registrationDate = user.registrationDate instanceof Date ? user.registrationDate : new Date(user.registrationDate);
+                const currentDate = new Date();
+                const accountActiveUntil = user.accountActiveUntil instanceof Date ? user.accountActiveUntil : new Date(user.accountActiveUntil);
+
+                if (currentDate.getTime() < registrationDate.getTime()) {
+                    alert(`🚫 Acceso Bloqueado: La fecha y hora de tu computadora es anterior a tu fecha de registro (${registrationDate.toLocaleString()}). Por favor, actualiza la fecha para continuar.`);
+                    return;
+                }
+
                 if (accountActiveUntil && currentDate.getTime() > accountActiveUntil.getTime()) {
                     alert(`🚫 Acceso Bloqueado: Tu cuenta ha expirado el ${accountActiveUntil.toLocaleString()}. Contacta al administrador para reactivarla.`);
                     return;
                 }
-                // ---- FIN DE LA MODIFICACIÓN ----
 
                 currentUser = user;
                 document.getElementById('welcomeUserName').textContent = user.fullName;
                 saveState();
                 showWelcome();
             } else {
-                alert('Usuario, número de control o contraseña incorrectos');
-                section: 2
+                setLoginMessage('Usuario, número de control o contraseña incorrectos', 'error');
             }
         }
 
@@ -1659,7 +1709,7 @@
         }
 
         // ====================================================================================
-        // F U N C I O N E S  D E  S T O C K  Y  R E C E T A S
+        // F U N C I O N E S  D E  S T O C K  Y  R E C E T A S
         // ====================================================================================
 
         function getRawMaterial(id) {
@@ -1703,7 +1753,7 @@
 
 
         // ====================================================================================
-        // F U N C I O N E S  P A N E L  A D M I N I S T R A D O R  ( V I S T A S )
+        // F U N C I O N E S  P A N E L  A D M I N I S T R A D O R  ( V I S T A S )
         // ====================================================================================
 
         function activateTab(targetId) {
@@ -1714,11 +1764,10 @@
             document.getElementById(targetId).classList.remove('bg-gray-200', 'text-gray-700');
             document.getElementById(targetId).classList.add('bg-blue-600', 'text-white');
 
-            // Oculta todas las secciones admin
             const sections = [
                 'adminStockSection', 'adminRawMaterialsSection', 'adminSupplierPurchasesSection',
                 'adminOrdersSection', 'adminStatsSection', 'adminUsersSection', 'adminMemorySection',
-                'adminPersonalDataSection', 'adminReportsSection' // <<< AÑADIDO: Sección de Reportes
+                'adminPersonalDataSection', 'adminReportsSection'
             ];
             sections.forEach(id => document.getElementById(id).classList.add('hidden'));
         }
@@ -1777,6 +1826,7 @@
         function showAdminReports() {
             activateTab('reportsTab');
             document.getElementById('adminReportsSection').classList.remove('hidden');
+            renderReportPreview();
         }
 
         function renderLocalMemory() {
@@ -1837,7 +1887,7 @@
         }
 
         // ====================================================================================
-        // F U N C I O N E S  M E N Ú  C L I E N T E
+        // F U N C I O N E S  M E N Ú  C L I E N T E
         // ====================================================================================
 
         function renderProducts() {
@@ -2183,7 +2233,7 @@
         }
 
         // ====================================================================================
-        // F U N C I O N E S  P A N E L  A D M I N I S T R A D O R  ( G E S T I Ó N )
+        // F U N C I O N E S  P A N E L  A D M I N I S T R A D O R  ( G E S T I Ó N )
         // ====================================================================================
 
         function renderAdminProducts() {
@@ -2354,7 +2404,7 @@
             const listContainer = document.getElementById('adminSupplierPurchasesList');
 
             if (supplierPurchases.length === 0) {
-                listContainer.innerHTML = ''; // Clear list if empty, stats section will show the message
+                listContainer.innerHTML = '';
                 return;
             }
 
@@ -2486,12 +2536,12 @@
             const purchase = supplierPurchases.find(p => p.id === purchaseId);
             if (!purchase) return;
 
-            showNewPurchaseModal(); // Re-use the modal setup
+            showNewPurchaseModal();
 
             document.getElementById('purchaseModalTitle').textContent = 'Editar Compra';
             document.getElementById('purchaseId').value = purchase.id;
             document.getElementById('purchaseMaterialId').value = purchase.materialId;
-            document.getElementById('purchaseMaterialId').disabled = true; // Prevent changing material on edit
+            document.getElementById('purchaseMaterialId').disabled = true;
             document.getElementById('purchaseQuantity').value = purchase.quantity;
             document.getElementById('purchaseCost').value = purchase.cost;
             document.getElementById('supplierName').value = purchase.supplierName;
@@ -2557,7 +2607,7 @@
                 return;
             }
 
-            if (purchaseId) { // Editing existing purchase
+            if (purchaseId) {
                 const existingPurchase = supplierPurchases.find(p => p.id === parseInt(purchaseId));
                 if (existingPurchase) {
                     const quantityDifference = newQuantity - existingPurchase.quantity;
@@ -2568,7 +2618,7 @@
                     existingPurchase.supplierName = newSupplierName;
                     alert('Compra actualizada y stock ajustado.');
                 }
-            } else { // Adding new purchase
+            } else {
                 material.stock += newQuantity;
                 const newPurchase = {
                     id: (Math.max(0, ...supplierPurchases.map(p => p.id))) + 1,
@@ -2583,7 +2633,7 @@
             }
 
             saveState();
-            showAdminSupplierPurchases(); // This re-renders both stats and list
+            showAdminSupplierPurchases();
             renderAdminRawMaterials();
             renderAdminProducts();
             closePurchaseModal();
@@ -2791,19 +2841,21 @@
                 return;
             }
 
-            adminUsersList.innerHTML = users.map(user => `
+            adminUsersList.innerHTML = users.map(user => {
+                const statusPill = `<span class="ml-2 px-2 py-0.5 rounded-full text-xs ${user.isActive === false ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">${user.isActive === false ? 'Desactivada' : 'Activa'}</span>`;
+                return `
                 <div class="bg-white border rounded-lg p-4 shadow-sm">
                     <div class="flex items-center justify-between mb-3">
                         <div class="flex items-center space-x-3">
                             <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                                 <span class="text-lg">
                                     ${user.userType === 'estudiante' ? '👨‍🎓' :
-                    user.userType === 'profesor' ? '👨‍🏫' :
-                        user.userType === 'docente' ? '👩‍🏫' : '👨‍💼'}
+                        user.userType === 'profesor' ? '👨‍🏫' :
+                            user.userType === 'docente' ? '👩‍🏫' : '👨‍💼'}
                                 </span>
                             </div>
                             <div>
-                                <h4 class="font-bold">${user.fullName}</h4>
+                                <h4 class="font-bold">${user.fullName} ${statusPill}</h4>
                                 <p class="text-sm text-gray-600 capitalize">${user.userType}</p>
                             </div>
                         </div>
@@ -2843,10 +2895,11 @@
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
-        // ===================== NUEVO: Datos Personales (render + edición) =====================
+        // ===================== NUEVO: Datos Personales (render + edición + ACTIVAR/DESACTIVAR) =====================
 
         function renderAdminPersonalData() {
             const list = document.getElementById('adminPersonalDataList');
@@ -2858,7 +2911,7 @@
                 return;
             }
 
-            let filtered = users.filter(u => u.id !== 0); // excluir admin en caso de existir
+            let filtered = users.filter(u => u.id !== 0);
 
             if (type !== 'all') {
                 filtered = filtered.filter(u => u.userType === type);
@@ -2901,12 +2954,38 @@
                                 <div><span class="font-medium">Registro:</span> ${u.registrationDate.toLocaleDateString()}</div>
                             </div>
                         </div>
-                        <div class="ml-4">
+                        <div class="ml-4 space-y-2 text-right">
+                            <!-- NUEVO: Switch Activar/Desactivar -->
+                            <div class="text-sm">
+                                <span class="block mb-1 font-medium">Estado de cuenta</span>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer" ${u.isActive === false ? '' : 'checked'}
+                                        onchange="toggleUserActive(${u.id}, this.checked)">
+                                    <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-green-500 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:h-5 after:w-5 after:rounded-full after:transition-all peer-checked:after:translate-x-5"></div>
+                                    <span class="ml-2 ${u.isActive === false ? 'text-red-700' : 'text-green-700'}">${u.isActive === false ? 'Desactivada' : 'Activa'}</span>
+                                </label>
+                            </div>
                             <button onclick="openEditUserModal(${u.id})" class="px-3 py-1 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-700">Editar</button>
                         </div>
                     </div>
                 </div>
             `).join('');
+        }
+
+        function toggleUserActive(userId, isActive) {
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
+            user.isActive = !!isActive;
+            saveState();
+            // refrescar vistas que muestran estado
+            renderAdminPersonalData();
+            renderAdminUsers();
+
+            // Si el admin desactiva a alguien que está logueado actualmente (raro, pero por si acaso)
+            if (currentUser && currentUser.id === user.id && user.isActive === false) {
+                alert('Esta cuenta ha sido desactivada y se cerrará la sesión.');
+                logout();
+            }
         }
 
         document.getElementById('personalSearchInput').addEventListener('input', renderAdminPersonalData);
@@ -2919,9 +2998,8 @@
             document.getElementById('editUserId').value = user.id;
             document.getElementById('editUserType').value = user.userType;
             document.getElementById('editFullName').value = user.fullName || '';
-            document.getElementById('editUsername').value = user.username || ''; // Asegura que el username se carga
+            document.getElementById('editUsername').value = user.username || '';
 
-            // Limpiar campos
             document.getElementById('editControlNumber').value = user.controlNumber || '';
             document.getElementById('editCareer').value = user.career || '';
             document.getElementById('editSemester').value = user.semester || '';
@@ -2929,27 +3007,20 @@
             document.getElementById('editPhoneNumber').value = user.phoneNumber || '';
             document.getElementById('editNewPassword').value = '';
             document.getElementById('editConfirmPassword').value = '';
-            
-            // Cargar fechas de activación
+
             const regDate = user.registrationDate ? new Date(user.registrationDate) : null;
             const activeUntilDate = user.accountActiveUntil ? new Date(user.accountActiveUntil) : null;
 
             if (regDate) {
-                // Formato para datetime-local: YYYY-MM-DDTHH:mm
                 document.getElementById('editRegistrationDate').value = new Date(regDate.getTime() - (regDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
             }
             if (activeUntilDate) {
                 document.getElementById('editAccountActiveUntil').value = new Date(activeUntilDate.getTime() - (activeUntilDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
             }
 
-            // Solo el ADMIN principal puede modificar las fechas de activación.
             const isAdmin = currentUser && currentUser.username === 'ADMIN';
             document.getElementById('editRegistrationDate').disabled = !isAdmin;
             document.getElementById('editAccountActiveUntil').disabled = !isAdmin;
-            
-
-
-
 
             toggleEditUserFields();
             document.getElementById('editUserModal').classList.remove('hidden');
@@ -2974,7 +3045,6 @@
         }
 
         function propagateUserChanges(updatedUser) {
-            // Actualiza los datos del usuario embebidos en pedidos existentes
             orders.forEach(o => {
                 if (o.user && o.user.id === updatedUser.id) {
                     o.user = {
@@ -2987,7 +3057,7 @@
                         career: updatedUser.career,
                         semester: updatedUser.semester,
                         group: updatedUser.group,
-                        registrationDate: updatedUser.registrationDate // Asegurar que la fecha se propague
+                        registrationDate: updatedUser.registrationDate
                     };
                 }
             });
@@ -2999,7 +3069,7 @@
             const id = parseInt(document.getElementById('editUserId').value);
             const type = document.getElementById('editUserType').value;
             const fullName = document.getElementById('editFullName').value.trim();
-            const username = document.getElementById('editUsername').value.trim(); // Se permite editar el username
+            const username = document.getElementById('editUsername').value.trim();
 
             const newPass = document.getElementById('editNewPassword').value;
             const confirmPass = document.getElementById('editConfirmPassword').value;
@@ -3015,19 +3085,16 @@
                 return;
             }
 
-            // prevenir duplicados de username
             const dupUsername = users.some(u => u.id !== id && u.username.toLowerCase() === username.toLowerCase());
             if (dupUsername) {
                 alert('Este nombre de usuario ya está registrado en otro usuario.');
                 return;
             }
 
-            // Aplicar cambios que aplican a todos
             user.fullName = fullName;
             user.username = username;
             user.userType = type;
 
-            // Validaciones y campos por tipo
             if (type === 'estudiante') {
                 const controlNumber = (document.getElementById('editControlNumber').value || '').trim();
                 const career = document.getElementById('editCareer').value || '';
@@ -3038,7 +3105,6 @@
                     alert('Ingresa el número de control.');
                     return;
                 }
-                // prevenir duplicados de No. Control
                 const dup = users.some(u => u.id !== id && u.controlNumber === controlNumber && u.userType === 'estudiante');
                 if (dup) {
                     alert('Este número de control ya está registrado en otro estudiante.');
@@ -3050,16 +3116,14 @@
                 user.semester = semester;
                 user.group = group;
 
-                // Limpiar campos de personal si existían
                 delete user.phoneNumber;
 
-            } else { // docente o administrativo
+            } else {
                 const phoneNumber = (document.getElementById('editPhoneNumber').value || '').trim();
                 if (!phoneNumber) {
                     alert('Ingresa el número de teléfono.');
                     return;
                 }
-                // prevenir duplicados de teléfono
                 const dup = users.some(u => u.id !== id && u.phoneNumber === phoneNumber);
                 if (dup) {
                     alert('Este número de teléfono ya está registrado en otro usuario.');
@@ -3068,7 +3132,6 @@
 
                 user.phoneNumber = phoneNumber;
 
-                // Limpiar campos de estudiante si existían
                 delete user.controlNumber;
                 delete user.career;
                 delete user.semester;
@@ -3083,7 +3146,6 @@
                 user.password = newPass;
             }
 
-            // Guardar fechas
             user.registrationDate = regDateValue ? new Date(regDateValue) : user.registrationDate;
             user.accountActiveUntil = activeUntilValue ? new Date(activeUntilValue) : user.accountActiveUntil;
 
@@ -3094,15 +3156,13 @@
             closeEditUserModal();
             renderAdminPersonalData();
             renderAdminUsers();
-            // Si está abierta la lista de pedidos, refrescarla
             if (!document.getElementById('adminOrdersSection').classList.contains('hidden')) {
                 renderAdminOrders();
             }
         });
 
-        // ===================== NUEVO: Sincronización Forzada de Datos de Usuario en Pedidos =====================
         function forcePropagateAllUsers() {
-            if (!confirm("¿Estás seguro de que quieres sincronizar los datos de TODOS los usuarios con sus pedidos existentes? Esto actualizará la información del cliente en cada pedido. Esta acción no se puede deshacer.")) {
+            if (!confirm("¿Estás seguro de que quieres sincronizar los datos de TODOS los usuarios con sus pedidos existentes?")) {
                 return;
             }
 
@@ -3369,7 +3429,7 @@
         function showAdminReports() {
             activateTab('reportsTab');
             document.getElementById('adminReportsSection').classList.remove('hidden');
-            renderReportPreview(); // ← generar la vista previa al abrir la pestaña
+            renderReportPreview();
         }
 
         function generateReportText() {
@@ -3377,11 +3437,9 @@
             const d = (n) => String(n).padStart(2, '0');
             const iso = `${now.getFullYear()}-${d(now.getMonth() + 1)}-${d(now.getDate())} ${d(now.getHours())}:${d(now.getMinutes())}:${d(now.getSeconds())}`;
 
-            // Asegurar arrays existentes
             const usersSafe = Array.isArray(users) ? users : [];
             const productsSafe = Array.isArray(products) ? products : [];
 
-            // Encabezado
             const lines = [];
             lines.push("==============================================");
             lines.push("            CAFE-TEC — REPORTE TXT            ");
@@ -3389,13 +3447,11 @@
             lines.push(`Generado: ${iso}`);
             lines.push("");
 
-            // Usuarios
             lines.push("USUARIOS");
             lines.push("--------");
             if (usersSafe.length === 0) {
                 lines.push("(sin usuarios)");
             } else {
-                // Excluir admin (id 0) si existiera
                 usersSafe
                     .filter(u => u && u.id !== 0)
                     .forEach((u, idx) => {
@@ -3407,6 +3463,7 @@
                         lines.push(`- Nombre: ${u.fullName || "N/D"}`);
                         lines.push(`- Usuario: ${u.username || "N/D"}`);
                         lines.push(`- Tipo: ${u.userType || "N/D"}`);
+                        lines.push(`- Estado: ${u.isActive === false ? "DESACTIVADA" : "ACTIVA"}`);
                         if (u.userType === 'estudiante') {
                             lines.push(`- No. Control: ${u.controlNumber || "N/D"}`);
                             lines.push(`- Carrera: ${u.career || "N/D"}`);
@@ -3421,7 +3478,6 @@
                     });
             }
 
-            // Productos
             lines.push("");
             lines.push("PRODUCTOS");
             lines.push("---------");
@@ -3439,7 +3495,6 @@
                     if (p.calories) lines.push(`- Calorías: ${p.calories}`);
                     if (p.description) lines.push(`- Descripción: ${p.description}`);
 
-                    // Receta (Materia Prima)
                     if (Array.isArray(p.materialsNeeded) && p.materialsNeeded.length > 0) {
                         lines.push("- Receta por unidad:");
                         p.materialsNeeded.forEach(mat => {
@@ -3496,7 +3551,6 @@
                 alert(ok ? "Reporte copiado al portapapeles." : "No se pudo copiar. Selecciona y copia manualmente.");
             }
         }
-        // Si la pestaña de reportes está visible, refrescar la vista previa
         const reports = document.getElementById('adminReportsSection');
         if (reports && !reports.classList.contains('hidden')) {
             renderReportPreview();
