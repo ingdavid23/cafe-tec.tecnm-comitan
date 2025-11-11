@@ -1456,7 +1456,7 @@
             const confirmPassword = document.getElementById('resetConfirmPassword').value;
 
             if (newPassword !== confirmPassword) {
-                alert('Las nuevas contraseñas no coinciden.');
+                setLoginMessage('Las nuevas contraseñas no coinciden.', 'error');
                 return;
             }
 
@@ -1471,15 +1471,15 @@
 
                 if (isPhoneMatch) {
                     user.password = newPassword;
-                    alert(`Contraseña restablecida exitosamente para ${user.fullName}. Por favor inicia sesión.`);
+                    setLoginMessage(`Contraseña restablecida para ${user.fullName}. Por favor inicia sesión.`, 'success');
                     saveState();
                     closePasswordResetModal();
                     showLogin();
                     return;
                 }
             }
-
-            alert('Error: Identificador (Usuario/No. Control/Teléfono) o Teléfono registrado no coinciden. Inténtalo de nuevo.');
+            setLoginMessage('Error: Los datos de verificación no coinciden. Inténtalo de nuevo.', 'error');
+            closePasswordResetModal();
         });
 
         function showLogin() {
@@ -1552,12 +1552,12 @@
             const confirmPassword = document.getElementById('confirmPassword').value;
 
             if (password !== confirmPassword) {
-                alert('Las contraseñas no coinciden');
+                setLoginMessage('Las contraseñas no coinciden.', 'error');
                 return;
             }
 
             if (users.some(user => user.username && user.username.toLowerCase() === username.toLowerCase())) {
-                alert('Este nombre de usuario ya está registrado. Por favor, elige otro.');
+                setLoginMessage('Este nombre de usuario ya está registrado. Por favor, elige otro.', 'error');
                 return;
             }
 
@@ -1577,7 +1577,7 @@
                 const controlNumber = document.getElementById('controlNumber').value.trim();
 
                 if (users.some(user => user.controlNumber === controlNumber && user.controlNumber)) {
-                    alert('Este número de control ya está registrado');
+                    setLoginMessage('Este número de control ya está registrado.', 'error');
                     return;
                 }
 
@@ -1590,7 +1590,7 @@
                 const phoneNumber = document.getElementById('phoneNumber').value.trim();
 
                 if (users.some(user => user.phoneNumber === phoneNumber && user.phoneNumber)) {
-                    alert('Este número de teléfono ya está registrado');
+                    setLoginMessage('Este número de teléfono ya está registrado.', 'error');
                     return;
                 }
 
@@ -1605,7 +1605,7 @@
 
             users.push(newUser);
 
-            alert(`¡Registro exitoso! Ya puedes iniciar sesión con tu nombre de usuario: ${username}.`);
+            setLoginMessage(`¡Registro exitoso! Ya puedes iniciar sesión con tu usuario: ${username}.`, 'success');
 
             document.getElementById('registerForm').reset();
             document.getElementById('credentialPreview').classList.add('hidden');
@@ -1649,13 +1649,13 @@
                 const currentDate = new Date();
                 const accountActiveUntil = user.accountActiveUntil instanceof Date ? user.accountActiveUntil : new Date(user.accountActiveUntil);
 
-                if (currentDate.getTime() < registrationDate.getTime()) {
-                    alert(`🚫 Acceso Bloqueado: La fecha y hora de tu computadora es anterior a tu fecha de registro (${registrationDate.toLocaleString()}). Por favor, actualiza la fecha para continuar.`);
+                if (currentDate.getTime() < registrationDate.getTime()) {                    
+                    setLoginMessage(`🚫 Acceso Bloqueado: La fecha de tu computadora es anterior a tu registro. Por favor, actualiza la fecha para continuar.`, 'error');
                     return;
                 }
 
-                if (accountActiveUntil && currentDate.getTime() > accountActiveUntil.getTime()) {
-                    alert(`🚫 Acceso Bloqueado: Tu cuenta ha expirado el ${accountActiveUntil.toLocaleString()}. Contacta al administrador para reactivarla.`);
+                if (accountActiveUntil && currentDate.getTime() > accountActiveUntil.getTime()) {                    
+                    setLoginMessage(`🚫 Acceso Bloqueado: Tu cuenta ha expirado. Contacta al administrador para reactivarla.`, 'error');
                     return;
                 }
 
@@ -3013,6 +3013,7 @@
             document.getElementById('editUserType').value = user.userType;
             document.getElementById('editFullName').value = user.fullName || '';
             document.getElementById('editUsername').value = user.username || '';
+            document.getElementById('editTecnologico').value = user.tecnologico || '';
 
             document.getElementById('editControlNumber').value = user.controlNumber || '';
             document.getElementById('editCareer').value = user.career || '';
@@ -3084,6 +3085,7 @@
             const type = document.getElementById('editUserType').value;
             const fullName = document.getElementById('editFullName').value.trim();
             const username = document.getElementById('editUsername').value.trim();
+            const tecnologico = document.getElementById('editTecnologico').value.trim();
 
             const newPass = document.getElementById('editNewPassword').value;
             const confirmPass = document.getElementById('editConfirmPassword').value;
@@ -3102,19 +3104,20 @@
             const dupUsername = users.some(u => u.id !== id && u.username.toLowerCase() === username.toLowerCase());
             if (dupUsername) {
                 alert('Este nombre de usuario ya está registrado en otro usuario.');
-                return;
+                return; // Se mantiene alert aquí porque es un modal de admin, no la pantalla de login.
             }
 
             user.fullName = fullName;
             user.username = username;
             user.userType = type;
+            user.tecnologico = tecnologico;
 
             if (type === 'estudiante') {
                 const controlNumber = (document.getElementById('editControlNumber').value || '').trim();
                 const career = document.getElementById('editCareer').value || '';
                 const semester = document.getElementById('editSemester').value || '';
                 const group = document.getElementById('editGroup').value || '';
-
+                
                 if (!controlNumber) {
                     alert('Ingresa el número de control.');
                     return;
@@ -3122,7 +3125,7 @@
                 const dup = users.some(u => u.id !== id && u.controlNumber === controlNumber && u.userType === 'estudiante');
                 if (dup) {
                     alert('Este número de control ya está registrado en otro estudiante.');
-                    return;
+                    return; // Se mantiene alert aquí porque es un modal de admin.
                 }
 
                 user.controlNumber = controlNumber;
@@ -3141,7 +3144,7 @@
                 const dup = users.some(u => u.id !== id && u.phoneNumber === phoneNumber);
                 if (dup) {
                     alert('Este número de teléfono ya está registrado en otro usuario.');
-                    return;
+                    return; // Se mantiene alert aquí porque es un modal de admin.
                 }
 
                 user.phoneNumber = phoneNumber;
