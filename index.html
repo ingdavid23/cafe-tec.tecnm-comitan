@@ -49,6 +49,8 @@
         }
     </style>
 
+    
+
 <body class="bg-gray-50 max-w-md mx-auto min-h-screen">
     <div id="loginScreen"
         class="h-screen bg-gradient-to-br from-blue-600 to-indigo-700 flex flex-col items-center justify-start pt-12 text-white relative overflow-y-auto">
@@ -951,51 +953,133 @@
         </div>
     </div>
 
+
     <div id="supplierPurchaseModal"
         class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up">
+        <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up max-h-[90vh] overflow-y-auto">
             <h3 id="purchaseModalTitle" class="text-lg font-bold mb-4">Registrar Compra</h3>
-            <form id="supplierPurchaseForm" class="space-y-4">
+
+            <!-- 🔽 AHORA EL FORM PERMITE VARIAS MATERIAS PRIMAS + PASARELA DE PAGO -->
+            <form id="supplierPurchaseForm" class="space-y-4" onsubmit="handleSupplierPurchaseSubmit(event)">
                 <input type="hidden" id="purchaseId">
+
+                <!-- LISTA DINÁMICA DE MATERIAS PRIMAS -->
                 <div>
-                    <label class="block text-sm font-medium mb-1">Materia Prima</label>
-                    <select id="purchaseMaterialId" class="w-full border rounded-lg px-3 py-2" required>
-                    </select>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Cantidad Comprada</label>
-                        <input type="number" id="purchaseQuantity" step="0.01"
-                            class="w-full border rounded-lg px-3 py-2" required>
+                    <h4 class="block text-sm font-semibold mb-2">Productos de Materia Prima</h4>
+                    <div id="purchaseItemsContainer" class="space-y-3">
+                        <!-- Filas dinámicas se agregan con JS -->
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Unidad</label>
-                        <input type="text" id="purchaseUnit" class="w-full border rounded-lg px-3 py-2 bg-gray-100"
-                            readonly>
+                    <button type="button" onclick="addPurchaseItemRow()"
+                        class="mt-2 w-full py-2 px-4 bg-green-100 text-green-700 rounded-lg text-sm font-medium hover:bg-green-200">
+                        + Agregar materia prima
+                    </button>
+                </div>
+
+                <!-- TOTAL COMPRA -->
+                <div class="border-t pt-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-semibold">Total de la compra:</span>
+                        <span id="purchaseTotalDisplay" class="text-lg font-bold text-green-600">$0.00</span>
                     </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Costo Total ($)</label>
-                    <input type="number" id="purchaseCost" step="0.01" class="w-full border rounded-lg px-3 py-2"
-                        placeholder="Ej: 550.50" required>
-                </div>
+
+                <!-- PROVEEDOR -->
                 <div>
                     <label class="block text-sm font-medium mb-1">Nombre del Proveedor (Opcional)</label>
                     <input type="text" id="supplierName" class="w-full border rounded-lg px-3 py-2"
                         placeholder="Ej: Proveedora del Sur">
                 </div>
-                <div class="flex space-x-3">
+
+                <!-- PASARELA DE PAGO AL PROVEEDOR -->
+                <div>
+                    <h4 class="text-sm font-semibold mb-2">💳 Método de Pago al Proveedor</h4>
+                    <div class="space-y-2">
+                        <label class="flex items-center p-2 border rounded-lg cursor-pointer hover:bg-gray-50">
+                            <input type="radio" name="purchasePayment" value="efectivo" class="mr-2" checked
+                                onchange="showSupplierPaymentDetails()">
+                            <span>💵 Efectivo</span>
+                        </label>
+                        <label class="flex items-center p-2 border rounded-lg cursor-pointer hover:bg-gray-50">
+                            <input type="radio" name="purchasePayment" value="transferencia" class="mr-2"
+                                onchange="showSupplierPaymentDetails()">
+                            <span>📱 Transferencia</span>
+                        </label>
+                        <label class="flex items-center p-2 border rounded-lg cursor-pointer hover:bg-gray-50">
+                            <input type="radio" name="purchasePayment" value="tarjeta" class="mr-2"
+                                onchange="showSupplierPaymentDetails()">
+                            <span>💳 Tarjeta</span>
+                        </label>
+                    </div>
+
+                    <!-- DATOS TARJETA PROVEEDOR -->
+                    <div id="supplierCardPaymentDetails" class="hidden mt-3 p-3 bg-blue-50 rounded-lg border">
+                        <h4 class="font-semibold mb-2 text-blue-800 text-sm">Datos de la Tarjeta</h4>
+                        <div class="space-y-2 text-sm">
+                            <div>
+                                <label class="block text-xs font-medium mb-1">Número de Tarjeta</label>
+                                <input type="text" id="purchaseCardNumber" class="w-full border rounded-lg px-2 py-1"
+                                    placeholder="1234 5678 9012 3456" maxlength="19">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">Vencimiento</label>
+                                    <input type="text" id="purchaseCardExpiry"
+                                        class="w-full border rounded-lg px-2 py-1" placeholder="MM/AA" maxlength="5">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium mb-1">CVV</label>
+                                    <input type="text" id="purchaseCardCvv" class="w-full border rounded-lg px-2 py-1"
+                                        placeholder="123" maxlength="3">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium mb-1">Nombre del Titular</label>
+                                <input type="text" id="purchaseCardHolder" class="w-full border rounded-lg px-2 py-1"
+                                    placeholder="Nombre como aparece en la tarjeta">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DATOS TRANSFERENCIA PROVEEDOR -->
+                    <div id="supplierTransferDetails" class="hidden mt-3 p-3 bg-green-50 rounded-lg border text-xs">
+                        <h4 class="font-semibold mb-2 text-green-800">Datos para Transferencia</h4>
+                        <div class="space-y-1">
+                            <div class="flex justify-between">
+                                <span class="font-medium">Banco:</span>
+                                <span>BBVA Bancomer</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">Cuenta:</span>
+                                <span>9876543210</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">CLABE:</span>
+                                <span>012345678901234567</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium">Titular:</span>
+                                <span>CAFE-TEC Proveedores</span>
+                            </div>
+                            <div class="mt-2 p-2 bg-yellow-100 rounded text-[10px] text-yellow-800">
+                                💡 Solo es simulación de pasarela de pago (no se envía nada real).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex space-x-3 pt-2">
                     <button type="button" onclick="closePurchaseModal()"
                         class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-medium">
                         Cancelar
                     </button>
                     <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium">
-                        Guardar
+                        Guardar compra
                     </button>
                 </div>
             </form>
         </div>
     </div>
+
 
     <div id="productPreviewModal"
         class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50">
@@ -4088,6 +4172,312 @@
     if (reports && !reports.classList.contains('hidden')) {
         renderReportPreview();
     }
+
+
+    // ====================================================================================
+// COMPRAS A PROVEEDOR: VARIOS PRODUCTOS + PASARELA DE PAGO
+// ====================================================================================
+
+// Abre el modal, limpia datos y agrega una fila por defecto
+function showNewPurchaseModal() {
+    const modal = document.getElementById('supplierPurchaseModal');
+    const form = document.getElementById('supplierPurchaseForm');
+    const container = document.getElementById('purchaseItemsContainer');
+
+    document.getElementById('purchaseModalTitle').textContent = 'Registrar Compra';
+    document.getElementById('purchaseId').value = '';
+
+    if (form) form.reset();
+    if (container) container.innerHTML = '';
+
+    addPurchaseItemRow(); // al menos 1 fila
+
+    document.getElementById('purchaseTotalDisplay').textContent = '$0.00';
+
+    // Pago por defecto
+    const defaultPayment = document.querySelector('input[name="purchasePayment"][value="efectivo"]');
+    if (defaultPayment) defaultPayment.checked = true;
+    showSupplierPaymentDetails();
+
+    modal.classList.remove('hidden');
+}
+
+// Cierra el modal y limpia un poco
+function closePurchaseModal() {
+    document.getElementById('supplierPurchaseModal').classList.add('hidden');
+}
+
+// Añade una fila de materia prima (rowData es opcional, para editar en el futuro)
+function addPurchaseItemRow(rowData) {
+    const container = document.getElementById('purchaseItemsContainer');
+    if (!container) return;
+
+    const options = [
+        '<option value="">Seleccionar materia prima</option>',
+        ...rawMaterials.map(m =>
+            `<option value="${m.id}">${m.emoji || ''} ${m.name}</option>`
+        )
+    ].join('');
+
+    const rowHtml = `
+        <div class="purchase-item-row border rounded-lg p-3 bg-gray-50">
+            <div class="grid grid-cols-12 gap-2">
+                <div class="col-span-12">
+                    <label class="block text-xs font-medium mb-1">Materia Prima</label>
+                    <select class="purchaseMaterial w-full border rounded-lg px-2 py-1 text-sm"
+                        onchange="onPurchaseMaterialChange(this)">
+                        ${options}
+                    </select>
+                </div>
+                <div class="col-span-6">
+                    <label class="block text-xs font-medium mb-1">Cantidad</label>
+                    <input type="number" step="0.01"
+                        class="purchaseQuantity w-full border rounded-lg px-2 py-1 text-sm"
+                        placeholder="Ej: 5"
+                        oninput="updatePurchaseRowFromInput(this)">
+                </div>
+                <div class="col-span-6">
+                    <label class="block text-xs font-medium mb-1">Unidad</label>
+                    <input type="text"
+                        class="purchaseUnit w-full border rounded-lg px-2 py-1 text-sm bg-gray-100"
+                        readonly>
+                </div>
+                <div class="col-span-6">
+                    <label class="block text-xs font-medium mb-1">Costo unitario ($)</label>
+                    <input type="number" step="0.01"
+                        class="purchaseUnitCost w-full border rounded-lg px-2 py-1 text-sm"
+                        placeholder="Ej: 50.00"
+                        oninput="updatePurchaseRowFromInput(this)">
+                </div>
+                <div class="col-span-5">
+                    <label class="block text-xs font-medium mb-1">Subtotal ($)</label>
+                    <input type="text"
+                        class="purchaseSubtotal w-full border rounded-lg px-2 py-1 text-sm bg-gray-100"
+                        readonly>
+                </div>
+                <div class="col-span-1 flex items-end justify-center">
+                    <button type="button"
+                        class="text-red-600 text-xl leading-none"
+                        onclick="removePurchaseItemRow(this)">✕</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    container.insertAdjacentHTML('beforeend', rowHtml);
+
+    // Si viene con datos (para futuro editar)
+    if (rowData) {
+        const row = container.lastElementChild;
+        const select = row.querySelector('.purchaseMaterial');
+        const qty = row.querySelector('.purchaseQuantity');
+        const unitCost = row.querySelector('.purchaseUnitCost');
+
+        if (select && rowData.materialId) {
+            select.value = String(rowData.materialId);
+            onPurchaseMaterialChange(select);
+        }
+        if (qty && rowData.quantity != null) qty.value = rowData.quantity;
+        if (unitCost && rowData.unitCost != null) unitCost.value = rowData.unitCost;
+
+        updatePurchaseRow(row);
+    }
+}
+
+// Quitar una fila
+function removePurchaseItemRow(btn) {
+    const row = btn.closest('.purchase-item-row');
+    if (!row) return;
+    row.remove();
+    updatePurchaseTotals();
+}
+
+// Cuando se selecciona materia prima, se rellena la unidad
+function onPurchaseMaterialChange(selectEl) {
+    const row = selectEl.closest('.purchase-item-row');
+    if (!row) return;
+    const unitInput = row.querySelector('.purchaseUnit');
+    const materialId = parseInt(selectEl.value);
+    const material = rawMaterials.find(m => m.id === materialId);
+
+    if (unitInput) {
+        unitInput.value = material ? material.unit : '';
+    }
+}
+
+// Helpers para recalcular subtotales / total
+function updatePurchaseRowFromInput(inputEl) {
+    const row = inputEl.closest('.purchase-item-row');
+    if (!row) return;
+    updatePurchaseRow(row);
+}
+
+function updatePurchaseRow(row) {
+    const qtyInput = row.querySelector('.purchaseQuantity');
+    const unitCostInput = row.querySelector('.purchaseUnitCost');
+    const subtotalInput = row.querySelector('.purchaseSubtotal');
+
+    const qty = parseFloat(qtyInput?.value) || 0;
+    const unitCost = parseFloat(unitCostInput?.value) || 0;
+    const subtotal = qty * unitCost;
+
+    if (subtotalInput) {
+        subtotalInput.value = subtotal > 0 ? subtotal.toFixed(2) : '';
+    }
+
+    updatePurchaseTotals();
+}
+
+function updatePurchaseTotals() {
+    const rows = document.querySelectorAll('#purchaseItemsContainer .purchase-item-row');
+    let total = 0;
+
+    rows.forEach(row => {
+        const subtotalInput = row.querySelector('.purchaseSubtotal');
+        const sub = parseFloat(subtotalInput?.value) || 0;
+        total += sub;
+    });
+
+    const display = document.getElementById('purchaseTotalDisplay');
+    if (display) {
+        display.textContent = `$${total.toFixed(2)}`;
+    }
+}
+
+// Mostrar detalles de pago (similar al menú de cliente)
+function showSupplierPaymentDetails() {
+    const methodEl = document.querySelector('input[name="purchasePayment"]:checked');
+    if (!methodEl) return;
+    const method = methodEl.value;
+
+    const cardBox = document.getElementById('supplierCardPaymentDetails');
+    const transferBox = document.getElementById('supplierTransferDetails');
+
+    if (cardBox) cardBox.classList.add('hidden');
+    if (transferBox) transferBox.classList.add('hidden');
+
+    if (method === 'tarjeta' && cardBox) {
+        cardBox.classList.remove('hidden');
+    } else if (method === 'transferencia' && transferBox) {
+        transferBox.classList.remove('hidden');
+    }
+}
+
+// Validación básica de datos de tarjeta para compras a proveedor
+function validateSupplierPurchasePaymentInfo(method) {
+    if (method === 'tarjeta') {
+        const num = document.getElementById('purchaseCardNumber')?.value.trim();
+        const exp = document.getElementById('purchaseCardExpiry')?.value.trim();
+        const cvv = document.getElementById('purchaseCardCvv')?.value.trim();
+        const holder = document.getElementById('purchaseCardHolder')?.value.trim();
+
+        if (!num || !exp || !cvv || !holder) {
+            alert('Por favor completa todos los datos de la tarjeta (compra a proveedor).');
+            return false;
+        }
+    }
+    // Para efectivo / transferencia no pedimos nada extra (solo simulación)
+    return true;
+}
+
+// SUBMIT del formulario de compras a proveedor (multi-producto)
+function handleSupplierPurchaseSubmit(event) {
+    event.preventDefault();
+
+    const rows = document.querySelectorAll('#purchaseItemsContainer .purchase-item-row');
+    if (rows.length === 0) {
+        alert('Agrega al menos una materia prima a la compra.');
+        return;
+    }
+
+    const paymentEl = document.querySelector('input[name="purchasePayment"]:checked');
+    if (!paymentEl) {
+        alert('Selecciona un método de pago.');
+        return;
+    }
+    const paymentMethod = paymentEl.value;
+
+    if (!validateSupplierPurchasePaymentInfo(paymentMethod)) {
+        return;
+    }
+
+    const supplierName = document.getElementById('supplierName')?.value.trim() || '';
+
+    const now = new Date();
+    const todayISO = now.toISOString().slice(0, 10);
+    const timestamp = now.toLocaleString();
+
+    // Para ids únicos, tomamos el máximo existente y seguimos
+    let nextId = supplierPurchases.reduce((max, p) => {
+        return p && typeof p.id === 'number' && p.id > max ? p.id : max;
+    }, 0) + 1;
+
+    const newPurchases = [];
+
+    for (const row of rows) {
+        const materialSelect = row.querySelector('.purchaseMaterial');
+        const qtyInput = row.querySelector('.purchaseQuantity');
+        const unitInput = row.querySelector('.purchaseUnit');
+        const unitCostInput = row.querySelector('.purchaseUnitCost');
+        const subtotalInput = row.querySelector('.purchaseSubtotal');
+
+        const materialId = parseInt(materialSelect?.value);
+        const quantity = parseFloat(qtyInput?.value);
+        const unitCost = parseFloat(unitCostInput?.value);
+        const subtotal = parseFloat(subtotalInput?.value) || 0;
+        const unit = unitInput?.value || '';
+
+        if (!materialId || !quantity || quantity <= 0 || !unitCost || unitCost <= 0) {
+            alert('Verifica que todas las filas tengan materia prima, cantidad y costo unitario válidos.');
+            return;
+        }
+
+        const material = rawMaterials.find(m => m.id === materialId);
+        if (!material) {
+            alert('Una de las materias primas ya no existe. Revisa la lista de materias primas.');
+            return;
+        }
+
+        // Actualizar stock de materia prima (SUMAR porque es compra)
+        material.stock = parseFloat((material.stock + quantity).toFixed(2));
+
+        const purchaseRecord = {
+            id: nextId++,
+            materialId: materialId,
+            materialName: material.name,
+            quantity: quantity,
+            unit: unit || material.unit,
+            cost: subtotal, // costo total por esa materia
+            unitCost: unitCost,
+            supplierName: supplierName,
+            paymentMethod: paymentMethod,
+            timestamp: timestamp,
+            date: todayISO
+        };
+
+        newPurchases.push(purchaseRecord);
+    }
+
+    // Agregar todas las compras individuales al arreglo
+    supplierPurchases = supplierPurchases.concat(newPurchases);
+
+    // Refrescar vistas relacionadas (si existen estas funciones)
+    if (typeof renderAdminRawMaterials === 'function') {
+        renderAdminRawMaterials();
+    }
+    if (typeof renderSupplierPurchaseStats === 'function') {
+        renderSupplierPurchaseStats();
+    }
+    if (typeof renderAdminSupplierPurchases === 'function') {
+        renderAdminSupplierPurchases();
+    }
+
+    saveState();
+
+    alert('Compra registrada correctamente con ' + newPurchases.length + ' producto(s) de materia prima.');
+    closePurchaseModal();
+}
+
 
 </script>
 </body>
