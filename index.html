@@ -49,7 +49,7 @@
         }
     </style>
 
-    
+
 
 <body class="bg-gray-50 max-w-md mx-auto min-h-screen">
     <div id="loginScreen"
@@ -607,6 +607,11 @@
                     class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     🗃️ Memoria Local
                 </button>
+                <!-- 🧾 NUEVO TAB: FACTURACIÓN -->
+                <button onclick="showAdminBilling()" id="billingTab"
+                    class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                    🧾 Facturación
+                </button>
                 <button onclick="showAdminReports()" id="reportsTab"
                     class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     📄 Reportes
@@ -724,6 +729,23 @@
                     ⚠️ Borrar Todos los Datos Locales
                 </button>
             </div>
+
+            <!-- 🧾 NUEVA SECCIÓN: FACTURACIÓN -->
+            <div id="adminBillingSection" class="hidden mb-6">
+                <h3 class="text-lg font-semibold mb-2">🧾 Facturación SAT (Simulada)</h3>
+                <p class="text-xs text-gray-600 mb-4">
+                    Esta sección genera comprobantes con formato similar a un CFDI del SAT
+                    <b>solo para fines académicos</b>. No se timbran ni se envían al SAT.
+                </p>
+
+                <h4 class="text-sm font-semibold mb-2">Pedidos para facturar</h4>
+                <div id="adminBillingOrdersList" class="space-y-3"></div>
+
+                <h4 class="text-sm font-semibold mt-6 mb-2">Historial de facturas generadas</h4>
+                <div id="adminBillingHistoryList" class="space-y-3"></div>
+            </div>
+
+
             <div id="adminReportsSection" class="hidden mb-6">
                 <h3 class="text-lg font-semibold mb-3">📄 Reporte (Vista previa & Copiar)</h3>
                 <div class="space-y-3 p-4 bg-gray-50 rounded-lg shadow-inner">
@@ -1445,12 +1467,190 @@
             </button>
         </div>
     </div>
+
+    <!-- 🧾 MODAL DE FACTURACIÓN SAT (SIMULADA) -->
+    <div id="invoiceModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg p-6 m-4 w-full max-w-md slide-up max-h-[90vh] overflow-y-auto">
+            <h3 class="text-xl font-bold mb-3 text-blue-700">🧾 Generar Factura CFDI (Simulación)</h3>
+            <p class="text-[11px] text-gray-500 mb-3">
+                Este comprobante tiene formato similar a un CFDI del SAT, pero es <b>solo para uso escolar</b>
+                y <b>no tiene validez fiscal</b>.
+            </p>
+
+            <form id="invoiceForm" class="space-y-3">
+                <input type="hidden" id="invoiceOrderId">
+
+                <!-- Resumen del pedido -->
+                <div class="bg-gray-50 border rounded-lg p-3 text-xs">
+                    <p><span class="font-semibold">Pedido:</span> <span id="invoiceOrderRef"></span></p>
+                    <p><span class="font-semibold">Cliente:</span> <span id="invoiceOrderClient"></span></p>
+                    <p><span class="font-semibold">Total pedido:</span> <span id="invoiceOrderTotal"></span></p>
+                </div>
+
+                <!-- Conceptos -->
+                <div class="bg-white border rounded-lg p-3 text-xs">
+                    <p class="font-semibold text-gray-700 mb-1">Conceptos</p>
+                    <table class="w-full text-[11px]">
+                        <thead>
+                            <tr>
+                                <th class="text-left">Cant</th>
+                                <th class="text-left">Producto</th>
+                                <th class="text-right">Importe</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoiceItemsTable"></tbody>
+                    </table>
+                </div>
+
+                <!-- Datos del receptor -->
+                <div class="grid grid-cols-1 gap-2 text-sm">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">RFC Receptor*</label>
+                        <input type="text" id="invoiceRfc" class="w-full border rounded-lg px-2 py-1 text-xs uppercase"
+                            placeholder="XAXX010101000">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Razón Social*</label>
+                        <input type="text" id="invoiceRazon" class="w-full border rounded-lg px-2 py-1 text-xs">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Uso CFDI*</label>
+                            <select id="invoiceUsoCfdi" class="w-full border rounded-lg px-2 py-1 text-xs">
+                                <option value="">Selecciona</option>
+                                <option value="G01">G01 - Adquisición de mercancías</option>
+                                <option value="G03">G03 - Gastos en general</option>
+                                <option value="P01">P01 - Por definir</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Régimen Fiscal Receptor*</label>
+                            <select id="invoiceRegimen" class="w-full border rounded-lg px-2 py-1 text-xs">
+                                <option value="">Selecciona</option>
+                                <option value="601">601 - General de Ley Personas Morales</option>
+                                <option value="603">603 - Personas Morales con Fines no Lucrativos</option>
+                                <option value="605">605 - Sueldos y Salarios</option>
+                                <option value="612">612 - PF Actividades Empresariales y Profesionales</option>
+                                <option value="621">621 - Incorporación Fiscal</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Método de Pago*</label>
+                            <select id="invoiceMetodoPago" class="w-full border rounded-lg px-2 py-1 text-xs">
+                                <option value="">Selecciona</option>
+                                <option value="PUE">PUE - Pago en una sola exhibición</option>
+                                <option value="PPD">PPD - Pago en parcialidades</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Forma de Pago*</label>
+                            <select id="invoiceFormaPago" class="w-full border rounded-lg px-2 py-1 text-xs">
+                                <option value="">Selecciona</option>
+                                <option value="01">01 - Efectivo</option>
+                                <option value="03">03 - Transferencia electrónica</option>
+                                <option value="04">04 - Tarjeta de crédito</option>
+                                <option value="28">28 - Tarjeta de débito</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Domicilio Fiscal Receptor</label>
+                        <textarea id="invoiceDomicilio" class="w-full border rounded-lg px-2 py-1 text-xs resize-none"
+                            rows="2" placeholder="Calle, número, colonia, CP, ciudad, estado"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex space-x-3 pt-1">
+                    <button type="button" onclick="closeInvoiceModal()"
+                        class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-semibold">
+                        Generar factura
+                    </button>
+                </div>
+            </form>
+
+            <!-- Ticket CFDI simulado -->
+            <div id="invoiceTicketContainer" class="hidden mt-4"></div>
+        </div>
+    </div>
 </body>
 
 </html>
 <script>
+
+    // ==== SUBMIT DEL FORMULARIO DE FACTURA (EVITA REINICIO DE LA WEB) ====
+    document.getElementById('invoiceForm').addEventListener('submit', function (e) {
+        e.preventDefault(); // ⛔ IMPORTANTE: evita que la página se recargue
+
+        const orderId = parseInt(document.getElementById('invoiceOrderId').value, 10);
+        const order = orders.find(o => o.id === orderId);
+
+        if (!order) {
+            alert('No se encontró el pedido a facturar.');
+            return;
+        }
+
+        // Datos del receptor
+        const rfcReceptor = document.getElementById('invoiceRfc').value.trim().toUpperCase();
+        const razonReceptor = document.getElementById('invoiceRazon').value.trim();
+        const usoCfdi = document.getElementById('invoiceUsoCfdi').value;
+        const regimenReceptor = document.getElementById('invoiceRegimen').value;
+        const metodoPago = document.getElementById('invoiceMetodoPago').value;
+        const formaPago = document.getElementById('invoiceFormaPago').value;
+        const domicilioReceptor = document.getElementById('invoiceDomicilio').value.trim();
+
+        // Validación básica de campos obligatorios
+        if (!rfcReceptor || !razonReceptor || !usoCfdi || !regimenReceptor || !metodoPago || !formaPago) {
+            alert('Completa todos los campos obligatorios marcados con *');
+            return;
+        }
+
+        // Cálculo simple de impuestos (simulado, 16% IVA)
+        const total = order.total;
+        const subtotal = +(total / 1.16).toFixed(2);
+        const iva = +(total - subtotal).toFixed(2);
+
+        // Folio/serie de la factura (simulado)
+        const serie = 'A';
+        const folio = (invoices.length + 1).toString().padStart(4, '0');
+        const fechaEmision = new Date().toISOString();
+
+        const invoice = {
+            id: Date.now(),
+            orderId: order.id,
+            orderRef: order.referenceNumber || `PED-${order.id}`,
+            serie,
+            folio,
+            rfcReceptor,
+            razonReceptor,
+            usoCfdi,
+            regimenReceptor,
+            metodoPago,
+            formaPago,
+            domicilioReceptor,
+            subtotal,
+            iva,
+            total,
+            dateIssued: fechaEmision
+        };
+
+        // Guardamos factura en memoria
+        invoices.push(invoice);
+        saveState();
+
+        // Refrescamos el listado de facturación en el panel admin
+        renderAdminBilling();
+
+        // Mostramos ticket CFDI dentro del mismo modal
+        renderInvoiceTicket(invoice, order);
+    });
     // ====================================================================================
-    // G E S T I Ó N  D E  M E M O R I A  L O C A L
+    // G E S T I Ó N  D E  M E M O R I A  L O C A L
     // ====================================================================================
 
     const STORAGE_KEYS = {
@@ -1460,7 +1660,8 @@
         ORDERS: 'cafetec_orders',
         USERS: 'cafetec_users',
         CURRENT_USER: 'cafetec_current_user',
-        ORDER_ID_COUNTER: 'cafetec_order_id_counter'
+        ORDER_ID_COUNTER: 'cafetec_order_id_counter',
+        INVOICES: 'cafetec_invoices' // 🧾 NUEVO: facturas ligadas a pedidos
     };
 
     function saveState() {
@@ -1471,10 +1672,10 @@
         localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
         localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
         localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
+        localStorage.setItem(STORAGE_KEYS.INVOICES, JSON.stringify(invoices)); // 🧾 guardar facturas
     }
 
     function loadState() {
-        // ... (Esta función se mantiene igual que la original) ...
         const storedProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
         const storedMaterials = localStorage.getItem(STORAGE_KEYS.MATERIALS);
         const storedPurchases = localStorage.getItem(STORAGE_KEYS.SUPPLIER_PURCHASES);
@@ -1482,11 +1683,13 @@
         const storedUsers = localStorage.getItem(STORAGE_KEYS.USERS);
         const storedCurrentUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
         const storedOrderIdCounter = localStorage.getItem(STORAGE_KEYS.ORDER_ID_COUNTER);
+        const storedInvoices = localStorage.getItem(STORAGE_KEYS.INVOICES); // 🧾
 
         if (storedProducts) products = JSON.parse(storedProducts);
         if (storedMaterials) rawMaterials = JSON.parse(storedMaterials);
         if (storedPurchases) supplierPurchases = JSON.parse(storedPurchases);
         if (storedOrders) orders = JSON.parse(storedOrders);
+        if (storedInvoices) invoices = JSON.parse(storedInvoices); // 🧾
 
         if (storedUsers) {
             users = JSON.parse(storedUsers).map(u => {
@@ -1497,7 +1700,6 @@
                     accountActiveUntil = new Date(registrationDate.getTime() + 24 * 60 * 60 * 1000);
                 }
 
-                // NUEVO: valor por defecto de estado de cuenta (activa)
                 const isActive = (typeof u.isActive === 'boolean') ? u.isActive : true;
 
                 return {
@@ -1511,12 +1713,11 @@
         if (storedCurrentUser) currentUser = JSON.parse(storedCurrentUser);
         if (storedOrderIdCounter) orderIdCounter = parseInt(storedOrderIdCounter);
 
-        // Si hay sesión previa, validar estado de cuenta/expiración antes de entrar directo
+        // Si hay sesión previa...
         if (currentUser) {
             if (currentUser.userType === 'admin') {
                 showAdminPanel();
             } else {
-                // buscar al usuario real por id
                 const cu = users.find(u => u.id === currentUser.id);
                 const now = new Date();
                 if (!cu) {
@@ -1660,11 +1861,13 @@
     let currentCategory = 'all';
     let orders = [];
     let supplierPurchases = [];
+    let invoices = []; // 🧾 NUEVO: facturas SAT simuladas ligadas a pedidos
     let orderIdCounter = 1;
     let users = [];
     let currentUser = null;
     let previewProduct = null;
-    let currentAdminProductType = 'manufactured'; // Nuevo estado para la sub-pestaña
+    let currentAdminProductType = 'manufactured';
+
 
     if (!localStorage.getItem(STORAGE_KEYS.PRODUCTS)) {
         localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
@@ -1673,7 +1876,10 @@
         localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
         localStorage.setItem(STORAGE_KEYS.SUPPLIER_PURCHASES, JSON.stringify(supplierPurchases));
         localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
+        localStorage.setItem(STORAGE_KEYS.INVOICES, JSON.stringify(invoices)); // 🧾 inicializar facturas
     }
+
+
 
     // ====================================================================================
     // F U N C I O N E S  D E  A U T E N T I C A C I Ó N (Sin cambios funcionales, solo se mantienen)
@@ -2068,9 +2274,17 @@
         document.getElementById(targetId).classList.add('bg-blue-600', 'text-white');
 
         const sections = [
-            'adminStockSection', 'adminRawMaterialsSection', 'adminSupplierPurchasesSection',
-            'adminOrdersSection', 'adminStatsSection', 'adminUsersSection', 'adminMemorySection',
-            'adminPersonalDataSection', 'adminReportsSection', 'adminSupplierStockSection' // NUEVO
+            'adminStockSection',
+            'adminRawMaterialsSection',
+            'adminSupplierPurchasesSection',
+            'adminOrdersSection',
+            'adminStatsSection',
+            'adminUsersSection',
+            'adminMemorySection',
+            'adminPersonalDataSection',
+            'adminReportsSection',
+            'adminSupplierStockSection',
+            'adminBillingSection' // 🧾 NUEVO
         ];
         sections.forEach(id => document.getElementById(id).classList.add('hidden'));
     }
@@ -2224,6 +2438,240 @@
             location.reload();
         }
     }
+
+
+    // =============================
+    // 🧾 FACTURACIÓN SAT (SIMULADA)
+    // =============================
+
+    function getInvoiceByOrder(orderId) {
+        return invoices.find(inv => inv.orderId === orderId) || null;
+    }
+
+    function showAdminBilling() {
+        activateTab('billingTab');
+        document.getElementById('adminBillingSection').classList.remove('hidden');
+        renderAdminBilling();
+    }
+
+    function renderAdminBilling() {
+        const ordersList = document.getElementById('adminBillingOrdersList');
+        const historyList = document.getElementById('adminBillingHistoryList');
+
+        if (!orders || orders.length === 0) {
+            ordersList.innerHTML = '<p class="text-center text-gray-500 py-6 text-sm">No hay pedidos registrados aún.</p>';
+            historyList.innerHTML = '<p class="text-center text-gray-500 py-6 text-sm">Todavía no hay facturas generadas.</p>';
+            return;
+        }
+
+        const sortedOrders = [...orders].sort((a, b) => {
+            const da = new Date(a.timestamp || a.date);
+            const db = new Date(b.timestamp || b.date);
+            return db - da;
+        });
+
+        ordersList.innerHTML = sortedOrders.map(order => {
+            const invoice = getInvoiceByOrder(order.id);
+            const statusBadge = invoice
+                ? '<span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700 font-semibold">Facturado</span>'
+                : '<span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700 font-semibold">Sin factura</span>';
+
+            const actionBtn = invoice
+                ? `<button disabled
+                    class="px-3 py-1 rounded-lg bg-gray-200 text-gray-500 text-xs font-medium cursor-not-allowed">
+                    Ya facturado (Folio ${invoice.serie}-${invoice.folio})
+               </button>`
+                : `<button onclick="openInvoiceModal(${order.id})"
+                    class="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700">
+                    Generar factura
+               </button>`;
+
+            const totalTxt = `$${order.total.toFixed(2)}`;
+            const cliente = order.user ? order.user.fullName : 'Cliente sin registro';
+            const ref = order.referenceNumber || `PED-${order.id}`;
+            const fecha = new Date(order.timestamp || order.date).toLocaleString();
+
+            return `
+            <div class="bg-white border rounded-lg p-3 shadow-sm text-sm">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs text-gray-500">${fecha}</p>
+                        <p class="font-semibold">Pedido ${ref}</p>
+                        <p class="text-xs text-gray-600">Cliente: ${cliente}</p>
+                        <p class="text-xs text-gray-600">Pago: ${order.paymentMethod}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-green-700 text-base">${totalTxt}</p>
+                        <div class="mt-1 mb-2">${statusBadge}</div>
+                        ${actionBtn}
+                    </div>
+                </div>
+            </div>
+        `;
+        }).join('');
+
+        if (!invoices || invoices.length === 0) {
+            historyList.innerHTML = '<p class="text-center text-gray-500 py-6 text-sm">Todavía no hay facturas generadas.</p>';
+            return;
+        }
+
+        const sortedInvoices = [...invoices].sort((a, b) =>
+            new Date(b.dateIssued) - new Date(a.dateIssued)
+        );
+
+        historyList.innerHTML = sortedInvoices.map(inv => {
+            const order = orders.find(o => o.id === inv.orderId);
+            const ref = inv.orderRef || (order ? (order.referenceNumber || `PED-${order.id}`) : `PED-${inv.orderId}`);
+            const fecha = new Date(inv.dateIssued).toLocaleString();
+
+            return `
+            <div class="bg-gray-50 border rounded-lg p-3 shadow-sm text-xs">
+                <div class="flex justify-between items-center mb-1">
+                    <div>
+                        <p class="font-semibold text-gray-800">Factura ${inv.serie}-${inv.folio}</p>
+                        <p class="text-[11px] text-gray-600">Pedido: ${ref}</p>
+                        <p class="text-[11px] text-gray-600">RFC: ${inv.rfcReceptor}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-green-700 text-sm">$${inv.total.toFixed(2)}</p>
+                        <p class="text-[11px] text-gray-500">${fecha}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        }).join('');
+    }
+
+    // ==== ABRIR / CERRAR MODAL DE FACTURA ====
+
+    // Abre el modal y carga la info del pedido
+    function openInvoiceModal(orderId) {
+        const order = orders.find(o => o.id === orderId);
+        if (!order) {
+            alert('No se encontró el pedido a facturar.');
+            return;
+        }
+
+        const form = document.getElementById('invoiceForm');
+        form.reset(); // limpiamos campos del receptor pero NO tocamos el pedido
+
+        // Renderiza el ticket CFDI simulado dentro de #invoiceTicketContainer
+        function renderInvoiceTicket(invoice, order) {
+            const container = document.getElementById('invoiceTicketContainer');
+            if (!container) return;
+
+            const fecha = new Date(invoice.dateIssued).toLocaleString();
+
+            const conceptosHTML = order.items.map(item => `
+        <tr>
+            <td>${item.quantity}</td>
+            <td>${item.name}</td>
+            <td class="text-right">$${(item.price * item.quantity).toFixed(2)}</td>
+        </tr>
+    `).join('');
+
+            container.innerHTML = `
+        <div class="mt-4 bg-gray-50 border rounded-lg p-3 font-mono text-[11px]">
+            <div class="text-center mb-2">
+                <p class="font-bold text-sm">CAFE-TEC</p>
+                <p class="text-[10px]">TecNM campus Comitán</p>
+                <p class="text-[10px] mt-1">FACTURA CFDI (Simulación)</p>
+            </div>
+
+            <div class="text-[10px] mb-2">
+                <p><b>Serie/Folio:</b> ${invoice.serie}-${invoice.folio}</p>
+                <p><b>Fecha emisión:</b> ${fecha}</p>
+                <p><b>Pedido:</b> ${invoice.orderRef}</p>
+                <p><b>RFC Receptor:</b> ${invoice.rfcReceptor}</p>
+                <p><b>Razón Social:</b> ${invoice.razonReceptor}</p>
+                <p><b>Uso CFDI:</b> ${invoice.usoCfdi}</p>
+                <p><b>Régimen Receptor:</b> ${invoice.regimenReceptor}</p>
+                <p><b>Método Pago:</b> ${invoice.metodoPago}</p>
+                <p><b>Forma Pago:</b> ${invoice.formaPago}</p>
+                ${invoice.domicilioReceptor
+                    ? `<p><b>Domicilio:</b> ${invoice.domicilioReceptor}</p>`
+                    : ''
+                }
+            </div>
+
+            <div style="border-top: 1px dashed #9ca3af; margin: 6px 0;"></div>
+
+            <table class="w-full text-[10px]">
+                <thead>
+                    <tr>
+                        <th class="text-left">Cant</th>
+                        <th class="text-left">Concepto</th>
+                        <th class="text-right">Importe</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${conceptosHTML}
+                </tbody>
+            </table>
+
+            <div style="border-top: 1px dashed #9ca3af; margin: 6px 0;"></div>
+
+            <div class="text-[10px]">
+                <div class="flex justify-between">
+                    <span>Subtotal:</span>
+                    <span>$${invoice.subtotal.toFixed(2)}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>IVA 16%:</span>
+                    <span>$${invoice.iva.toFixed(2)}</span>
+                </div>
+                <div class="flex justify-between font-bold mt-1">
+                    <span>TOTAL:</span>
+                    <span>$${invoice.total.toFixed(2)}</span>
+                </div>
+            </div>
+
+            <p class="text-[9px] text-center text-gray-500 mt-2">
+                Documento sin validez fiscal. Uso exclusivo académico.
+            </p>
+        </div>
+    `;
+
+            container.classList.remove('hidden');
+        }
+
+        const ref = order.referenceNumber || `PED-${order.id}`;
+        const cliente = order.user ? order.user.fullName : 'Cliente sin registro';
+        const totalTxt = `$${order.total.toFixed(2)}`;
+
+        // Datos resumen del pedido
+        document.getElementById('invoiceOrderId').value = order.id;
+        document.getElementById('invoiceOrderRef').textContent = ref;
+        document.getElementById('invoiceOrderClient').textContent = cliente;
+        document.getElementById('invoiceOrderTotal').textContent = totalTxt;
+
+        // Tabla de conceptos
+        const tbody = document.getElementById('invoiceItemsTable');
+        tbody.innerHTML = order.items.map(item => `
+        <tr>
+            <td>${item.quantity}</td>
+            <td>${item.name}</td>
+            <td class="text-right">$${(item.price * item.quantity).toFixed(2)}</td>
+        </tr>
+    `).join('');
+
+        // Limpiar ticket previo
+        const ticketContainer = document.getElementById('invoiceTicketContainer');
+        ticketContainer.innerHTML = '';
+        ticketContainer.classList.add('hidden');
+
+        // Mostrar modal
+        document.getElementById('invoiceModal').classList.remove('hidden');
+    }
+
+    // Cierra el modal de factura
+    function closeInvoiceModal() {
+        document.getElementById('invoiceModal').classList.add('hidden');
+        const ticketContainer = document.getElementById('invoiceTicketContainer');
+        ticketContainer.innerHTML = '';
+        ticketContainer.classList.add('hidden');
+    }
+
 
     // ====================================================================================
     // F U N C I O N E S  M E N Ú  C L I E N T E
@@ -4175,51 +4623,51 @@
 
 
     // ====================================================================================
-// COMPRAS A PROVEEDOR: VARIOS PRODUCTOS + PASARELA DE PAGO
-// ====================================================================================
+    // COMPRAS A PROVEEDOR: VARIOS PRODUCTOS + PASARELA DE PAGO
+    // ====================================================================================
 
-// Abre el modal, limpia datos y agrega una fila por defecto
-function showNewPurchaseModal() {
-    const modal = document.getElementById('supplierPurchaseModal');
-    const form = document.getElementById('supplierPurchaseForm');
-    const container = document.getElementById('purchaseItemsContainer');
+    // Abre el modal, limpia datos y agrega una fila por defecto
+    function showNewPurchaseModal() {
+        const modal = document.getElementById('supplierPurchaseModal');
+        const form = document.getElementById('supplierPurchaseForm');
+        const container = document.getElementById('purchaseItemsContainer');
 
-    document.getElementById('purchaseModalTitle').textContent = 'Registrar Compra';
-    document.getElementById('purchaseId').value = '';
+        document.getElementById('purchaseModalTitle').textContent = 'Registrar Compra';
+        document.getElementById('purchaseId').value = '';
 
-    if (form) form.reset();
-    if (container) container.innerHTML = '';
+        if (form) form.reset();
+        if (container) container.innerHTML = '';
 
-    addPurchaseItemRow(); // al menos 1 fila
+        addPurchaseItemRow(); // al menos 1 fila
 
-    document.getElementById('purchaseTotalDisplay').textContent = '$0.00';
+        document.getElementById('purchaseTotalDisplay').textContent = '$0.00';
 
-    // Pago por defecto
-    const defaultPayment = document.querySelector('input[name="purchasePayment"][value="efectivo"]');
-    if (defaultPayment) defaultPayment.checked = true;
-    showSupplierPaymentDetails();
+        // Pago por defecto
+        const defaultPayment = document.querySelector('input[name="purchasePayment"][value="efectivo"]');
+        if (defaultPayment) defaultPayment.checked = true;
+        showSupplierPaymentDetails();
 
-    modal.classList.remove('hidden');
-}
+        modal.classList.remove('hidden');
+    }
 
-// Cierra el modal y limpia un poco
-function closePurchaseModal() {
-    document.getElementById('supplierPurchaseModal').classList.add('hidden');
-}
+    // Cierra el modal y limpia un poco
+    function closePurchaseModal() {
+        document.getElementById('supplierPurchaseModal').classList.add('hidden');
+    }
 
-// Añade una fila de materia prima (rowData es opcional, para editar en el futuro)
-function addPurchaseItemRow(rowData) {
-    const container = document.getElementById('purchaseItemsContainer');
-    if (!container) return;
+    // Añade una fila de materia prima (rowData es opcional, para editar en el futuro)
+    function addPurchaseItemRow(rowData) {
+        const container = document.getElementById('purchaseItemsContainer');
+        if (!container) return;
 
-    const options = [
-        '<option value="">Seleccionar materia prima</option>',
-        ...rawMaterials.map(m =>
-            `<option value="${m.id}">${m.emoji || ''} ${m.name}</option>`
-        )
-    ].join('');
+        const options = [
+            '<option value="">Seleccionar materia prima</option>',
+            ...rawMaterials.map(m =>
+                `<option value="${m.id}">${m.emoji || ''} ${m.name}</option>`
+            )
+        ].join('');
 
-    const rowHtml = `
+        const rowHtml = `
         <div class="purchase-item-row border rounded-lg p-3 bg-gray-50">
             <div class="grid grid-cols-12 gap-2">
                 <div class="col-span-12">
@@ -4264,219 +4712,400 @@ function addPurchaseItemRow(rowData) {
         </div>
     `;
 
-    container.insertAdjacentHTML('beforeend', rowHtml);
+        container.insertAdjacentHTML('beforeend', rowHtml);
 
-    // Si viene con datos (para futuro editar)
-    if (rowData) {
-        const row = container.lastElementChild;
-        const select = row.querySelector('.purchaseMaterial');
-        const qty = row.querySelector('.purchaseQuantity');
-        const unitCost = row.querySelector('.purchaseUnitCost');
+        // Si viene con datos (para futuro editar)
+        if (rowData) {
+            const row = container.lastElementChild;
+            const select = row.querySelector('.purchaseMaterial');
+            const qty = row.querySelector('.purchaseQuantity');
+            const unitCost = row.querySelector('.purchaseUnitCost');
 
-        if (select && rowData.materialId) {
-            select.value = String(rowData.materialId);
-            onPurchaseMaterialChange(select);
+            if (select && rowData.materialId) {
+                select.value = String(rowData.materialId);
+                onPurchaseMaterialChange(select);
+            }
+            if (qty && rowData.quantity != null) qty.value = rowData.quantity;
+            if (unitCost && rowData.unitCost != null) unitCost.value = rowData.unitCost;
+
+            updatePurchaseRow(row);
         }
-        if (qty && rowData.quantity != null) qty.value = rowData.quantity;
-        if (unitCost && rowData.unitCost != null) unitCost.value = rowData.unitCost;
+    }
 
+    // Quitar una fila
+    function removePurchaseItemRow(btn) {
+        const row = btn.closest('.purchase-item-row');
+        if (!row) return;
+        row.remove();
+        updatePurchaseTotals();
+    }
+
+    // Cuando se selecciona materia prima, se rellena la unidad
+    function onPurchaseMaterialChange(selectEl) {
+        const row = selectEl.closest('.purchase-item-row');
+        if (!row) return;
+        const unitInput = row.querySelector('.purchaseUnit');
+        const materialId = parseInt(selectEl.value);
+        const material = rawMaterials.find(m => m.id === materialId);
+
+        if (unitInput) {
+            unitInput.value = material ? material.unit : '';
+        }
+    }
+
+    // Helpers para recalcular subtotales / total
+    function updatePurchaseRowFromInput(inputEl) {
+        const row = inputEl.closest('.purchase-item-row');
+        if (!row) return;
         updatePurchaseRow(row);
     }
-}
 
-// Quitar una fila
-function removePurchaseItemRow(btn) {
-    const row = btn.closest('.purchase-item-row');
-    if (!row) return;
-    row.remove();
-    updatePurchaseTotals();
-}
-
-// Cuando se selecciona materia prima, se rellena la unidad
-function onPurchaseMaterialChange(selectEl) {
-    const row = selectEl.closest('.purchase-item-row');
-    if (!row) return;
-    const unitInput = row.querySelector('.purchaseUnit');
-    const materialId = parseInt(selectEl.value);
-    const material = rawMaterials.find(m => m.id === materialId);
-
-    if (unitInput) {
-        unitInput.value = material ? material.unit : '';
-    }
-}
-
-// Helpers para recalcular subtotales / total
-function updatePurchaseRowFromInput(inputEl) {
-    const row = inputEl.closest('.purchase-item-row');
-    if (!row) return;
-    updatePurchaseRow(row);
-}
-
-function updatePurchaseRow(row) {
-    const qtyInput = row.querySelector('.purchaseQuantity');
-    const unitCostInput = row.querySelector('.purchaseUnitCost');
-    const subtotalInput = row.querySelector('.purchaseSubtotal');
-
-    const qty = parseFloat(qtyInput?.value) || 0;
-    const unitCost = parseFloat(unitCostInput?.value) || 0;
-    const subtotal = qty * unitCost;
-
-    if (subtotalInput) {
-        subtotalInput.value = subtotal > 0 ? subtotal.toFixed(2) : '';
-    }
-
-    updatePurchaseTotals();
-}
-
-function updatePurchaseTotals() {
-    const rows = document.querySelectorAll('#purchaseItemsContainer .purchase-item-row');
-    let total = 0;
-
-    rows.forEach(row => {
-        const subtotalInput = row.querySelector('.purchaseSubtotal');
-        const sub = parseFloat(subtotalInput?.value) || 0;
-        total += sub;
-    });
-
-    const display = document.getElementById('purchaseTotalDisplay');
-    if (display) {
-        display.textContent = `$${total.toFixed(2)}`;
-    }
-}
-
-// Mostrar detalles de pago (similar al menú de cliente)
-function showSupplierPaymentDetails() {
-    const methodEl = document.querySelector('input[name="purchasePayment"]:checked');
-    if (!methodEl) return;
-    const method = methodEl.value;
-
-    const cardBox = document.getElementById('supplierCardPaymentDetails');
-    const transferBox = document.getElementById('supplierTransferDetails');
-
-    if (cardBox) cardBox.classList.add('hidden');
-    if (transferBox) transferBox.classList.add('hidden');
-
-    if (method === 'tarjeta' && cardBox) {
-        cardBox.classList.remove('hidden');
-    } else if (method === 'transferencia' && transferBox) {
-        transferBox.classList.remove('hidden');
-    }
-}
-
-// Validación básica de datos de tarjeta para compras a proveedor
-function validateSupplierPurchasePaymentInfo(method) {
-    if (method === 'tarjeta') {
-        const num = document.getElementById('purchaseCardNumber')?.value.trim();
-        const exp = document.getElementById('purchaseCardExpiry')?.value.trim();
-        const cvv = document.getElementById('purchaseCardCvv')?.value.trim();
-        const holder = document.getElementById('purchaseCardHolder')?.value.trim();
-
-        if (!num || !exp || !cvv || !holder) {
-            alert('Por favor completa todos los datos de la tarjeta (compra a proveedor).');
-            return false;
-        }
-    }
-    // Para efectivo / transferencia no pedimos nada extra (solo simulación)
-    return true;
-}
-
-// SUBMIT del formulario de compras a proveedor (multi-producto)
-function handleSupplierPurchaseSubmit(event) {
-    event.preventDefault();
-
-    const rows = document.querySelectorAll('#purchaseItemsContainer .purchase-item-row');
-    if (rows.length === 0) {
-        alert('Agrega al menos una materia prima a la compra.');
-        return;
-    }
-
-    const paymentEl = document.querySelector('input[name="purchasePayment"]:checked');
-    if (!paymentEl) {
-        alert('Selecciona un método de pago.');
-        return;
-    }
-    const paymentMethod = paymentEl.value;
-
-    if (!validateSupplierPurchasePaymentInfo(paymentMethod)) {
-        return;
-    }
-
-    const supplierName = document.getElementById('supplierName')?.value.trim() || '';
-
-    const now = new Date();
-    const todayISO = now.toISOString().slice(0, 10);
-    const timestamp = now.toLocaleString();
-
-    // Para ids únicos, tomamos el máximo existente y seguimos
-    let nextId = supplierPurchases.reduce((max, p) => {
-        return p && typeof p.id === 'number' && p.id > max ? p.id : max;
-    }, 0) + 1;
-
-    const newPurchases = [];
-
-    for (const row of rows) {
-        const materialSelect = row.querySelector('.purchaseMaterial');
+    function updatePurchaseRow(row) {
         const qtyInput = row.querySelector('.purchaseQuantity');
-        const unitInput = row.querySelector('.purchaseUnit');
         const unitCostInput = row.querySelector('.purchaseUnitCost');
         const subtotalInput = row.querySelector('.purchaseSubtotal');
 
-        const materialId = parseInt(materialSelect?.value);
-        const quantity = parseFloat(qtyInput?.value);
-        const unitCost = parseFloat(unitCostInput?.value);
-        const subtotal = parseFloat(subtotalInput?.value) || 0;
-        const unit = unitInput?.value || '';
+        const qty = parseFloat(qtyInput?.value) || 0;
+        const unitCost = parseFloat(unitCostInput?.value) || 0;
+        const subtotal = qty * unitCost;
 
-        if (!materialId || !quantity || quantity <= 0 || !unitCost || unitCost <= 0) {
-            alert('Verifica que todas las filas tengan materia prima, cantidad y costo unitario válidos.');
+        if (subtotalInput) {
+            subtotalInput.value = subtotal > 0 ? subtotal.toFixed(2) : '';
+        }
+
+        updatePurchaseTotals();
+    }
+
+    function updatePurchaseTotals() {
+        const rows = document.querySelectorAll('#purchaseItemsContainer .purchase-item-row');
+        let total = 0;
+
+        rows.forEach(row => {
+            const subtotalInput = row.querySelector('.purchaseSubtotal');
+            const sub = parseFloat(subtotalInput?.value) || 0;
+            total += sub;
+        });
+
+        const display = document.getElementById('purchaseTotalDisplay');
+        if (display) {
+            display.textContent = `$${total.toFixed(2)}`;
+        }
+    }
+
+    // Mostrar detalles de pago (similar al menú de cliente)
+    function showSupplierPaymentDetails() {
+        const methodEl = document.querySelector('input[name="purchasePayment"]:checked');
+        if (!methodEl) return;
+        const method = methodEl.value;
+
+        const cardBox = document.getElementById('supplierCardPaymentDetails');
+        const transferBox = document.getElementById('supplierTransferDetails');
+
+        if (cardBox) cardBox.classList.add('hidden');
+        if (transferBox) transferBox.classList.add('hidden');
+
+        if (method === 'tarjeta' && cardBox) {
+            cardBox.classList.remove('hidden');
+        } else if (method === 'transferencia' && transferBox) {
+            transferBox.classList.remove('hidden');
+        }
+    }
+
+    // Validación básica de datos de tarjeta para compras a proveedor
+    function validateSupplierPurchasePaymentInfo(method) {
+        if (method === 'tarjeta') {
+            const num = document.getElementById('purchaseCardNumber')?.value.trim();
+            const exp = document.getElementById('purchaseCardExpiry')?.value.trim();
+            const cvv = document.getElementById('purchaseCardCvv')?.value.trim();
+            const holder = document.getElementById('purchaseCardHolder')?.value.trim();
+
+            if (!num || !exp || !cvv || !holder) {
+                alert('Por favor completa todos los datos de la tarjeta (compra a proveedor).');
+                return false;
+            }
+        }
+        // Para efectivo / transferencia no pedimos nada extra (solo simulación)
+        return true;
+    }
+
+    // SUBMIT del formulario de compras a proveedor (multi-producto)
+    function handleSupplierPurchaseSubmit(event) {
+        event.preventDefault();
+
+        const rows = document.querySelectorAll('#purchaseItemsContainer .purchase-item-row');
+        if (rows.length === 0) {
+            alert('Agrega al menos una materia prima a la compra.');
             return;
         }
 
-        const material = rawMaterials.find(m => m.id === materialId);
-        if (!material) {
-            alert('Una de las materias primas ya no existe. Revisa la lista de materias primas.');
+        const paymentEl = document.querySelector('input[name="purchasePayment"]:checked');
+        if (!paymentEl) {
+            alert('Selecciona un método de pago.');
+            return;
+        }
+        const paymentMethod = paymentEl.value;
+
+        if (!validateSupplierPurchasePaymentInfo(paymentMethod)) {
             return;
         }
 
-        // Actualizar stock de materia prima (SUMAR porque es compra)
-        material.stock = parseFloat((material.stock + quantity).toFixed(2));
+        const supplierName = document.getElementById('supplierName')?.value.trim() || '';
 
-        const purchaseRecord = {
-            id: nextId++,
-            materialId: materialId,
-            materialName: material.name,
-            quantity: quantity,
-            unit: unit || material.unit,
-            cost: subtotal, // costo total por esa materia
-            unitCost: unitCost,
-            supplierName: supplierName,
-            paymentMethod: paymentMethod,
-            timestamp: timestamp,
-            date: todayISO
+        const now = new Date();
+        const todayISO = now.toISOString().slice(0, 10);
+        const timestamp = now.toLocaleString();
+
+        // Para ids únicos, tomamos el máximo existente y seguimos
+        let nextId = supplierPurchases.reduce((max, p) => {
+            return p && typeof p.id === 'number' && p.id > max ? p.id : max;
+        }, 0) + 1;
+
+        const newPurchases = [];
+
+        for (const row of rows) {
+            const materialSelect = row.querySelector('.purchaseMaterial');
+            const qtyInput = row.querySelector('.purchaseQuantity');
+            const unitInput = row.querySelector('.purchaseUnit');
+            const unitCostInput = row.querySelector('.purchaseUnitCost');
+            const subtotalInput = row.querySelector('.purchaseSubtotal');
+
+            const materialId = parseInt(materialSelect?.value);
+            const quantity = parseFloat(qtyInput?.value);
+            const unitCost = parseFloat(unitCostInput?.value);
+            const subtotal = parseFloat(subtotalInput?.value) || 0;
+            const unit = unitInput?.value || '';
+
+            if (!materialId || !quantity || quantity <= 0 || !unitCost || unitCost <= 0) {
+                alert('Verifica que todas las filas tengan materia prima, cantidad y costo unitario válidos.');
+                return;
+            }
+
+            const material = rawMaterials.find(m => m.id === materialId);
+            if (!material) {
+                alert('Una de las materias primas ya no existe. Revisa la lista de materias primas.');
+                return;
+            }
+
+            // Actualizar stock de materia prima (SUMAR porque es compra)
+            material.stock = parseFloat((material.stock + quantity).toFixed(2));
+
+            const purchaseRecord = {
+                id: nextId++,
+                materialId: materialId,
+                materialName: material.name,
+                quantity: quantity,
+                unit: unit || material.unit,
+                cost: subtotal, // costo total por esa materia
+                unitCost: unitCost,
+                supplierName: supplierName,
+                paymentMethod: paymentMethod,
+                timestamp: timestamp,
+                date: todayISO
+            };
+
+            newPurchases.push(purchaseRecord);
+        }
+
+        // Agregar todas las compras individuales al arreglo
+        supplierPurchases = supplierPurchases.concat(newPurchases);
+
+        // Refrescar vistas relacionadas (si existen estas funciones)
+        if (typeof renderAdminRawMaterials === 'function') {
+            renderAdminRawMaterials();
+        }
+        if (typeof renderSupplierPurchaseStats === 'function') {
+            renderSupplierPurchaseStats();
+        }
+        if (typeof renderAdminSupplierPurchases === 'function') {
+            renderAdminSupplierPurchases();
+        }
+
+        saveState();
+
+        alert('Compra registrada correctamente con ' + newPurchases.length + ' producto(s) de materia prima.');
+        closePurchaseModal();
+    }
+
+    // ===============================================
+    // 🧾 CONTROL DEL MODAL DE FACTURACIÓN Y TICKET
+    // ===============================================
+
+    function openInvoiceModal(orderId) {
+        const order = orders.find(o => o.id === orderId);
+        if (!order) return;
+
+        const existing = getInvoiceByOrder(orderId);
+        if (existing) {
+            alert(`Este pedido ya tiene factura: ${existing.serie}-${existing.folio}`);
+            return;
+        }
+
+        const modal = document.getElementById('invoiceModal');
+        const form = document.getElementById('invoiceForm');
+        const ticketContainer = document.getElementById('invoiceTicketContainer');
+
+        form.reset();
+        ticketContainer.classList.add('hidden');
+        ticketContainer.innerHTML = '';
+
+        document.getElementById('invoiceOrderId').value = order.id;
+        document.getElementById('invoiceOrderRef').textContent = order.referenceNumber || `PED-${order.id}`;
+        document.getElementById('invoiceOrderClient').textContent = order.user ? order.user.fullName : 'Cliente sin registro';
+        document.getElementById('invoiceOrderTotal').textContent = `$${order.total.toFixed(2)}`;
+
+        const itemsTbody = document.getElementById('invoiceItemsTable');
+        itemsTbody.innerHTML = order.items.map(item => `
+        <tr>
+            <td class="pr-2">${item.quantity}</td>
+            <td class="pr-2">${item.name}</td>
+            <td class="text-right">$${(item.price * item.quantity).toFixed(2)}</td>
+        </tr>
+    `).join('');
+
+        modal.classList.remove('hidden');
+    }
+
+    function closeInvoiceModal() {
+        document.getElementById('invoiceModal').classList.add('hidden');
+    }
+
+    // Manejar envío del formulario de factura
+    document.getElementById('invoiceForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const orderId = parseInt(document.getElementById('invoiceOrderId').value, 10);
+        const order = orders.find(o => o.id === orderId);
+        if (!order) return;
+
+        if (getInvoiceByOrder(orderId)) {
+            alert('Este pedido ya se encuentra facturado.');
+            return;
+        }
+
+        const rfc = document.getElementById('invoiceRfc').value.trim().toUpperCase();
+        const razon = document.getElementById('invoiceRazon').value.trim();
+        const usoCfdi = document.getElementById('invoiceUsoCfdi').value;
+        const regimen = document.getElementById('invoiceRegimen').value;
+        const metodoPago = document.getElementById('invoiceMetodoPago').value;
+        const formaPago = document.getElementById('invoiceFormaPago').value;
+        const domicilio = document.getElementById('invoiceDomicilio').value.trim();
+
+        if (!rfc || !razon || !usoCfdi || !regimen || !metodoPago || !formaPago) {
+            alert('Por favor completa todos los campos obligatorios de facturación (*)');
+            return;
+        }
+
+        const now = new Date();
+        const subtotal = +(order.total / 1.16).toFixed(2);
+        const iva = +(order.total - subtotal).toFixed(2);
+
+        const newId = invoices.length > 0 ? Math.max(...invoices.map(i => i.id)) + 1 : 1;
+        const folio = String(newId).padStart(4, '0');
+        const serie = 'A';
+
+        const invoice = {
+            id: newId,
+            orderId: order.id,
+            orderRef: order.referenceNumber || `PED-${order.id}`,
+            folio,
+            serie,
+            rfcReceptor: rfc,
+            razonSocialReceptor: razon,
+            usoCfdi,
+            metodoPago,
+            formaPago,
+            regimenReceptor: regimen,
+            domicilio,
+            dateIssued: now.toISOString(),
+            subtotal,
+            iva,
+            total: order.total,
+            moneda: 'MXN'
         };
 
-        newPurchases.push(purchaseRecord);
-    }
+        invoices.push(invoice);
+        order.hasInvoice = true;
+        order.invoiceId = invoice.id;
 
-    // Agregar todas las compras individuales al arreglo
-    supplierPurchases = supplierPurchases.concat(newPurchases);
+        saveState();
+        renderAdminBilling();
+        renderInvoiceTicket(invoice, order);
+    });
 
-    // Refrescar vistas relacionadas (si existen estas funciones)
-    if (typeof renderAdminRawMaterials === 'function') {
-        renderAdminRawMaterials();
-    }
-    if (typeof renderSupplierPurchaseStats === 'function') {
-        renderSupplierPurchaseStats();
-    }
-    if (typeof renderAdminSupplierPurchases === 'function') {
-        renderAdminSupplierPurchases();
-    }
+    function renderInvoiceTicket(invoice, order) {
+        const container = document.getElementById('invoiceTicketContainer');
+        if (!container) return;
 
-    saveState();
+        const fecha = new Date(invoice.dateIssued).toLocaleString();
+        const itemsHtml = order.items.map(item => `
+        <tr class="align-top">
+            <td class="pr-2">${item.quantity}</td>
+            <td>${item.name}</td>
+            <td class="text-right">$${(item.price * item.quantity).toFixed(2)}</td>
+        </tr>
+    `).join('');
 
-    alert('Compra registrada correctamente con ' + newPurchases.length + ' producto(s) de materia prima.');
-    closePurchaseModal();
-}
+        container.innerHTML = `
+        <div class="bg-gray-50 border border-gray-300 rounded-lg p-4 font-mono text-[11px]">
+            <div class="text-center mb-2">
+                <p class="font-bold text-sm">CAFE-TEC</p>
+                <p>RFC EMISOR: CTE000000XXX</p>
+                <p>TecNM campus Comitán</p>
+                <p>Calle Ficticia 123, CP 30000, Comitán, Chiapas</p>
+            </div>
+
+            <div style="border-top:1px dashed #9ca3af; margin:6px 0;"></div>
+
+            <p>RFC RECEPTOR: ${invoice.rfcReceptor}</p>
+            <p>Razón Social: ${invoice.razonSocialReceptor}</p>
+            <p>Régimen: ${invoice.regimenReceptor}</p>
+            ${invoice.domicilio ? `<p>Domicilio: ${invoice.domicilio}</p>` : ''}
+
+            <div style="border-top:1px dashed #9ca3af; margin:6px 0;"></div>
+
+            <p>Serie: ${invoice.serie}   Folio: ${invoice.folio}</p>
+            <p>Fecha emisión: ${fecha}</p>
+            <p>Uso CFDI: ${invoice.usoCfdi}</p>
+            <p>Método Pago: ${invoice.metodoPago}</p>
+            <p>Forma Pago: ${invoice.formaPago}</p>
+            <p>Moneda: ${invoice.moneda}</p>
+
+            <div style="border-top:1px dashed #9ca3af; margin:6px 0;"></div>
+
+            <table class="w-full">
+                <thead>
+                    <tr>
+                        <th class="text-left">Cant</th>
+                        <th class="text-left">Concepto</th>
+                        <th class="text-right">Importe</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${itemsHtml}
+                </tbody>
+            </table>
+
+            <div style="border-top:1px dashed #9ca3af; margin:6px 0;"></div>
+
+            <p class="flex justify-between">
+                <span>Subtotal:</span><span>$${invoice.subtotal.toFixed(2)}</span>
+            </p>
+            <p class="flex justify-between">
+                <span>IVA 16%:</span><span>$${invoice.iva.toFixed(2)}</span>
+            </p>
+            <p class="flex justify-between font-bold text-sm">
+                <span>Total:</span><span>$${invoice.total.toFixed(2)}</span>
+            </p>
+
+            <div style="border-top:1px dashed #9ca3af; margin:6px 0;"></div>
+            <p class="text-center text-[10px] mt-1">
+                Comprobante sin validez fiscal. Simulación de CFDI para fines académicos.
+            </p>
+        </div>
+    `;
+
+        container.classList.remove('hidden');
+    }
 
 
 </script>
