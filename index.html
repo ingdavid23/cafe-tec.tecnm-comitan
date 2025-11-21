@@ -49,8 +49,6 @@
         }
     </style>
 
-
-
 <body class="bg-gray-50 max-w-md mx-auto min-h-screen">
     <div id="loginScreen"
         class="h-screen bg-gradient-to-br from-blue-600 to-indigo-700 flex flex-col items-center justify-start pt-12 text-white relative overflow-y-auto">
@@ -607,14 +605,13 @@
                     class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     🗃️ Memoria Local
                 </button>
-                <!-- 🧾 NUEVO TAB: FACTURACIÓN -->
-                <button onclick="showAdminBilling()" id="billingTab"
-                    class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
-                    🧾 Facturación
-                </button>
                 <button onclick="showAdminReports()" id="reportsTab"
                     class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     📄 Reportes
+                </button>
+                <button onclick="showAdminInvoicing()" id="invoicingTab"
+                    class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
+                    🧾 Facturación
                 </button>
                 <button onclick="adminLogout()"
                     class="admin-tab bg-red-200 text-red-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
@@ -693,6 +690,14 @@
                 </div>
             </div>
 
+            <div id="adminInvoicingSection" class="hidden mb-6">
+                <h3 class="text-lg font-semibold mb-3">🧾 Facturación CFDI (Simulada SAT)</h3>
+                <p class="text-xs text-gray-500 mb-4">
+                    Selecciona un pedido para generar la factura CFDI (simulada) y verla en formato de ticket.
+                </p>
+                <div id="adminInvoicingList" class="space-y-3"></div>
+            </div>
+
             <div id="adminStatsSection" class="hidden mb-6">
                 <h3 class="text-lg font-semibold mb-3">📊 Estadísticas de Ventas</h3>
                 <div id="adminStatsList" class="space-y-3">
@@ -729,23 +734,6 @@
                     ⚠️ Borrar Todos los Datos Locales
                 </button>
             </div>
-
-            <!-- 🧾 NUEVA SECCIÓN: FACTURACIÓN -->
-            <div id="adminBillingSection" class="hidden mb-6">
-                <h3 class="text-lg font-semibold mb-2">🧾 Facturación SAT (Simulada)</h3>
-                <p class="text-xs text-gray-600 mb-4">
-                    Esta sección genera comprobantes con formato similar a un CFDI del SAT
-                    <b>solo para fines académicos</b>. No se timbran ni se envían al SAT.
-                </p>
-
-                <h4 class="text-sm font-semibold mb-2">Pedidos para facturar</h4>
-                <div id="adminBillingOrdersList" class="space-y-3"></div>
-
-                <h4 class="text-sm font-semibold mt-6 mb-2">Historial de facturas generadas</h4>
-                <div id="adminBillingHistoryList" class="space-y-3"></div>
-            </div>
-
-
             <div id="adminReportsSection" class="hidden mb-6">
                 <h3 class="text-lg font-semibold mb-3">📄 Reporte (Vista previa & Copiar)</h3>
                 <div class="space-y-3 p-4 bg-gray-50 rounded-lg shadow-inner">
@@ -975,133 +963,227 @@
         </div>
     </div>
 
-
     <div id="supplierPurchaseModal"
         class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up">
             <h3 id="purchaseModalTitle" class="text-lg font-bold mb-4">Registrar Compra</h3>
-
-            <!-- 🔽 AHORA EL FORM PERMITE VARIAS MATERIAS PRIMAS + PASARELA DE PAGO -->
-            <form id="supplierPurchaseForm" class="space-y-4" onsubmit="handleSupplierPurchaseSubmit(event)">
+            <form id="supplierPurchaseForm" class="space-y-4">
                 <input type="hidden" id="purchaseId">
-
-                <!-- LISTA DINÁMICA DE MATERIAS PRIMAS -->
                 <div>
-                    <h4 class="block text-sm font-semibold mb-2">Productos de Materia Prima</h4>
-                    <div id="purchaseItemsContainer" class="space-y-3">
-                        <!-- Filas dinámicas se agregan con JS -->
-                    </div>
-                    <button type="button" onclick="addPurchaseItemRow()"
-                        class="mt-2 w-full py-2 px-4 bg-green-100 text-green-700 rounded-lg text-sm font-medium hover:bg-green-200">
-                        + Agregar materia prima
-                    </button>
+                    <label class="block text-sm font-medium mb-1">Materia Prima</label>
+                    <select id="purchaseMaterialId" class="w-full border rounded-lg px-3 py-2" required>
+                    </select>
                 </div>
-
-                <!-- TOTAL COMPRA -->
-                <div class="border-t pt-3">
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm font-semibold">Total de la compra:</span>
-                        <span id="purchaseTotalDisplay" class="text-lg font-bold text-green-600">$0.00</span>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Cantidad Comprada</label>
+                        <input type="number" id="purchaseQuantity" step="0.01"
+                            class="w-full border rounded-lg px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Unidad</label>
+                        <input type="text" id="purchaseUnit" class="w-full border rounded-lg px-3 py-2 bg-gray-100"
+                            readonly>
                     </div>
                 </div>
-
-                <!-- PROVEEDOR -->
+                <div>
+                    <label class="block text-sm font-medium mb-1">Costo Total ($)</label>
+                    <input type="number" id="purchaseCost" step="0.01" class="w-full border rounded-lg px-3 py-2"
+                        placeholder="Ej: 550.50" required>
+                </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Nombre del Proveedor (Opcional)</label>
                     <input type="text" id="supplierName" class="w-full border rounded-lg px-3 py-2"
                         placeholder="Ej: Proveedora del Sur">
                 </div>
-
-                <!-- PASARELA DE PAGO AL PROVEEDOR -->
-                <div>
-                    <h4 class="text-sm font-semibold mb-2">💳 Método de Pago al Proveedor</h4>
-                    <div class="space-y-2">
-                        <label class="flex items-center p-2 border rounded-lg cursor-pointer hover:bg-gray-50">
-                            <input type="radio" name="purchasePayment" value="efectivo" class="mr-2" checked
-                                onchange="showSupplierPaymentDetails()">
-                            <span>💵 Efectivo</span>
-                        </label>
-                        <label class="flex items-center p-2 border rounded-lg cursor-pointer hover:bg-gray-50">
-                            <input type="radio" name="purchasePayment" value="transferencia" class="mr-2"
-                                onchange="showSupplierPaymentDetails()">
-                            <span>📱 Transferencia</span>
-                        </label>
-                        <label class="flex items-center p-2 border rounded-lg cursor-pointer hover:bg-gray-50">
-                            <input type="radio" name="purchasePayment" value="tarjeta" class="mr-2"
-                                onchange="showSupplierPaymentDetails()">
-                            <span>💳 Tarjeta</span>
-                        </label>
-                    </div>
-
-                    <!-- DATOS TARJETA PROVEEDOR -->
-                    <div id="supplierCardPaymentDetails" class="hidden mt-3 p-3 bg-blue-50 rounded-lg border">
-                        <h4 class="font-semibold mb-2 text-blue-800 text-sm">Datos de la Tarjeta</h4>
-                        <div class="space-y-2 text-sm">
-                            <div>
-                                <label class="block text-xs font-medium mb-1">Número de Tarjeta</label>
-                                <input type="text" id="purchaseCardNumber" class="w-full border rounded-lg px-2 py-1"
-                                    placeholder="1234 5678 9012 3456" maxlength="19">
-                            </div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="block text-xs font-medium mb-1">Vencimiento</label>
-                                    <input type="text" id="purchaseCardExpiry"
-                                        class="w-full border rounded-lg px-2 py-1" placeholder="MM/AA" maxlength="5">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium mb-1">CVV</label>
-                                    <input type="text" id="purchaseCardCvv" class="w-full border rounded-lg px-2 py-1"
-                                        placeholder="123" maxlength="3">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium mb-1">Nombre del Titular</label>
-                                <input type="text" id="purchaseCardHolder" class="w-full border rounded-lg px-2 py-1"
-                                    placeholder="Nombre como aparece en la tarjeta">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- DATOS TRANSFERENCIA PROVEEDOR -->
-                    <div id="supplierTransferDetails" class="hidden mt-3 p-3 bg-green-50 rounded-lg border text-xs">
-                        <h4 class="font-semibold mb-2 text-green-800">Datos para Transferencia</h4>
-                        <div class="space-y-1">
-                            <div class="flex justify-between">
-                                <span class="font-medium">Banco:</span>
-                                <span>BBVA Bancomer</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="font-medium">Cuenta:</span>
-                                <span>9876543210</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="font-medium">CLABE:</span>
-                                <span>012345678901234567</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="font-medium">Titular:</span>
-                                <span>CAFE-TEC Proveedores</span>
-                            </div>
-                            <div class="mt-2 p-2 bg-yellow-100 rounded text-[10px] text-yellow-800">
-                                💡 Solo es simulación de pasarela de pago (no se envía nada real).
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex space-x-3 pt-2">
+                <div class="flex space-x-3">
                     <button type="button" onclick="closePurchaseModal()"
                         class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-medium">
                         Cancelar
                     </button>
                     <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium">
-                        Guardar compra
+                        Guardar
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- =================== MODAL: FORMULARIO DE FACTURA CFDI (SIMULADA) =================== -->
+    <div id="invoiceModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up max-h-[90vh] overflow-y-auto">
+            <h3 class="text-lg font-bold mb-3 text-blue-700">Generar Factura CFDI (Simulada)</h3>
+
+            <form id="invoiceForm" class="space-y-3">
+                <input type="hidden" id="invoiceOrderId">
+
+                <!-- Resumen del pedido -->
+                <div class="text-xs bg-gray-50 border rounded-lg p-3 mb-2">
+                    <p><span class="font-semibold">Pedido: </span><span id="invoiceOrderInfo"></span></p>
+                    <p><span class="font-semibold">Cliente: </span><span id="invoiceOrderClient"></span></p>
+                    <p><span class="font-semibold">Total: </span><span id="invoiceOrderTotal"></span></p>
+                </div>
+
+                <!-- Emisor (fijo / simulado) -->
+                <div class="border rounded-lg p-3 bg-blue-50">
+                    <p class="text-xs font-semibold text-blue-800 mb-1">Emisor (Cafetería)</p>
+                    <p class="text-xs">Nombre: <span class="font-semibold">CAFE-TEC S.A. de C.V.</span></p>
+                    <p class="text-xs">RFC: <span class="font-semibold">CACX7605101P8</span></p>
+                    <p class="text-xs">Régimen: <span class="font-semibold">601 - General de Ley Personas Morales</span>
+                    </p>
+                    <p class="text-xs">CP: <span class="font-semibold">30000</span></p>
+                </div>
+
+                <!-- Receptor -->
+                <div class="border rounded-lg p-3 space-y-2">
+                    <p class="text-xs font-semibold text-gray-700 mb-1">Datos del Receptor</p>
+
+                    <div>
+                        <label class="block text-xs font-medium mb-1">RFC Receptor</label>
+                        <input type="text" id="invoiceRfc" class="w-full border rounded-lg px-3 py-2 text-xs uppercase"
+                            placeholder="XAXX010101000" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Razón Social / Nombre</label>
+                        <input type="text" id="invoiceRazon" class="w-full border rounded-lg px-3 py-2 text-xs"
+                            placeholder="Nombre del cliente" required>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-medium mb-1">CP Receptor</label>
+                            <input type="text" id="invoiceCp" class="w-full border rounded-lg px-3 py-2 text-xs"
+                                placeholder="30000" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Régimen Fiscal Receptor</label>
+                            <input type="text" id="invoiceRegimenReceptor"
+                                class="w-full border rounded-lg px-3 py-2 text-xs"
+                                placeholder="605 - Sueldos y salarios">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Uso CFDI</label>
+                        <select id="invoiceUsoCfdi" class="w-full border rounded-lg px-3 py-2 text-xs" required>
+                            <option value="G01">G01 - Adquisición de mercancías</option>
+                            <option value="G03" selected>G03 - Gastos en general</option>
+                            <option value="P01">P01 - Por definir</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1">Correo del Receptor (opcional)</label>
+                        <input type="email" id="invoiceEmail" class="w-full border rounded-lg px-3 py-2 text-xs"
+                            placeholder="cliente@ejemplo.com">
+                    </div>
+                </div>
+
+                <!-- Pago -->
+                <div class="border rounded-lg p-3 space-y-2">
+                    <p class="text-xs font-semibold text-gray-700 mb-1">Datos de Pago</p>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Método de Pago (SAT)</label>
+                            <select id="invoiceMetodoPago" class="w-full border rounded-lg px-3 py-2 text-xs" required>
+                                <option value="PUE" selected>PUE - Pago en una sola exhibición</option>
+                                <option value="PPD">PPD - Pago en parcialidades o diferido</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1">Forma de Pago (SAT)</label>
+                            <select id="invoiceFormaPago" class="w-full border rounded-lg px-3 py-2 text-xs" required>
+                                <option value="01">01 - Efectivo</option>
+                                <option value="03">03 - Transferencia electrónica</option>
+                                <option value="04">04 - Tarjeta de crédito</option>
+                                <option value="28">28 - Tarjeta de débito</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex space-x-3 pt-2">
+                    <button type="button" onclick="closeInvoiceModal()"
+                        class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                        class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">
+                        Guardar Factura
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- =================== MODAL: TICKET DE FACTURA CFDI =================== -->
+    <div id="invoiceTicketModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up shadow-xl font-mono text-xs">
+            <div class="text-center mb-2">
+                <h4 class="font-bold text-base">CAFE-TEC</h4>
+                <p class="text-[0.65rem]">RFC: <span id="invoiceTicketEmisorRfc"></span></p>
+                <p class="text-[0.65rem]">TecNM campus Comitán</p>
+                <p class="text-[0.65rem] mt-1 font-semibold">FACTURA CFDI (SIMULADA)</p>
+            </div>
+
+            <div class="flex justify-between text-[0.65rem] mb-2">
+                <div>
+                    <p>Folio: <span id="invoiceTicketFolio"></span></p>
+                    <p class="break-all">UUID: <span id="invoiceTicketUuid"></span></p>
+                </div>
+                <div class="text-right">
+                    <p>Fecha: <span id="invoiceTicketDate"></span></p>
+                    <p>Método: <span id="invoiceTicketMetodo"></span></p>
+                    <p>Forma: <span id="invoiceTicketForma"></span></p>
+                </div>
+            </div>
+
+            <div class="ticket-line" style="border-top: 1px dashed #9ca3af; margin: 6px 0;"></div>
+
+            <div class="text-[0.65rem] mb-2">
+                <p class="font-semibold">Receptor</p>
+                <p>RFC: <span id="invoiceTicketReceptorRfc"></span></p>
+                <p>Nombre: <span id="invoiceTicketReceptorNombre"></span></p>
+                <p>Uso CFDI: <span id="invoiceTicketUsoCfdi"></span></p>
+                <p>Régimen: <span id="invoiceTicketRegimenReceptor"></span></p>
+                <p>CP: <span id="invoiceTicketCpReceptor"></span></p>
+            </div>
+
+            <div class="ticket-line" style="border-top: 1px dashed #9ca3af; margin: 6px 0;"></div>
+
+            <table class="w-full text-[0.65rem]">
+                <thead>
+                    <tr>
+                        <th class="text-left font-semibold">Cant.</th>
+                        <th class="text-left font-semibold">Concepto</th>
+                        <th class="text-right font-semibold">Importe</th>
+                    </tr>
+                </thead>
+                <tbody id="invoiceTicketItems"></tbody>
+            </table>
+
+            <div class="ticket-line" style="border-top: 1px dashed #9ca3af; margin: 6px 0;"></div>
+
+            <div class="text-[0.7rem] space-y-1">
+                <div class="flex justify-between">
+                    <span>Subtotal:</span>
+                    <span id="invoiceTicketSubtotal"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span>IVA 16%:</span>
+                    <span id="invoiceTicketIva"></span>
+                </div>
+                <div class="flex justify-between font-bold text-sm">
+                    <span>TOTAL:</span>
+                    <span id="invoiceTicketTotal"></span>
+                </div>
+            </div>
+
+            <button onclick="closeInvoiceTicketModal()"
+                class="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 mt-4">
+                Cerrar
+            </button>
+        </div>
+    </div>
 
     <div id="productPreviewModal"
         class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50">
@@ -1467,190 +1549,12 @@
             </button>
         </div>
     </div>
-
-    <!-- 🧾 MODAL DE FACTURACIÓN SAT (SIMULADA) -->
-    <div id="invoiceModal"
-        class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg p-6 m-4 w-full max-w-md slide-up max-h-[90vh] overflow-y-auto">
-            <h3 class="text-xl font-bold mb-3 text-blue-700">🧾 Generar Factura CFDI (Simulación)</h3>
-            <p class="text-[11px] text-gray-500 mb-3">
-                Este comprobante tiene formato similar a un CFDI del SAT, pero es <b>solo para uso escolar</b>
-                y <b>no tiene validez fiscal</b>.
-            </p>
-
-            <form id="invoiceForm" class="space-y-3">
-                <input type="hidden" id="invoiceOrderId">
-
-                <!-- Resumen del pedido -->
-                <div class="bg-gray-50 border rounded-lg p-3 text-xs">
-                    <p><span class="font-semibold">Pedido:</span> <span id="invoiceOrderRef"></span></p>
-                    <p><span class="font-semibold">Cliente:</span> <span id="invoiceOrderClient"></span></p>
-                    <p><span class="font-semibold">Total pedido:</span> <span id="invoiceOrderTotal"></span></p>
-                </div>
-
-                <!-- Conceptos -->
-                <div class="bg-white border rounded-lg p-3 text-xs">
-                    <p class="font-semibold text-gray-700 mb-1">Conceptos</p>
-                    <table class="w-full text-[11px]">
-                        <thead>
-                            <tr>
-                                <th class="text-left">Cant</th>
-                                <th class="text-left">Producto</th>
-                                <th class="text-right">Importe</th>
-                            </tr>
-                        </thead>
-                        <tbody id="invoiceItemsTable"></tbody>
-                    </table>
-                </div>
-
-                <!-- Datos del receptor -->
-                <div class="grid grid-cols-1 gap-2 text-sm">
-                    <div>
-                        <label class="block text-xs font-semibold mb-1">RFC Receptor*</label>
-                        <input type="text" id="invoiceRfc" class="w-full border rounded-lg px-2 py-1 text-xs uppercase"
-                            placeholder="XAXX010101000">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold mb-1">Razón Social*</label>
-                        <input type="text" id="invoiceRazon" class="w-full border rounded-lg px-2 py-1 text-xs">
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-xs font-semibold mb-1">Uso CFDI*</label>
-                            <select id="invoiceUsoCfdi" class="w-full border rounded-lg px-2 py-1 text-xs">
-                                <option value="">Selecciona</option>
-                                <option value="G01">G01 - Adquisición de mercancías</option>
-                                <option value="G03">G03 - Gastos en general</option>
-                                <option value="P01">P01 - Por definir</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold mb-1">Régimen Fiscal Receptor*</label>
-                            <select id="invoiceRegimen" class="w-full border rounded-lg px-2 py-1 text-xs">
-                                <option value="">Selecciona</option>
-                                <option value="601">601 - General de Ley Personas Morales</option>
-                                <option value="603">603 - Personas Morales con Fines no Lucrativos</option>
-                                <option value="605">605 - Sueldos y Salarios</option>
-                                <option value="612">612 - PF Actividades Empresariales y Profesionales</option>
-                                <option value="621">621 - Incorporación Fiscal</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-xs font-semibold mb-1">Método de Pago*</label>
-                            <select id="invoiceMetodoPago" class="w-full border rounded-lg px-2 py-1 text-xs">
-                                <option value="">Selecciona</option>
-                                <option value="PUE">PUE - Pago en una sola exhibición</option>
-                                <option value="PPD">PPD - Pago en parcialidades</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold mb-1">Forma de Pago*</label>
-                            <select id="invoiceFormaPago" class="w-full border rounded-lg px-2 py-1 text-xs">
-                                <option value="">Selecciona</option>
-                                <option value="01">01 - Efectivo</option>
-                                <option value="03">03 - Transferencia electrónica</option>
-                                <option value="04">04 - Tarjeta de crédito</option>
-                                <option value="28">28 - Tarjeta de débito</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold mb-1">Domicilio Fiscal Receptor</label>
-                        <textarea id="invoiceDomicilio" class="w-full border rounded-lg px-2 py-1 text-xs resize-none"
-                            rows="2" placeholder="Calle, número, colonia, CP, ciudad, estado"></textarea>
-                    </div>
-                </div>
-
-                <div class="flex space-x-3 pt-1">
-                    <button type="button" onclick="closeInvoiceModal()"
-                        class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-semibold">
-                        Generar factura
-                    </button>
-                </div>
-            </form>
-
-            <!-- Ticket CFDI simulado -->
-            <div id="invoiceTicketContainer" class="hidden mt-4"></div>
-        </div>
-    </div>
 </body>
 
 </html>
 <script>
-
-    // ==== SUBMIT DEL FORMULARIO DE FACTURA (EVITA REINICIO DE LA WEB) ====
-    document.getElementById('invoiceForm').addEventListener('submit', function (e) {
-        e.preventDefault(); // ⛔ IMPORTANTE: evita que la página se recargue
-
-        const orderId = parseInt(document.getElementById('invoiceOrderId').value, 10);
-        const order = orders.find(o => o.id === orderId);
-
-        if (!order) {
-            alert('No se encontró el pedido a facturar.');
-            return;
-        }
-
-        // Datos del receptor
-        const rfcReceptor = document.getElementById('invoiceRfc').value.trim().toUpperCase();
-        const razonReceptor = document.getElementById('invoiceRazon').value.trim();
-        const usoCfdi = document.getElementById('invoiceUsoCfdi').value;
-        const regimenReceptor = document.getElementById('invoiceRegimen').value;
-        const metodoPago = document.getElementById('invoiceMetodoPago').value;
-        const formaPago = document.getElementById('invoiceFormaPago').value;
-        const domicilioReceptor = document.getElementById('invoiceDomicilio').value.trim();
-
-        // Validación básica de campos obligatorios
-        if (!rfcReceptor || !razonReceptor || !usoCfdi || !regimenReceptor || !metodoPago || !formaPago) {
-            alert('Completa todos los campos obligatorios marcados con *');
-            return;
-        }
-
-        // Cálculo simple de impuestos (simulado, 16% IVA)
-        const total = order.total;
-        const subtotal = +(total / 1.16).toFixed(2);
-        const iva = +(total - subtotal).toFixed(2);
-
-        // Folio/serie de la factura (simulado)
-        const serie = 'A';
-        const folio = (invoices.length + 1).toString().padStart(4, '0');
-        const fechaEmision = new Date().toISOString();
-
-        const invoice = {
-            id: Date.now(),
-            orderId: order.id,
-            orderRef: order.referenceNumber || `PED-${order.id}`,
-            serie,
-            folio,
-            rfcReceptor,
-            razonReceptor,
-            usoCfdi,
-            regimenReceptor,
-            metodoPago,
-            formaPago,
-            domicilioReceptor,
-            subtotal,
-            iva,
-            total,
-            dateIssued: fechaEmision
-        };
-
-        // Guardamos factura en memoria
-        invoices.push(invoice);
-        saveState();
-
-        // Refrescamos el listado de facturación en el panel admin
-        renderAdminBilling();
-
-        // Mostramos ticket CFDI dentro del mismo modal
-        renderInvoiceTicket(invoice, order);
-    });
     // ====================================================================================
-    // G E S T I Ó N  D E  M E M O R I A  L O C A L
+    // G E S T I Ó N  D E  M E M O R I A  L O C A L
     // ====================================================================================
 
     const STORAGE_KEYS = {
@@ -1660,8 +1564,7 @@
         ORDERS: 'cafetec_orders',
         USERS: 'cafetec_users',
         CURRENT_USER: 'cafetec_current_user',
-        ORDER_ID_COUNTER: 'cafetec_order_id_counter',
-        INVOICES: 'cafetec_invoices' // 🧾 NUEVO: facturas ligadas a pedidos
+        ORDER_ID_COUNTER: 'cafetec_order_id_counter'
     };
 
     function saveState() {
@@ -1672,10 +1575,10 @@
         localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
         localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
         localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
-        localStorage.setItem(STORAGE_KEYS.INVOICES, JSON.stringify(invoices)); // 🧾 guardar facturas
     }
 
     function loadState() {
+        // ... (Esta función se mantiene igual que la original) ...
         const storedProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
         const storedMaterials = localStorage.getItem(STORAGE_KEYS.MATERIALS);
         const storedPurchases = localStorage.getItem(STORAGE_KEYS.SUPPLIER_PURCHASES);
@@ -1683,13 +1586,11 @@
         const storedUsers = localStorage.getItem(STORAGE_KEYS.USERS);
         const storedCurrentUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
         const storedOrderIdCounter = localStorage.getItem(STORAGE_KEYS.ORDER_ID_COUNTER);
-        const storedInvoices = localStorage.getItem(STORAGE_KEYS.INVOICES); // 🧾
 
         if (storedProducts) products = JSON.parse(storedProducts);
         if (storedMaterials) rawMaterials = JSON.parse(storedMaterials);
         if (storedPurchases) supplierPurchases = JSON.parse(storedPurchases);
         if (storedOrders) orders = JSON.parse(storedOrders);
-        if (storedInvoices) invoices = JSON.parse(storedInvoices); // 🧾
 
         if (storedUsers) {
             users = JSON.parse(storedUsers).map(u => {
@@ -1700,6 +1601,7 @@
                     accountActiveUntil = new Date(registrationDate.getTime() + 24 * 60 * 60 * 1000);
                 }
 
+                // NUEVO: valor por defecto de estado de cuenta (activa)
                 const isActive = (typeof u.isActive === 'boolean') ? u.isActive : true;
 
                 return {
@@ -1713,11 +1615,12 @@
         if (storedCurrentUser) currentUser = JSON.parse(storedCurrentUser);
         if (storedOrderIdCounter) orderIdCounter = parseInt(storedOrderIdCounter);
 
-        // Si hay sesión previa...
+        // Si hay sesión previa, validar estado de cuenta/expiración antes de entrar directo
         if (currentUser) {
             if (currentUser.userType === 'admin') {
                 showAdminPanel();
             } else {
+                // buscar al usuario real por id
                 const cu = users.find(u => u.id === currentUser.id);
                 const now = new Date();
                 if (!cu) {
@@ -1861,13 +1764,11 @@
     let currentCategory = 'all';
     let orders = [];
     let supplierPurchases = [];
-    let invoices = []; // 🧾 NUEVO: facturas SAT simuladas ligadas a pedidos
     let orderIdCounter = 1;
     let users = [];
     let currentUser = null;
     let previewProduct = null;
-    let currentAdminProductType = 'manufactured';
-
+    let currentAdminProductType = 'manufactured'; // Nuevo estado para la sub-pestaña
 
     if (!localStorage.getItem(STORAGE_KEYS.PRODUCTS)) {
         localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
@@ -1876,10 +1777,7 @@
         localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
         localStorage.setItem(STORAGE_KEYS.SUPPLIER_PURCHASES, JSON.stringify(supplierPurchases));
         localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
-        localStorage.setItem(STORAGE_KEYS.INVOICES, JSON.stringify(invoices)); // 🧾 inicializar facturas
     }
-
-
 
     // ====================================================================================
     // F U N C I O N E S  D E  A U T E N T I C A C I Ó N (Sin cambios funcionales, solo se mantienen)
@@ -2284,7 +2182,7 @@
             'adminPersonalDataSection',
             'adminReportsSection',
             'adminSupplierStockSection',
-            'adminBillingSection' // 🧾 NUEVO
+            'adminInvoicingSection' // 👈 NUEVA SECCIÓN
         ];
         sections.forEach(id => document.getElementById(id).classList.add('hidden'));
     }
@@ -2438,240 +2336,6 @@
             location.reload();
         }
     }
-
-
-    // =============================
-    // 🧾 FACTURACIÓN SAT (SIMULADA)
-    // =============================
-
-    function getInvoiceByOrder(orderId) {
-        return invoices.find(inv => inv.orderId === orderId) || null;
-    }
-
-    function showAdminBilling() {
-        activateTab('billingTab');
-        document.getElementById('adminBillingSection').classList.remove('hidden');
-        renderAdminBilling();
-    }
-
-    function renderAdminBilling() {
-        const ordersList = document.getElementById('adminBillingOrdersList');
-        const historyList = document.getElementById('adminBillingHistoryList');
-
-        if (!orders || orders.length === 0) {
-            ordersList.innerHTML = '<p class="text-center text-gray-500 py-6 text-sm">No hay pedidos registrados aún.</p>';
-            historyList.innerHTML = '<p class="text-center text-gray-500 py-6 text-sm">Todavía no hay facturas generadas.</p>';
-            return;
-        }
-
-        const sortedOrders = [...orders].sort((a, b) => {
-            const da = new Date(a.timestamp || a.date);
-            const db = new Date(b.timestamp || b.date);
-            return db - da;
-        });
-
-        ordersList.innerHTML = sortedOrders.map(order => {
-            const invoice = getInvoiceByOrder(order.id);
-            const statusBadge = invoice
-                ? '<span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700 font-semibold">Facturado</span>'
-                : '<span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700 font-semibold">Sin factura</span>';
-
-            const actionBtn = invoice
-                ? `<button disabled
-                    class="px-3 py-1 rounded-lg bg-gray-200 text-gray-500 text-xs font-medium cursor-not-allowed">
-                    Ya facturado (Folio ${invoice.serie}-${invoice.folio})
-               </button>`
-                : `<button onclick="openInvoiceModal(${order.id})"
-                    class="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700">
-                    Generar factura
-               </button>`;
-
-            const totalTxt = `$${order.total.toFixed(2)}`;
-            const cliente = order.user ? order.user.fullName : 'Cliente sin registro';
-            const ref = order.referenceNumber || `PED-${order.id}`;
-            const fecha = new Date(order.timestamp || order.date).toLocaleString();
-
-            return `
-            <div class="bg-white border rounded-lg p-3 shadow-sm text-sm">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-xs text-gray-500">${fecha}</p>
-                        <p class="font-semibold">Pedido ${ref}</p>
-                        <p class="text-xs text-gray-600">Cliente: ${cliente}</p>
-                        <p class="text-xs text-gray-600">Pago: ${order.paymentMethod}</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-bold text-green-700 text-base">${totalTxt}</p>
-                        <div class="mt-1 mb-2">${statusBadge}</div>
-                        ${actionBtn}
-                    </div>
-                </div>
-            </div>
-        `;
-        }).join('');
-
-        if (!invoices || invoices.length === 0) {
-            historyList.innerHTML = '<p class="text-center text-gray-500 py-6 text-sm">Todavía no hay facturas generadas.</p>';
-            return;
-        }
-
-        const sortedInvoices = [...invoices].sort((a, b) =>
-            new Date(b.dateIssued) - new Date(a.dateIssued)
-        );
-
-        historyList.innerHTML = sortedInvoices.map(inv => {
-            const order = orders.find(o => o.id === inv.orderId);
-            const ref = inv.orderRef || (order ? (order.referenceNumber || `PED-${order.id}`) : `PED-${inv.orderId}`);
-            const fecha = new Date(inv.dateIssued).toLocaleString();
-
-            return `
-            <div class="bg-gray-50 border rounded-lg p-3 shadow-sm text-xs">
-                <div class="flex justify-between items-center mb-1">
-                    <div>
-                        <p class="font-semibold text-gray-800">Factura ${inv.serie}-${inv.folio}</p>
-                        <p class="text-[11px] text-gray-600">Pedido: ${ref}</p>
-                        <p class="text-[11px] text-gray-600">RFC: ${inv.rfcReceptor}</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-bold text-green-700 text-sm">$${inv.total.toFixed(2)}</p>
-                        <p class="text-[11px] text-gray-500">${fecha}</p>
-                    </div>
-                </div>
-            </div>
-        `;
-        }).join('');
-    }
-
-    // ==== ABRIR / CERRAR MODAL DE FACTURA ====
-
-    // Abre el modal y carga la info del pedido
-    function openInvoiceModal(orderId) {
-        const order = orders.find(o => o.id === orderId);
-        if (!order) {
-            alert('No se encontró el pedido a facturar.');
-            return;
-        }
-
-        const form = document.getElementById('invoiceForm');
-        form.reset(); // limpiamos campos del receptor pero NO tocamos el pedido
-
-        // Renderiza el ticket CFDI simulado dentro de #invoiceTicketContainer
-        function renderInvoiceTicket(invoice, order) {
-            const container = document.getElementById('invoiceTicketContainer');
-            if (!container) return;
-
-            const fecha = new Date(invoice.dateIssued).toLocaleString();
-
-            const conceptosHTML = order.items.map(item => `
-        <tr>
-            <td>${item.quantity}</td>
-            <td>${item.name}</td>
-            <td class="text-right">$${(item.price * item.quantity).toFixed(2)}</td>
-        </tr>
-    `).join('');
-
-            container.innerHTML = `
-        <div class="mt-4 bg-gray-50 border rounded-lg p-3 font-mono text-[11px]">
-            <div class="text-center mb-2">
-                <p class="font-bold text-sm">CAFE-TEC</p>
-                <p class="text-[10px]">TecNM campus Comitán</p>
-                <p class="text-[10px] mt-1">FACTURA CFDI (Simulación)</p>
-            </div>
-
-            <div class="text-[10px] mb-2">
-                <p><b>Serie/Folio:</b> ${invoice.serie}-${invoice.folio}</p>
-                <p><b>Fecha emisión:</b> ${fecha}</p>
-                <p><b>Pedido:</b> ${invoice.orderRef}</p>
-                <p><b>RFC Receptor:</b> ${invoice.rfcReceptor}</p>
-                <p><b>Razón Social:</b> ${invoice.razonReceptor}</p>
-                <p><b>Uso CFDI:</b> ${invoice.usoCfdi}</p>
-                <p><b>Régimen Receptor:</b> ${invoice.regimenReceptor}</p>
-                <p><b>Método Pago:</b> ${invoice.metodoPago}</p>
-                <p><b>Forma Pago:</b> ${invoice.formaPago}</p>
-                ${invoice.domicilioReceptor
-                    ? `<p><b>Domicilio:</b> ${invoice.domicilioReceptor}</p>`
-                    : ''
-                }
-            </div>
-
-            <div style="border-top: 1px dashed #9ca3af; margin: 6px 0;"></div>
-
-            <table class="w-full text-[10px]">
-                <thead>
-                    <tr>
-                        <th class="text-left">Cant</th>
-                        <th class="text-left">Concepto</th>
-                        <th class="text-right">Importe</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${conceptosHTML}
-                </tbody>
-            </table>
-
-            <div style="border-top: 1px dashed #9ca3af; margin: 6px 0;"></div>
-
-            <div class="text-[10px]">
-                <div class="flex justify-between">
-                    <span>Subtotal:</span>
-                    <span>$${invoice.subtotal.toFixed(2)}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span>IVA 16%:</span>
-                    <span>$${invoice.iva.toFixed(2)}</span>
-                </div>
-                <div class="flex justify-between font-bold mt-1">
-                    <span>TOTAL:</span>
-                    <span>$${invoice.total.toFixed(2)}</span>
-                </div>
-            </div>
-
-            <p class="text-[9px] text-center text-gray-500 mt-2">
-                Documento sin validez fiscal. Uso exclusivo académico.
-            </p>
-        </div>
-    `;
-
-            container.classList.remove('hidden');
-        }
-
-        const ref = order.referenceNumber || `PED-${order.id}`;
-        const cliente = order.user ? order.user.fullName : 'Cliente sin registro';
-        const totalTxt = `$${order.total.toFixed(2)}`;
-
-        // Datos resumen del pedido
-        document.getElementById('invoiceOrderId').value = order.id;
-        document.getElementById('invoiceOrderRef').textContent = ref;
-        document.getElementById('invoiceOrderClient').textContent = cliente;
-        document.getElementById('invoiceOrderTotal').textContent = totalTxt;
-
-        // Tabla de conceptos
-        const tbody = document.getElementById('invoiceItemsTable');
-        tbody.innerHTML = order.items.map(item => `
-        <tr>
-            <td>${item.quantity}</td>
-            <td>${item.name}</td>
-            <td class="text-right">$${(item.price * item.quantity).toFixed(2)}</td>
-        </tr>
-    `).join('');
-
-        // Limpiar ticket previo
-        const ticketContainer = document.getElementById('invoiceTicketContainer');
-        ticketContainer.innerHTML = '';
-        ticketContainer.classList.add('hidden');
-
-        // Mostrar modal
-        document.getElementById('invoiceModal').classList.remove('hidden');
-    }
-
-    // Cierra el modal de factura
-    function closeInvoiceModal() {
-        document.getElementById('invoiceModal').classList.add('hidden');
-        const ticketContainer = document.getElementById('invoiceTicketContainer');
-        ticketContainer.innerHTML = '';
-        ticketContainer.classList.add('hidden');
-    }
-
 
     // ====================================================================================
     // F U N C I O N E S  M E N Ú  C L I E N T E
@@ -3755,6 +3419,117 @@
         `).join('');
     }
 
+    // =================== FACTURACIÓN CFDI (SIMULADA SAT) ===================
+
+    // Datos del emisor (simulados). Cámbialos por los reales de tu cafetería si los tienes:
+    const EMISOR_FISCAL = {
+        nombre: 'CAFE-TEC S.A. de C.V.',
+        rfc: 'CACX7605101P8',
+        regimen: '601 - General de Ley Personas Morales',
+        cp: '30000'
+    };
+
+    function generateFakeUuid() {
+        // Patrón tipo UUID v4
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        }).toUpperCase();
+    }
+
+    function showAdminInvoicing() {
+        activateTab('invoicingTab');
+        document.getElementById('adminInvoicingSection').classList.remove('hidden');
+        renderAdminInvoicing();
+    }
+
+    function renderAdminInvoicing() {
+        const container = document.getElementById('adminInvoicingList');
+
+        if (!orders || orders.length === 0) {
+            container.innerHTML = '<p class="text-center text-gray-500 py-8 text-sm">No hay pedidos registrados para facturar.</p>';
+            return;
+        }
+
+        const sortedOrders = [...orders].sort((a, b) => b.id - a.id);
+
+        container.innerHTML = sortedOrders.map(order => {
+            const hasInvoice = !!order.invoice;
+            const cliente = order.user ? order.user.fullName : 'Desconocido';
+            const fecha = order.timestamp || '';
+            const total = order.total || 0;
+
+            return `
+            <div class="bg-white border rounded-lg p-4 shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <p class="font-semibold text-sm">Pedido #${order.id} • Ref: ${order.referenceNumber || '-'}</p>
+                        <p class="text-xs text-gray-500">${fecha}</p>
+                        <p class="text-xs text-gray-600 mt-1">Cliente: <span class="font-medium">${cliente}</span></p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-500">Total</p>
+                        <p class="text-lg font-bold text-blue-600">$${total.toFixed(2)}</p>
+                        <span class="inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-[0.65rem] font-medium ${hasInvoice ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+                            ${hasInvoice ? '✅ Facturado' : '⏳ Sin factura'}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-2 mt-2">
+                    <button onclick="openInvoiceForm(${order.id})"
+                        class="px-3 py-1 rounded-lg text-xs font-medium bg-blue-100 text-blue-700 hover:bg-blue-200">
+                        ${hasInvoice ? '✏️ Editar Factura' : '🧾 Generar Factura'}
+                    </button>
+                    <button onclick="openInvoiceTicket(${order.id})"
+                        ${hasInvoice ? '' : 'disabled'}
+                        class="px-3 py-1 rounded-lg text-xs font-medium ${hasInvoice ? 'bg-gray-100 text-gray-800 hover:bg-gray-200' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}">
+                        📄 Ver Ticket
+                    </button>
+                </div>
+            </div>
+        `;
+        }).join('');
+    }
+
+    function openInvoiceForm(orderId) {
+        const order = orders.find(o => o.id === orderId);
+        if (!order) {
+            alert('No se encontró el pedido a facturar.');
+            return;
+        }
+
+        document.getElementById('invoiceOrderId').value = order.id;
+        document.getElementById('invoiceOrderInfo').textContent = `#${order.id} (${order.referenceNumber || 'SIN REF'})`;
+        document.getElementById('invoiceOrderClient').textContent = order.user ? order.user.fullName : 'Desconocido';
+        document.getElementById('invoiceOrderTotal').textContent = `$${order.total.toFixed(2)}`;
+
+        const invoice = order.invoice;
+
+        // Si ya hay factura, rellenamos datos; si no, ponemos valores por defecto
+        document.getElementById('invoiceRfc').value = invoice?.receptor?.rfc || '';
+        document.getElementById('invoiceRazon').value = invoice?.receptor?.nombre || (order.user ? order.user.fullName : '');
+        document.getElementById('invoiceCp').value = invoice?.receptor?.cp || '30000';
+        document.getElementById('invoiceRegimenReceptor').value = invoice?.receptor?.regimen || '605 - Sueldos y salarios';
+        document.getElementById('invoiceUsoCfdi').value = invoice?.usoCfdi || 'G03';
+        document.getElementById('invoiceEmail').value = invoice?.receptor?.email || '';
+
+        // Mapear método de pago de la orden a forma de pago SAT
+        let formaPagoDefault = '01'; // Efectivo
+        if (order.paymentMethod === 'tarjeta') formaPagoDefault = '04';
+        if (order.paymentMethod === 'transferencia') formaPagoDefault = '03';
+
+        document.getElementById('invoiceFormaPago').value = invoice?.formaPago || formaPagoDefault;
+        document.getElementById('invoiceMetodoPago').value = invoice?.metodoPago || 'PUE';
+
+        document.getElementById('invoiceModal').classList.remove('hidden');
+    }
+
+    function closeInvoiceModal() {
+        document.getElementById('invoiceModal').classList.add('hidden');
+    }
+
     function renderSalesStats() {
         // ... (Esta función se mantiene igual que la original) ...
         const adminStatsList = document.getElementById('adminStatsList');
@@ -4190,6 +3965,129 @@
         alert("Sincronización completada. Los datos de los usuarios han sido actualizados en todos los pedidos.");
     }
 
+    document.getElementById('invoiceForm').addEventListener('submit', function (e) {
+        e.preventDefault(); // MUY IMPORTANTE: no recargar la página
+
+        const orderId = parseInt(document.getElementById('invoiceOrderId').value, 10);
+        const order = orders.find(o => o.id === orderId);
+
+        if (!order) {
+            alert('No se encontró el pedido a facturar.');
+            return;
+        }
+
+        // Datos receptor
+        const rfcReceptor = document.getElementById('invoiceRfc').value.trim().toUpperCase();
+        const razonReceptor = document.getElementById('invoiceRazon').value.trim();
+        const cpReceptor = document.getElementById('invoiceCp').value.trim();
+        const regimenReceptor = document.getElementById('invoiceRegimenReceptor').value.trim();
+        const usoCfdi = document.getElementById('invoiceUsoCfdi').value;
+        const emailReceptor = document.getElementById('invoiceEmail').value.trim();
+
+        // Datos pago
+        const metodoPago = document.getElementById('invoiceMetodoPago').value;
+        const formaPago = document.getElementById('invoiceFormaPago').value;
+
+        // Cálculo de impuestos (simulado)
+        const total = order.total;
+        const subtotal = +(total / 1.16).toFixed(2);
+        const iva = +(total - subtotal).toFixed(2);
+
+        // Si ya tenía factura, respetamos folio/UUID; si no, generamos
+        const previousInvoice = order.invoice;
+        const folio = previousInvoice?.folio || `A-${String(order.id).padStart(4, '0')}`;
+        const uuid = previousInvoice?.uuid || generateFakeUuid();
+        const fechaEmision = previousInvoice?.fecha || new Date().toISOString();
+
+        const invoice = {
+            folio,
+            uuid,
+            fecha: fechaEmision,
+            emisor: { ...EMISOR_FISCAL },
+            receptor: {
+                rfc: rfcReceptor,
+                nombre: razonReceptor,
+                cp: cpReceptor,
+                regimen: regimenReceptor,
+                email: emailReceptor || null
+            },
+            usoCfdi,
+            metodoPago,
+            formaPago,
+            moneda: 'MXN',
+            subtotal,
+            iva,
+            total,
+            // Conceptos: se basan en los items del pedido
+            conceptos: order.items.map(item => ({
+                cantidad: item.quantity,
+                descripcion: item.name,
+                valorUnitario: item.price,
+                importe: +(item.price * item.quantity).toFixed(2)
+            }))
+        };
+
+        // Guardar la factura dentro del pedido
+        order.invoice = invoice;
+
+        // Guardar en localStorage
+        saveState();
+
+        closeInvoiceModal();
+        renderAdminInvoicing();
+        // Mostrar ticket inmediatamente
+        openInvoiceTicket(orderId);
+        alert('Factura CFDI (simulada) guardada correctamente.');
+    });
+
+    function openInvoiceTicket(orderId) {
+        const order = orders.find(o => o.id === orderId);
+        if (!order || !order.invoice) {
+            alert('Este pedido aún no tiene factura generada.');
+            return;
+        }
+
+        const inv = order.invoice;
+
+        // Encabezado
+        document.getElementById('invoiceTicketEmisorRfc').textContent = inv.emisor.rfc;
+        document.getElementById('invoiceTicketFolio').textContent = inv.folio;
+        document.getElementById('invoiceTicketUuid').textContent = inv.uuid;
+        document.getElementById('invoiceTicketDate').textContent =
+            new Date(inv.fecha).toLocaleString();
+
+        document.getElementById('invoiceTicketMetodo').textContent = inv.metodoPago;
+        document.getElementById('invoiceTicketForma').textContent = inv.formaPago;
+
+        // Receptor
+        document.getElementById('invoiceTicketReceptorRfc').textContent = inv.receptor.rfc;
+        document.getElementById('invoiceTicketReceptorNombre').textContent = inv.receptor.nombre;
+        document.getElementById('invoiceTicketUsoCfdi').textContent = inv.usoCfdi;
+        document.getElementById('invoiceTicketRegimenReceptor').textContent = inv.receptor.regimen;
+        document.getElementById('invoiceTicketCpReceptor').textContent = inv.receptor.cp;
+
+        // Conceptos
+        const itemsBody = document.getElementById('invoiceTicketItems');
+        itemsBody.innerHTML = inv.conceptos.map(c => `
+        <tr class="align-top">
+            <td class="pr-1">${c.cantidad}</td>
+            <td>${c.descripcion}</td>
+            <td class="text-right whitespace-nowrap">$${c.importe.toFixed(2)}</td>
+        </tr>
+    `).join('');
+
+        // Totales
+        document.getElementById('invoiceTicketSubtotal').textContent = `$${inv.subtotal.toFixed(2)}`;
+        document.getElementById('invoiceTicketIva').textContent = `$${inv.iva.toFixed(2)}`;
+        document.getElementById('invoiceTicketTotal').textContent = `$${inv.total.toFixed(2)}`;
+
+        document.getElementById('invoiceTicketModal').classList.remove('hidden');
+    }
+
+    function closeInvoiceTicketModal() {
+        document.getElementById('invoiceTicketModal').classList.add('hidden');
+    }
+
     // ====================================================================================
     // (Resto de utilidades y formularios existentes)
     // ====================================================================================
@@ -4620,493 +4518,6 @@
     if (reports && !reports.classList.contains('hidden')) {
         renderReportPreview();
     }
-
-
-    // ====================================================================================
-    // COMPRAS A PROVEEDOR: VARIOS PRODUCTOS + PASARELA DE PAGO
-    // ====================================================================================
-
-    // Abre el modal, limpia datos y agrega una fila por defecto
-    function showNewPurchaseModal() {
-        const modal = document.getElementById('supplierPurchaseModal');
-        const form = document.getElementById('supplierPurchaseForm');
-        const container = document.getElementById('purchaseItemsContainer');
-
-        document.getElementById('purchaseModalTitle').textContent = 'Registrar Compra';
-        document.getElementById('purchaseId').value = '';
-
-        if (form) form.reset();
-        if (container) container.innerHTML = '';
-
-        addPurchaseItemRow(); // al menos 1 fila
-
-        document.getElementById('purchaseTotalDisplay').textContent = '$0.00';
-
-        // Pago por defecto
-        const defaultPayment = document.querySelector('input[name="purchasePayment"][value="efectivo"]');
-        if (defaultPayment) defaultPayment.checked = true;
-        showSupplierPaymentDetails();
-
-        modal.classList.remove('hidden');
-    }
-
-    // Cierra el modal y limpia un poco
-    function closePurchaseModal() {
-        document.getElementById('supplierPurchaseModal').classList.add('hidden');
-    }
-
-    // Añade una fila de materia prima (rowData es opcional, para editar en el futuro)
-    function addPurchaseItemRow(rowData) {
-        const container = document.getElementById('purchaseItemsContainer');
-        if (!container) return;
-
-        const options = [
-            '<option value="">Seleccionar materia prima</option>',
-            ...rawMaterials.map(m =>
-                `<option value="${m.id}">${m.emoji || ''} ${m.name}</option>`
-            )
-        ].join('');
-
-        const rowHtml = `
-        <div class="purchase-item-row border rounded-lg p-3 bg-gray-50">
-            <div class="grid grid-cols-12 gap-2">
-                <div class="col-span-12">
-                    <label class="block text-xs font-medium mb-1">Materia Prima</label>
-                    <select class="purchaseMaterial w-full border rounded-lg px-2 py-1 text-sm"
-                        onchange="onPurchaseMaterialChange(this)">
-                        ${options}
-                    </select>
-                </div>
-                <div class="col-span-6">
-                    <label class="block text-xs font-medium mb-1">Cantidad</label>
-                    <input type="number" step="0.01"
-                        class="purchaseQuantity w-full border rounded-lg px-2 py-1 text-sm"
-                        placeholder="Ej: 5"
-                        oninput="updatePurchaseRowFromInput(this)">
-                </div>
-                <div class="col-span-6">
-                    <label class="block text-xs font-medium mb-1">Unidad</label>
-                    <input type="text"
-                        class="purchaseUnit w-full border rounded-lg px-2 py-1 text-sm bg-gray-100"
-                        readonly>
-                </div>
-                <div class="col-span-6">
-                    <label class="block text-xs font-medium mb-1">Costo unitario ($)</label>
-                    <input type="number" step="0.01"
-                        class="purchaseUnitCost w-full border rounded-lg px-2 py-1 text-sm"
-                        placeholder="Ej: 50.00"
-                        oninput="updatePurchaseRowFromInput(this)">
-                </div>
-                <div class="col-span-5">
-                    <label class="block text-xs font-medium mb-1">Subtotal ($)</label>
-                    <input type="text"
-                        class="purchaseSubtotal w-full border rounded-lg px-2 py-1 text-sm bg-gray-100"
-                        readonly>
-                </div>
-                <div class="col-span-1 flex items-end justify-center">
-                    <button type="button"
-                        class="text-red-600 text-xl leading-none"
-                        onclick="removePurchaseItemRow(this)">✕</button>
-                </div>
-            </div>
-        </div>
-    `;
-
-        container.insertAdjacentHTML('beforeend', rowHtml);
-
-        // Si viene con datos (para futuro editar)
-        if (rowData) {
-            const row = container.lastElementChild;
-            const select = row.querySelector('.purchaseMaterial');
-            const qty = row.querySelector('.purchaseQuantity');
-            const unitCost = row.querySelector('.purchaseUnitCost');
-
-            if (select && rowData.materialId) {
-                select.value = String(rowData.materialId);
-                onPurchaseMaterialChange(select);
-            }
-            if (qty && rowData.quantity != null) qty.value = rowData.quantity;
-            if (unitCost && rowData.unitCost != null) unitCost.value = rowData.unitCost;
-
-            updatePurchaseRow(row);
-        }
-    }
-
-    // Quitar una fila
-    function removePurchaseItemRow(btn) {
-        const row = btn.closest('.purchase-item-row');
-        if (!row) return;
-        row.remove();
-        updatePurchaseTotals();
-    }
-
-    // Cuando se selecciona materia prima, se rellena la unidad
-    function onPurchaseMaterialChange(selectEl) {
-        const row = selectEl.closest('.purchase-item-row');
-        if (!row) return;
-        const unitInput = row.querySelector('.purchaseUnit');
-        const materialId = parseInt(selectEl.value);
-        const material = rawMaterials.find(m => m.id === materialId);
-
-        if (unitInput) {
-            unitInput.value = material ? material.unit : '';
-        }
-    }
-
-    // Helpers para recalcular subtotales / total
-    function updatePurchaseRowFromInput(inputEl) {
-        const row = inputEl.closest('.purchase-item-row');
-        if (!row) return;
-        updatePurchaseRow(row);
-    }
-
-    function updatePurchaseRow(row) {
-        const qtyInput = row.querySelector('.purchaseQuantity');
-        const unitCostInput = row.querySelector('.purchaseUnitCost');
-        const subtotalInput = row.querySelector('.purchaseSubtotal');
-
-        const qty = parseFloat(qtyInput?.value) || 0;
-        const unitCost = parseFloat(unitCostInput?.value) || 0;
-        const subtotal = qty * unitCost;
-
-        if (subtotalInput) {
-            subtotalInput.value = subtotal > 0 ? subtotal.toFixed(2) : '';
-        }
-
-        updatePurchaseTotals();
-    }
-
-    function updatePurchaseTotals() {
-        const rows = document.querySelectorAll('#purchaseItemsContainer .purchase-item-row');
-        let total = 0;
-
-        rows.forEach(row => {
-            const subtotalInput = row.querySelector('.purchaseSubtotal');
-            const sub = parseFloat(subtotalInput?.value) || 0;
-            total += sub;
-        });
-
-        const display = document.getElementById('purchaseTotalDisplay');
-        if (display) {
-            display.textContent = `$${total.toFixed(2)}`;
-        }
-    }
-
-    // Mostrar detalles de pago (similar al menú de cliente)
-    function showSupplierPaymentDetails() {
-        const methodEl = document.querySelector('input[name="purchasePayment"]:checked');
-        if (!methodEl) return;
-        const method = methodEl.value;
-
-        const cardBox = document.getElementById('supplierCardPaymentDetails');
-        const transferBox = document.getElementById('supplierTransferDetails');
-
-        if (cardBox) cardBox.classList.add('hidden');
-        if (transferBox) transferBox.classList.add('hidden');
-
-        if (method === 'tarjeta' && cardBox) {
-            cardBox.classList.remove('hidden');
-        } else if (method === 'transferencia' && transferBox) {
-            transferBox.classList.remove('hidden');
-        }
-    }
-
-    // Validación básica de datos de tarjeta para compras a proveedor
-    function validateSupplierPurchasePaymentInfo(method) {
-        if (method === 'tarjeta') {
-            const num = document.getElementById('purchaseCardNumber')?.value.trim();
-            const exp = document.getElementById('purchaseCardExpiry')?.value.trim();
-            const cvv = document.getElementById('purchaseCardCvv')?.value.trim();
-            const holder = document.getElementById('purchaseCardHolder')?.value.trim();
-
-            if (!num || !exp || !cvv || !holder) {
-                alert('Por favor completa todos los datos de la tarjeta (compra a proveedor).');
-                return false;
-            }
-        }
-        // Para efectivo / transferencia no pedimos nada extra (solo simulación)
-        return true;
-    }
-
-    // SUBMIT del formulario de compras a proveedor (multi-producto)
-    function handleSupplierPurchaseSubmit(event) {
-        event.preventDefault();
-
-        const rows = document.querySelectorAll('#purchaseItemsContainer .purchase-item-row');
-        if (rows.length === 0) {
-            alert('Agrega al menos una materia prima a la compra.');
-            return;
-        }
-
-        const paymentEl = document.querySelector('input[name="purchasePayment"]:checked');
-        if (!paymentEl) {
-            alert('Selecciona un método de pago.');
-            return;
-        }
-        const paymentMethod = paymentEl.value;
-
-        if (!validateSupplierPurchasePaymentInfo(paymentMethod)) {
-            return;
-        }
-
-        const supplierName = document.getElementById('supplierName')?.value.trim() || '';
-
-        const now = new Date();
-        const todayISO = now.toISOString().slice(0, 10);
-        const timestamp = now.toLocaleString();
-
-        // Para ids únicos, tomamos el máximo existente y seguimos
-        let nextId = supplierPurchases.reduce((max, p) => {
-            return p && typeof p.id === 'number' && p.id > max ? p.id : max;
-        }, 0) + 1;
-
-        const newPurchases = [];
-
-        for (const row of rows) {
-            const materialSelect = row.querySelector('.purchaseMaterial');
-            const qtyInput = row.querySelector('.purchaseQuantity');
-            const unitInput = row.querySelector('.purchaseUnit');
-            const unitCostInput = row.querySelector('.purchaseUnitCost');
-            const subtotalInput = row.querySelector('.purchaseSubtotal');
-
-            const materialId = parseInt(materialSelect?.value);
-            const quantity = parseFloat(qtyInput?.value);
-            const unitCost = parseFloat(unitCostInput?.value);
-            const subtotal = parseFloat(subtotalInput?.value) || 0;
-            const unit = unitInput?.value || '';
-
-            if (!materialId || !quantity || quantity <= 0 || !unitCost || unitCost <= 0) {
-                alert('Verifica que todas las filas tengan materia prima, cantidad y costo unitario válidos.');
-                return;
-            }
-
-            const material = rawMaterials.find(m => m.id === materialId);
-            if (!material) {
-                alert('Una de las materias primas ya no existe. Revisa la lista de materias primas.');
-                return;
-            }
-
-            // Actualizar stock de materia prima (SUMAR porque es compra)
-            material.stock = parseFloat((material.stock + quantity).toFixed(2));
-
-            const purchaseRecord = {
-                id: nextId++,
-                materialId: materialId,
-                materialName: material.name,
-                quantity: quantity,
-                unit: unit || material.unit,
-                cost: subtotal, // costo total por esa materia
-                unitCost: unitCost,
-                supplierName: supplierName,
-                paymentMethod: paymentMethod,
-                timestamp: timestamp,
-                date: todayISO
-            };
-
-            newPurchases.push(purchaseRecord);
-        }
-
-        // Agregar todas las compras individuales al arreglo
-        supplierPurchases = supplierPurchases.concat(newPurchases);
-
-        // Refrescar vistas relacionadas (si existen estas funciones)
-        if (typeof renderAdminRawMaterials === 'function') {
-            renderAdminRawMaterials();
-        }
-        if (typeof renderSupplierPurchaseStats === 'function') {
-            renderSupplierPurchaseStats();
-        }
-        if (typeof renderAdminSupplierPurchases === 'function') {
-            renderAdminSupplierPurchases();
-        }
-
-        saveState();
-
-        alert('Compra registrada correctamente con ' + newPurchases.length + ' producto(s) de materia prima.');
-        closePurchaseModal();
-    }
-
-    // ===============================================
-    // 🧾 CONTROL DEL MODAL DE FACTURACIÓN Y TICKET
-    // ===============================================
-
-    function openInvoiceModal(orderId) {
-        const order = orders.find(o => o.id === orderId);
-        if (!order) return;
-
-        const existing = getInvoiceByOrder(orderId);
-        if (existing) {
-            alert(`Este pedido ya tiene factura: ${existing.serie}-${existing.folio}`);
-            return;
-        }
-
-        const modal = document.getElementById('invoiceModal');
-        const form = document.getElementById('invoiceForm');
-        const ticketContainer = document.getElementById('invoiceTicketContainer');
-
-        form.reset();
-        ticketContainer.classList.add('hidden');
-        ticketContainer.innerHTML = '';
-
-        document.getElementById('invoiceOrderId').value = order.id;
-        document.getElementById('invoiceOrderRef').textContent = order.referenceNumber || `PED-${order.id}`;
-        document.getElementById('invoiceOrderClient').textContent = order.user ? order.user.fullName : 'Cliente sin registro';
-        document.getElementById('invoiceOrderTotal').textContent = `$${order.total.toFixed(2)}`;
-
-        const itemsTbody = document.getElementById('invoiceItemsTable');
-        itemsTbody.innerHTML = order.items.map(item => `
-        <tr>
-            <td class="pr-2">${item.quantity}</td>
-            <td class="pr-2">${item.name}</td>
-            <td class="text-right">$${(item.price * item.quantity).toFixed(2)}</td>
-        </tr>
-    `).join('');
-
-        modal.classList.remove('hidden');
-    }
-
-    function closeInvoiceModal() {
-        document.getElementById('invoiceModal').classList.add('hidden');
-    }
-
-    // Manejar envío del formulario de factura
-    document.getElementById('invoiceForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        const orderId = parseInt(document.getElementById('invoiceOrderId').value, 10);
-        const order = orders.find(o => o.id === orderId);
-        if (!order) return;
-
-        if (getInvoiceByOrder(orderId)) {
-            alert('Este pedido ya se encuentra facturado.');
-            return;
-        }
-
-        const rfc = document.getElementById('invoiceRfc').value.trim().toUpperCase();
-        const razon = document.getElementById('invoiceRazon').value.trim();
-        const usoCfdi = document.getElementById('invoiceUsoCfdi').value;
-        const regimen = document.getElementById('invoiceRegimen').value;
-        const metodoPago = document.getElementById('invoiceMetodoPago').value;
-        const formaPago = document.getElementById('invoiceFormaPago').value;
-        const domicilio = document.getElementById('invoiceDomicilio').value.trim();
-
-        if (!rfc || !razon || !usoCfdi || !regimen || !metodoPago || !formaPago) {
-            alert('Por favor completa todos los campos obligatorios de facturación (*)');
-            return;
-        }
-
-        const now = new Date();
-        const subtotal = +(order.total / 1.16).toFixed(2);
-        const iva = +(order.total - subtotal).toFixed(2);
-
-        const newId = invoices.length > 0 ? Math.max(...invoices.map(i => i.id)) + 1 : 1;
-        const folio = String(newId).padStart(4, '0');
-        const serie = 'A';
-
-        const invoice = {
-            id: newId,
-            orderId: order.id,
-            orderRef: order.referenceNumber || `PED-${order.id}`,
-            folio,
-            serie,
-            rfcReceptor: rfc,
-            razonSocialReceptor: razon,
-            usoCfdi,
-            metodoPago,
-            formaPago,
-            regimenReceptor: regimen,
-            domicilio,
-            dateIssued: now.toISOString(),
-            subtotal,
-            iva,
-            total: order.total,
-            moneda: 'MXN'
-        };
-
-        invoices.push(invoice);
-        order.hasInvoice = true;
-        order.invoiceId = invoice.id;
-
-        saveState();
-        renderAdminBilling();
-        renderInvoiceTicket(invoice, order);
-    });
-
-    function renderInvoiceTicket(invoice, order) {
-        const container = document.getElementById('invoiceTicketContainer');
-        if (!container) return;
-
-        const fecha = new Date(invoice.dateIssued).toLocaleString();
-        const itemsHtml = order.items.map(item => `
-        <tr class="align-top">
-            <td class="pr-2">${item.quantity}</td>
-            <td>${item.name}</td>
-            <td class="text-right">$${(item.price * item.quantity).toFixed(2)}</td>
-        </tr>
-    `).join('');
-
-        container.innerHTML = `
-        <div class="bg-gray-50 border border-gray-300 rounded-lg p-4 font-mono text-[11px]">
-            <div class="text-center mb-2">
-                <p class="font-bold text-sm">CAFE-TEC</p>
-                <p>RFC EMISOR: CTE000000XXX</p>
-                <p>TecNM campus Comitán</p>
-                <p>Calle Ficticia 123, CP 30000, Comitán, Chiapas</p>
-            </div>
-
-            <div style="border-top:1px dashed #9ca3af; margin:6px 0;"></div>
-
-            <p>RFC RECEPTOR: ${invoice.rfcReceptor}</p>
-            <p>Razón Social: ${invoice.razonSocialReceptor}</p>
-            <p>Régimen: ${invoice.regimenReceptor}</p>
-            ${invoice.domicilio ? `<p>Domicilio: ${invoice.domicilio}</p>` : ''}
-
-            <div style="border-top:1px dashed #9ca3af; margin:6px 0;"></div>
-
-            <p>Serie: ${invoice.serie}   Folio: ${invoice.folio}</p>
-            <p>Fecha emisión: ${fecha}</p>
-            <p>Uso CFDI: ${invoice.usoCfdi}</p>
-            <p>Método Pago: ${invoice.metodoPago}</p>
-            <p>Forma Pago: ${invoice.formaPago}</p>
-            <p>Moneda: ${invoice.moneda}</p>
-
-            <div style="border-top:1px dashed #9ca3af; margin:6px 0;"></div>
-
-            <table class="w-full">
-                <thead>
-                    <tr>
-                        <th class="text-left">Cant</th>
-                        <th class="text-left">Concepto</th>
-                        <th class="text-right">Importe</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${itemsHtml}
-                </tbody>
-            </table>
-
-            <div style="border-top:1px dashed #9ca3af; margin:6px 0;"></div>
-
-            <p class="flex justify-between">
-                <span>Subtotal:</span><span>$${invoice.subtotal.toFixed(2)}</span>
-            </p>
-            <p class="flex justify-between">
-                <span>IVA 16%:</span><span>$${invoice.iva.toFixed(2)}</span>
-            </p>
-            <p class="flex justify-between font-bold text-sm">
-                <span>Total:</span><span>$${invoice.total.toFixed(2)}</span>
-            </p>
-
-            <div style="border-top:1px dashed #9ca3af; margin:6px 0;"></div>
-            <p class="text-center text-[10px] mt-1">
-                Comprobante sin validez fiscal. Simulación de CFDI para fines académicos.
-            </p>
-        </div>
-    `;
-
-        container.classList.remove('hidden');
-    }
-
 
 </script>
 </body>
