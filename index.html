@@ -1704,30 +1704,79 @@
         }
     }
 
-    async function loadState() {
-        try {
-            console.log("🔄 Conectando a Firebase...");
-            const getDocData = async (docName) => {
-                const docRef = await db.collection("cafetec").doc(docName).get();
-                return docRef.exists ? docRef.data().data : null;
-            };
+    // 📥 Función para CARGAR y ESCUCHAR desde Firestore en TIEMPO REAL
+    function loadState() {
+        console.log("🔄 Iniciando conexión en Tiempo Real...");
 
-            const fbProducts = await getDocData("products");
-            const fbMaterials = await getDocData("materials");
-            const fbPurchases = await getDocData("purchases");
-            const fbOrders = await getDocData("orders");
-            const fbUsers = await getDocData("users");
+        // Controladores para saber cuando Firebase termina de cargar todo por primera vez
+        let loadedFlags = { products: false, materials: false, purchases: false, orders: false, users: false, metadata: false };
 
-            const metaDoc = await db.collection("cafetec").doc("metadata").get();
-            if (metaDoc.exists) orderIdCounter = metaDoc.data().orderIdCounter || 1;
+        function checkIfFullyLoaded() {
+            if (!isDataLoaded && Object.values(loadedFlags).every(v => v === true)) {
+                isDataLoaded = true;
+                console.log("✅ [Firebase] Sistema en Tiempo Real Activado.");
+                
+                // Si la BD está vacía (primer uso), guardamos los datos por defecto
+                if (products.length === 0 && rawMaterials.length === 0) {
+                    products = defaultProducts;
+                    rawMaterials = defaultMaterials;
+                    saveState();
+                }
 
-            // Si existen datos en Firebase, sobreescribir los por defecto
-            if (fbProducts && fbProducts.length > 0) products = fbProducts;
-            if (fbMaterials && fbMaterials.length > 0) rawMaterials = fbMaterials;
-            if (fbPurchases) supplierPurchases = fbPurchases;
-            if (fbOrders) orders = fbOrders;
+                // Restaurar sesión de usuario
+                const storedCurrentUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+                if (storedCurrentUser) currentUser = JSON.parse(storedCurrentUser);
 
-            if (fbUsers) {
+                checkAuthAndRoute();
+            }
+        }
+
+        // 1. Escuchar PEDIDOS (¡Esto hace que aparezcan al instante!)
+        db.collection("cafetec").doc("orders").onSnapshot((doc) => {
+            orders = doc.exists ? (doc.data().data || []) : [];
+            loadedFlags.orders = true;
+            checkIfFullyLoaded();
+            
+            // Si el administrador está viendo la pantalla de pedidos, actualizarla en vivo
+            if (!document.getElementById('adminOrdersSection').classList.contains('hidden')) renderAdminOrders();
+            if (!document.getElementById('adminInvoicingSection').classList.contains('hidden')) renderAdminInvoicing();
+        });
+
+        // 2. Escuchar PRODUCTOS (Actualiza el stock en vivo en el menú)
+        db.collection("cafetec").doc("products").onSnapshot((doc) => {
+            products = doc.exists ? (doc.data().data || []) : [];
+            loadedFlags.products = true;
+            checkIfFullyLoaded();
+            
+            if (!document.getElementById('customerMenu').classList.contains('hidden')) renderProducts();
+            if (!document.getElementById('adminStockSection').classList.contains('hidden')) renderAdminProducts(currentAdminProductType);
+        });
+
+        // 3. Escuchar MATERIALES
+        db.collection("cafetec").doc("materials").onSnapshot((doc) => {
+            rawMaterials = doc.exists ? (doc.data().data || []) : [];
+            loadedFlags.materials = true;
+            checkIfFullyLoaded();
+            
+            if (!document.getElementById('adminRawMaterialsSection').classList.contains('hidden')) renderAdminRawMaterials();
+        });
+
+        // 4. Escuchar COMPRAS A PROVEEDOR
+        db.collection("cafetec").doc("purchases").onSnapshot((doc) => {
+            supplierPurchases = doc.exists ? (doc.data().data || []) : [];
+            loadedFlags.purchases = true;
+            checkIfFullyLoaded();
+            
+            if (!document.getElementById('adminSupplierPurchasesSection').classList.contains('hidden')) {
+                renderSupplierPurchaseStats();
+                renderAdminSupplierPurchases();
+            }
+        });
+
+        // 5. Escuchar USUARIOS (Actualiza los bloqueos de cuenta al instante)
+        db.collection("cafetec").doc("users").onSnapshot((doc) => {
+            if (doc.exists) {
+                const fbUsers = doc.data().data || [];
                 users = fbUsers.map(u => {
                     let regDate = new Date();
                     if (u.registrationDate) {
@@ -1740,26 +1789,22 @@
                     const isActive = (typeof u.isActive === 'boolean') ? u.isActive : true;
                     return { ...u, isActive, registrationDate: regDate, accountActiveUntil };
                 });
+            } else {
+                users = [];
             }
+            loadedFlags.users = true;
+            checkIfFullyLoaded();
 
-            console.log("✅ [Firebase] Datos descargados y listos.");
-            isDataLoaded = true; // Abrir candado
+            if (!document.getElementById('adminUsersSection').classList.contains('hidden')) renderAdminUsers();
+            if (!document.getElementById('adminPersonalDataSection').classList.contains('hidden')) renderAdminPersonalData();
+        });
 
-            // Si Firebase estaba vacío y se usaron los datos por defecto, los guardamos en la nube.
-            if (!fbProducts || fbProducts.length === 0) {
-                saveState();
-            }
-
-        } catch (error) {
-            console.error("🔥 [Firebase] ERROR AL CARGAR:", error);
-            alert("Error de conexión a la base de datos. Trabajando con datos locales.");
-            isDataLoaded = true; 
-        }
-
-        const storedCurrentUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
-        if (storedCurrentUser) currentUser = JSON.parse(storedCurrentUser);
-
-        checkAuthAndRoute();
+        // 6. Escuchar METADATA (Contador de folios)
+        db.collection("cafetec").doc("metadata").onSnapshot((doc) => {
+            orderIdCounter = doc.exists ? (doc.data().orderIdCounter || 1) : 1;
+            loadedFlags.metadata = true;
+            checkIfFullyLoaded();
+        });
     }
 
     function checkAuthAndRoute() {
