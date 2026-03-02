@@ -1564,14 +1564,9 @@
 </html>
 <script>
     // ====================================================================================
-    // G E S T I Ó N  D E  M E M O R I A  L O C A L
-    // ====================================================================================
-
-    // ====================================================================================
     // G E S T I Ó N  D E  B A S E  D E  D A T O S  ( F I R E B A S E )
     // ====================================================================================
 
-    // 1. Inicializar Firebase (Versión Compat para no romper los onclick del HTML)
     const firebaseConfig = {
         apiKey: "AIzaSyAirIFLZbN4E6_fAMaziojHkAHlnILlYKI",
         authDomain: "webw-41418.firebaseapp.com",
@@ -1582,72 +1577,136 @@
         measurementId: "G-WPJRP0038Q"
     };
 
-    firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
     const db = firebase.firestore();
+
+    // ====================================================================================
+    // V A R I A B L E S   G L O B A L E S   Y   E S T A D O S   I N I C I A L E S
+    // ====================================================================================
+    
+    // Candado para evitar borrar la base de datos
+    let isDataLoaded = false;
 
     const STORAGE_KEYS = {
         CURRENT_USER: 'cafetec_current_user'
     };
 
+    let cart = [];
+    let currentCategory = 'all';
+    let orders = [];
+    let supplierPurchases = [];
+    let orderIdCounter = 1;
+    let users = [];
+    let currentUser = null;
+    let previewProduct = null;
+    let currentAdminProductType = 'manufactured';
 
+    // Datos por defecto (Se usarán si Firebase está completamente vacío)
+    let rawMaterials = [
+        { id: 101, name: 'Granos de Café', stock: 5.0, unit: 'kg', emoji: '☕' },
+        { id: 102, name: 'Leche', stock: 20.0, unit: 'L', emoji: '🥛' },
+        { id: 103, name: 'Azúcar', stock: 15.0, unit: 'kg', emoji: '🍚' },
+        { id: 104, name: 'Pan Club', stock: 30.0, unit: 'pzas', emoji: '🍞' },
+        { id: 105, name: 'Pollo', stock: 10.0, unit: 'kg', emoji: '🍗' },
+        { id: 106, name: 'Lechuga', stock: 8.0, unit: 'kg', emoji: '🥬' },
+        { id: 107, name: 'Aderezo César', stock: 5.0, unit: 'L', emoji: '🧴' },
+        { id: 108, name: 'Queso Crema', stock: 12.0, unit: 'kg', emoji: '🧀' },
+        { id: 109, name: 'Chocolate', stock: 18.0, unit: 'kg', emoji: '🍫' }
+    ];
 
+    let products = [
+        {
+            id: 1, name: 'Café Americano', price: 25.00, category: 'bebidas', stock: 50, emoji: '☕',
+            materialsNeeded: [{ materialId: 101, quantity: 0.02 }, { materialId: 103, quantity: 0.01 }],
+            isSupplierProduct: false, imageURL: 'https://images.unsplash.com/photo-1509785116905-f370a1a0fb84?q=80&w=2070',
+            description: 'El clásico café, simple y aromático. Perfecto para iniciar la mañana o recargar energías.', time: '2 min', calories: '5 Cal'
+        },
+        {
+            id: 2, name: 'Cappuccino', price: 35.00, category: 'bebidas', stock: 30, emoji: '☕',
+            materialsNeeded: [{ materialId: 101, quantity: 0.015 }, { materialId: 102, quantity: 0.2 }],
+            isSupplierProduct: false, imageURL: 'https://images.unsplash.com/photo-1517454238596-f947477610c4?q=80&w=1974',
+            description: 'Espresso con leche espumada, suave y cremoso.', time: '5 min', calories: '120 Cal'
+        },
+        {
+            id: 3, name: 'Sandwich Club', price: 65.00, category: 'comida', stock: 20, emoji: '🥪',
+            materialsNeeded: [{ materialId: 104, quantity: 3 }, { materialId: 105, quantity: 0.1 }, { materialId: 106, quantity: 0.05 }],
+            isSupplierProduct: false, imageURL: 'https://images.unsplash.com/photo-1627915570889-019688b13958?q=80&w=2070',
+            description: 'Clásico sándwich de pollo, jamón, queso y verduras en triple pan tostado.', time: '10 min', calories: '350 Cal'
+        },
+        {
+            id: 4, name: 'Ensalada César', price: 55.00, category: 'comida', stock: 15, emoji: '🥗',
+            materialsNeeded: [{ materialId: 106, quantity: 0.15 }, { materialId: 107, quantity: 0.05 }, { materialId: 105, quantity: 0.05 }],
+            isSupplierProduct: false, imageURL: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=2070',
+            description: 'La ensalada más famosa: lechuga, crutones, queso parmesano y aderezo César.', time: '8 min', calories: '230 Cal'
+        },
+        {
+            id: 5, name: 'Cheesecake', price: 45.00, category: 'postres', stock: 12, emoji: '🍰',
+            materialsNeeded: [{ materialId: 108, quantity: 0.2 }, { materialId: 103, quantity: 0.05 }],
+            isSupplierProduct: false, imageURL: 'https://images.unsplash.com/photo-1565292881729-e85d9c228220?q=80&w=1925',
+            description: 'Tarta de queso cremosa con base de galleta.', time: '5 min', calories: '480 Cal'
+        },
+        {
+            id: 6, name: 'Muffin Chocolate', price: 30.00, category: 'postres', stock: 25, emoji: '🧁',
+            materialsNeeded: [{ materialId: 109, quantity: 0.1 }, { materialId: 103, quantity: 0.02 }],
+            isSupplierProduct: false, imageURL: 'https://images.unsplash.com/photo-1628172088031-155e97148530?q=80&w=2071',
+            description: 'Suave panecillo de chocolate, ideal para acompañar tu café.', time: '3 min', calories: '290 Cal'
+        },
+        {
+            id: 7, name: 'Refresco Coca-Cola', price: 22.00, category: 'golosinas', stock: 40, emoji: '🥤',
+            materialsNeeded: [], isSupplierProduct: true, imageURL: 'https://images.unsplash.com/photo-1625902403780-fd4da67c9c0f?q=80&w=1920',
+            description: 'Refresco embotellado de 600ml.', time: '0 min', calories: '250 Cal'
+        },
+        {
+            id: 8, name: 'Papas Fritas Queso', price: 18.00, category: 'golosinas', stock: 55, emoji: '🧀',
+            materialsNeeded: [], isSupplierProduct: true, imageURL: 'https://images.unsplash.com/photo-1596701830601-e94119d54e0b?q=80&w=1920',
+            description: 'Bolsa de papas fritas sabor queso.', time: '0 min', calories: '180 Cal'
+        }
+    ];
 
-    // Función para guardar en Firestore
-    function saveState() {
+    // ====================================================================================
+    // LÓGICA DE FIREBASE Y SESIÓN
+    // ====================================================================================
 
-        // ====================================================================================
-        // V A R I A B L E S   G L O B A L E S
-        // ====================================================================================
-        let rawMaterials = [];
-        let products = [];
-        let cart = [];
-        let currentCategory = 'all';
-        let orders = [];
-        let supplierPurchases = [];
-        let orderIdCounter = 1;
-        let users = [];
-        let currentUser = null;
-        let previewProduct = null;
-        let currentAdminProductType = 'manufactured';
+    // Sanitizador para evitar errores de objetos inválidos en Firebase
+    function sanitizeData(data) {
+        return JSON.parse(JSON.stringify(data));
+    }
 
-        // 🔒 CANDADO DE SEGURIDAD: Evita borrar la base de datos por accidente
-        let isDataLoaded = false;
+    async function saveState() {
+        if (!isDataLoaded) {
+            console.warn("⚠️ Bloqueado: Se intentó guardar antes de cargar los datos de Firebase.");
+            return; 
+        }
 
-        const STORAGE_KEYS = {
-            CURRENT_USER: 'cafetec_current_user'
-        };
+        try {
+            const batch = db.batch();
+            
+            batch.set(db.collection("cafetec").doc("products"), { data: sanitizeData(products) });
+            batch.set(db.collection("cafetec").doc("materials"), { data: sanitizeData(rawMaterials) });
+            batch.set(db.collection("cafetec").doc("purchases"), { data: sanitizeData(supplierPurchases) });
+            batch.set(db.collection("cafetec").doc("orders"), { data: sanitizeData(orders) });
+            batch.set(db.collection("cafetec").doc("users"), { data: sanitizeData(users) });
+            batch.set(db.collection("cafetec").doc("metadata"), { orderIdCounter: orderIdCounter || 1 });
 
-        // Función para guardar en Firestore
-        function saveState() {
-            // Si los datos no han terminado de cargar desde la nube, ABORTAMOS el guardado.
-            // Esto evita que el sistema guarde listas vacías [] y borre tu información.
-            if (!isDataLoaded) {
-                console.warn("Intento de guardado bloqueado: Los datos aún no cargan desde Firebase.");
-                return;
-            }
+            await batch.commit();
+            console.log("✅ [Firebase] Datos guardados correctamente.");
+        } catch (error) {
+            console.error("🔥 [Firebase] ERROR AL GUARDAR:", error);
+            alert("Error al guardar en la nube. Revisa F12.");
+        }
 
-            db.collection("cafetec").doc("products").set({ data: products });
-            db.collection("cafetec").doc("materials").set({ data: rawMaterials });
-            db.collection("cafetec").doc("purchases").set({ data: supplierPurchases });
-            db.collection("cafetec").doc("orders").set({ data: orders });
-            db.collection("cafetec").doc("users").set({ data: users });
-            db.collection("cafetec").doc("metadata").set({ orderIdCounter: orderIdCounter });
-
-            // Mantenemos la sesión activa en el navegador
-            if (currentUser) {
-                localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
-            } else {
-                localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-            }
+        if (currentUser) {
+            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+        } else {
+            localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
         }
     }
 
-
-
-    // Función Asíncrona para cargar desde Firestore
     async function loadState() {
         try {
-            console.log("Intentando conectar con Firebase...");
+            console.log("🔄 Conectando a Firebase...");
             const getDocData = async (docName) => {
                 const docRef = await db.collection("cafetec").doc(docName).get();
                 return docRef.exists ? docRef.data().data : null;
@@ -1662,14 +1721,15 @@
             const metaDoc = await db.collection("cafetec").doc("metadata").get();
             if (metaDoc.exists) orderIdCounter = metaDoc.data().orderIdCounter || 1;
 
-            if (fbProducts) products = fbProducts;
-            if (fbMaterials) rawMaterials = fbMaterials;
+            // Si existen datos en Firebase, sobreescribir los por defecto
+            if (fbProducts && fbProducts.length > 0) products = fbProducts;
+            if (fbMaterials && fbMaterials.length > 0) rawMaterials = fbMaterials;
             if (fbPurchases) supplierPurchases = fbPurchases;
             if (fbOrders) orders = fbOrders;
 
             if (fbUsers) {
                 users = fbUsers.map(u => {
-                    let regDate = new Date(0);
+                    let regDate = new Date();
                     if (u.registrationDate) {
                         regDate = u.registrationDate.toDate ? u.registrationDate.toDate() : new Date(u.registrationDate);
                     }
@@ -1682,54 +1742,24 @@
                 });
             }
 
-            console.log("✅ Datos descargados correctamente.");
-            isDataLoaded = true; // Abrimos el candado
+            console.log("✅ [Firebase] Datos descargados y listos.");
+            isDataLoaded = true; // Abrir candado
+
+            // Si Firebase estaba vacío y se usaron los datos por defecto, los guardamos en la nube.
+            if (!fbProducts || fbProducts.length === 0) {
+                saveState();
+            }
 
         } catch (error) {
-            console.error("🔥 ERROR DE LECTURA FIREBASE:", error);
-            alert("⚠️ Firebase denegó la lectura. Revisa tus Reglas de Firestore.");
+            console.error("🔥 [Firebase] ERROR AL CARGAR:", error);
+            alert("Error de conexión a la base de datos. Trabajando con datos locales.");
             isDataLoaded = true; 
         }
 
-        // Restaurar sesión
         const storedCurrentUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
         if (storedCurrentUser) currentUser = JSON.parse(storedCurrentUser);
 
         checkAuthAndRoute();
-    }
-
-    // Función para guardar en Firestore
-    function saveState() {
-        if (!isDataLoaded) {
-            console.warn("Bloqueado: intentando guardar antes de que carguen los datos.");
-            return; 
-        }
-
-        console.log("⏳ Guardando datos en la nube...");
-
-        // Guardamos todo en un "Lote" (Batch) para que sea instantáneo y seguro
-        const batch = db.batch();
-        batch.set(db.collection("cafetec").doc("products"), { data: products });
-        batch.set(db.collection("cafetec").doc("materials"), { data: rawMaterials });
-        batch.set(db.collection("cafetec").doc("purchases"), { data: supplierPurchases });
-        batch.set(db.collection("cafetec").doc("orders"), { data: orders });
-        batch.set(db.collection("cafetec").doc("users"), { data: users });
-        batch.set(db.collection("cafetec").doc("metadata"), { orderIdCounter: orderIdCounter });
-
-        // Ejecutamos el guardado
-        batch.commit()
-            .then(() => console.log("✅ Datos guardados permanentemente en Firebase"))
-            .catch(error => {
-                console.error("🔥 ERROR DE ESCRITURA:", error);
-                alert("⚠️ DENEGADO: Firebase no te dejó guardar. Tus cambios se perderán al recargar. Ve a la consola de Firebase y cambia tus Reglas (Rules) a 'allow read, write: if true;'");
-            });
-
-        // Mantenemos la sesión activa en el navegador
-        if (currentUser) {
-            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
-        } else {
-            localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-        }
     }
 
     function checkAuthAndRoute() {
@@ -1742,7 +1772,7 @@
                 
                 if (!cu) {
                     currentUser = null;
-                    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER); // Borramos solo la sesión local
+                    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
                     showLogin();
                     setLoginMessage('🚫 Tu usuario ya no existe. Contacta al administrador.', 'error');
                     return;
@@ -1758,7 +1788,7 @@
                     currentUser = null;
                     localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
                     showLogin();
-                    setLoginMessage('🚫 Acceso bloqueado: tu cuenta ha expirado. Contacta al administrador.', 'error');
+                    setLoginMessage('🚫 Acceso bloqueado: tu cuenta ha expirado.', 'error');
                     return;
                 }
 
@@ -1770,135 +1800,8 @@
         }
     }
 
-    
     // ====================================================================================
-    // E S T A D O S  I N I C I A L E S 
-    // ====================================================================================
-
-    let rawMaterials = [
-        // ... (Esta sección se mantiene igual que la original) ...
-        { id: 101, name: 'Granos de Café', stock: 5.0, unit: 'kg', emoji: '☕' },
-        { id: 102, name: 'Leche', stock: 20.0, unit: 'L', emoji: '🥛' },
-        { id: 103, name: 'Azúcar', stock: 15.0, unit: 'kg', emoji: '🍚' },
-        { id: 104, name: 'Pan Club', stock: 30.0, unit: 'pzas', emoji: '🍞' },
-        { id: 105, name: 'Pollo', stock: 10.0, unit: 'kg', emoji: '🍗' },
-        { id: 106, name: 'Lechuga', stock: 8.0, unit: 'kg', emoji: '🥬' },
-        { id: 107, name: 'Aderezo César', stock: 5.0, unit: 'L', emoji: '🧴' },
-        { id: 108, name: 'Queso Crema', stock: 12.0, unit: 'kg', emoji: '🧀' },
-        { id: 109, name: 'Chocolate', stock: 18.0, unit: 'kg', emoji: '🍫' }
-    ];
-
-    let products = [
-        // Productos hechos en casa (manufactured)
-        {
-            id: 1, name: 'Café Americano', price: 25.00, category: 'bebidas', stock: 50, emoji: '☕',
-            materialsNeeded: [
-                { materialId: 101, quantity: 0.02 },
-                { materialId: 103, quantity: 0.01 }
-            ],
-            isSupplierProduct: false,
-            imageURL: 'https://images.unsplash.com/photo-1509785116905-f370a1a0fb84?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-            description: 'El clásico café, simple y aromático. Perfecto para iniciar la mañana o recargar energías.',
-            time: '2 min', calories: '5 Cal'
-        },
-        {
-            id: 2, name: 'Cappuccino', price: 35.00, category: 'bebidas', stock: 30, emoji: '☕',
-            materialsNeeded: [
-                { materialId: 101, quantity: 0.015 },
-                { materialId: 102, quantity: 0.2 }
-            ],
-            isSupplierProduct: false,
-            imageURL: 'https://images.unsplash.com/photo-1517454238596-f947477610c4?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-            description: 'Espresso con leche espumada, suave y cremoso. Una delicia para los amantes del café con leche.',
-            time: '5 min', calories: '120 Cal'
-        },
-        {
-            id: 3, name: 'Sandwich Club', price: 65.00, category: 'comida', stock: 20, emoji: '🥪',
-            materialsNeeded: [
-                { materialId: 104, quantity: 3 },
-                { materialId: 105, quantity: 0.1 },
-                { materialId: 106, quantity: 0.05 }
-            ],
-            isSupplierProduct: false,
-            imageURL: 'https://images.unsplash.com/photo-1627915570889-019688b13958?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-            description: 'Clásico sándwich de pollo, jamón, queso y verduras en triple pan tostado.',
-            time: '10 min', calories: '350 Cal'
-        },
-        {
-            id: 4, name: 'Ensalada César', price: 55.00, category: 'comida', stock: 15, emoji: '🥗',
-            materialsNeeded: [
-                { materialId: 106, quantity: 0.15 },
-                { materialId: 107, quantity: 0.05 },
-                { materialId: 105, quantity: 0.05 }
-            ],
-            isSupplierProduct: false,
-            imageURL: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-            description: 'La ensalada más famosa: lechuga, crutones, queso parmesano y aderezo César.',
-            time: '8 min', calories: '230 Cal'
-        },
-        {
-            id: 5, name: 'Cheesecake', price: 45.00, category: 'postres', stock: 12, emoji: '🍰',
-            materialsNeeded: [
-                { materialId: 108, quantity: 0.2 },
-                { materialId: 103, quantity: 0.05 }
-            ],
-            isSupplierProduct: false,
-            imageURL: 'https://images.unsplash.com/photo-1565292881729-e85d9c228220?q=80&w=1925&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-            description: 'Tarta de queso cremosa con base de galleta, servida con coulis de frutos rojos.',
-            time: '5 min', calories: '480 Cal'
-        },
-        {
-            id: 6, name: 'Muffin Chocolate', price: 30.00, category: 'postres', stock: 25, emoji: '🧁',
-            materialsNeeded: [
-                { materialId: 109, quantity: 0.1 },
-                { materialId: 103, quantity: 0.02 }
-            ],
-            isSupplierProduct: false,
-            imageURL: 'https://images.unsplash.com/photo-1628172088031-155e97148530?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-            description: 'Suave panecillo de chocolate, ideal para acompañar tu café o como postre rápido.',
-            time: '3 min', calories: '290 Cal'
-        },
-        // START: PRODUCTOS DE PROVEEDOR POR DEFECTO
-        {
-            id: 7, name: 'Refresco Coca-Cola', price: 22.00, category: 'golosinas', stock: 40, emoji: '🥤',
-            materialsNeeded: [], // No tiene receta, es producto final de proveedor
-            isSupplierProduct: true,
-            imageURL: 'https://images.unsplash.com/photo-1625902403780-fd4da67c9c0f?q=80&w=1920&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-            description: 'Refresco embotellado de 600ml.',
-            time: '0 min', calories: '250 Cal'
-        },
-        {
-            id: 8, name: 'Papas Fritas Queso', price: 18.00, category: 'golosinas', stock: 55, emoji: '🧀',
-            materialsNeeded: [],
-            isSupplierProduct: true,
-            imageURL: 'https://images.unsplash.com/photo-1596701830601-e94119d54e0b?q=80&w=1920&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-            description: 'Bolsa de papas fritas sabor queso, marca comercial.',
-            time: '0 min', calories: '180 Cal'
-        },
-        // END: PRODUCTOS DE PROVEEDOR POR DEFECTO
-    ];
-
-    let cart = [];
-    let currentCategory = 'all';
-    let orders = [];
-    let supplierPurchases = [];
-    let orderIdCounter = 1;
-    let users = [];
-    let currentUser = null;
-    let previewProduct = null;
-    let currentAdminProductType = 'manufactured'; // Nuevo estado para la sub-pestaña
-
-    if (!localStorage.getItem(STORAGE_KEYS.PRODUCTS)) {
-        localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
-        localStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(rawMaterials));
-        localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
-        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-        localStorage.setItem(STORAGE_KEYS.SUPPLIER_PURCHASES, JSON.stringify(supplierPurchases));
-        localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
-    }
-
-    // ====================================================================================
-    // F U N C I O N E S  D E  A U T E N T I C A C I Ó N (Sin cambios funcionales, solo se mantienen)
+    // F U N C I O N E S  D E  A U T E N T I C A C I Ó N
     // ====================================================================================
 
     function togglePasswordVisibility(inputId) {
@@ -2048,9 +1951,7 @@
 
         const userType = document.getElementById('userType').value;
         const fullName = document.getElementById('fullName').value;
-        // =========== OBTENER VALOR DEL NUEVO CAMPO ===========
         const tecnologico = document.getElementById('tecnologico').value.trim();
-        // =====================================================
         const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
@@ -2070,11 +1971,11 @@
             id: users.length + 1,
             userType: userType,
             fullName: fullName,
-            tecnologico: tecnologico, // <-- NUEVO DATO GUARDADO
+            tecnologico: tecnologico,
             username: username,
             password: password,
             registrationDate: now,
-            isActive: true // NUEVO: por defecto activa
+            isActive: true 
         };
 
         if (userType === 'estudiante') {
@@ -2108,9 +2009,7 @@
         }
 
         users.push(newUser);
-
         setLoginMessage(`¡Registro exitoso! Ya puedes iniciar sesión con tu usuario: ${username}.`, 'success');
-
         document.getElementById('registerForm').reset();
         document.getElementById('credentialPreview').classList.add('hidden');
         toggleUserFields();
@@ -2119,9 +2018,7 @@
     });
 
     function login() {
-        // ... (Esta función se mantiene igual que la original) ...
         clearLoginMessage();
-
         const loginIdentifier = document.getElementById('loginUser').value.trim();
         const password = document.getElementById('loginPassword').value;
 
@@ -2144,7 +2041,6 @@
         );
 
         if (user) {
-            // NUEVO: bloqueo si está desactivada
             if (user.isActive === false) {
                 setLoginMessage('🚫 Cuenta desactivada. Contacta al administrador.', 'error');
                 return;
@@ -2152,15 +2048,15 @@
 
             const registrationDate = user.registrationDate instanceof Date ? user.registrationDate : new Date(user.registrationDate);
             const currentDate = new Date();
-            const accountActiveUntil = user.accountActiveUntil instanceof Date ? user.accountActiveUntil : new Date(user.accountActiveUntil);
+            const accountActiveUntil = user.accountActiveUntil ? (user.accountActiveUntil instanceof Date ? user.accountActiveUntil : new Date(user.accountActiveUntil)) : null;
 
             if (currentDate.getTime() < registrationDate.getTime()) {
-                setLoginMessage(`🚫 Acceso Bloqueado: La fecha de tu computadora es anterior a tu registro. Por favor, actualiza la fecha para continuar.`, 'error');
+                setLoginMessage(`🚫 Acceso Bloqueado: La fecha de tu computadora es anterior a tu registro.`, 'error');
                 return;
             }
 
             if (accountActiveUntil && currentDate.getTime() > accountActiveUntil.getTime()) {
-                setLoginMessage(`🚫 Cuenta Caducada: Tu cuenta ha expirado. Contacta al administrador para reactivarla.`, 'error');
+                setLoginMessage(`🚫 Cuenta Caducada: Tu cuenta ha expirado. Contacta al administrador.`, 'error');
                 return;
             }
 
@@ -2174,7 +2070,6 @@
             document.getElementById('loginPassword').value = '';
         }
     }
-
 
     function logout() {
         document.getElementById('loginPassword').value = '';
@@ -2230,7 +2125,7 @@
     }
 
     // ====================================================================================
-    // F U N C I O N E S  D E  S T O C K  Y  R E C E T A S (Se mantiene la lógica central)
+    // F U N C I O N E S  D E  S T O C K  Y  R E C E T A S
     // ====================================================================================
 
     function getRawMaterial(id) {
@@ -2238,10 +2133,7 @@
     }
 
     function checkRawMaterialStock(product, quantity) {
-        // Los productos de proveedor (isSupplierProduct: true) no necesitan materia prima,
-        // su stock es el stock directo de producto final (revisado en renderProducts)
         if (product.isSupplierProduct) return true;
-
         if (!product.materialsNeeded || product.materialsNeeded.length === 0) return true;
 
         for (const material of product.materialsNeeded) {
@@ -2250,11 +2142,8 @@
                 console.warn(`Materia prima ID ${material.materialId} no encontrada.`);
                 continue;
             }
-
             const required = material.quantity * quantity;
-
             if (rawMaterial.stock < required - 0.001) {
-                console.log(`Falta MP para ${product.name}. Stock de ${rawMaterial.name}: ${rawMaterial.stock}, requerido: ${required}.`);
                 return false;
             }
         }
@@ -2276,9 +2165,8 @@
         });
     }
 
-
     // ====================================================================================
-    // F U N C I O N E S  P A N E L  A D M I N I S T R A D O R  ( V I S T A S )
+    // F U N C I O N E S  P A N E L  A D M I N I S T R A D O R  ( V I S T A S )
     // ====================================================================================
 
     function activateTab(targetId) {
@@ -2300,7 +2188,7 @@
             'adminPersonalDataSection',
             'adminReportsSection',
             'adminSupplierStockSection',
-            'adminInvoicingSection' // 👈 NUEVA SECCIÓN
+            'adminInvoicingSection'
         ];
         sections.forEach(id => document.getElementById(id).classList.add('hidden'));
     }
@@ -2308,10 +2196,9 @@
     function showAdminStock() {
         activateTab('stockTab');
         document.getElementById('adminStockSection').classList.remove('hidden');
-        showAdminFinalProducts(currentAdminProductType); // Muestra la sub-pestaña activa
+        showAdminFinalProducts(currentAdminProductType); 
     }
 
-    // NUEVA FUNCIÓN: Mostrar Productos finales (manufactured o supplier)
     function showAdminFinalProducts(type) {
         currentAdminProductType = type;
         document.getElementById('adminProductList').classList.add('hidden');
@@ -2337,14 +2224,12 @@
         }
     }
 
-
     function showAdminRawMaterials() {
         activateTab('rawMaterialsTab');
         document.getElementById('adminRawMaterialsSection').classList.remove('hidden');
         renderAdminRawMaterials();
     }
 
-    // NUEVA FUNCIÓN: Mostrar Stock de Productos de Proveedores (MP de Proveedor)
     function showAdminSupplierStock() {
         activateTab('supplierStockTab');
         document.getElementById('adminSupplierStockSection').classList.remove('hidden');
@@ -2366,19 +2251,11 @@
 
         if (!confirmed) return;
 
-        // Vacía el arreglo en memoria
         supplierPurchases = [];
-
-        // Guarda el nuevo estado en la memoria local
         saveState();
 
-        // Vuelve a dibujar estadísticas e historial
-        if (typeof renderSupplierPurchaseStats === 'function') {
-            renderSupplierPurchaseStats();
-        }
-        if (typeof renderAdminSupplierPurchases === 'function') {
-            renderAdminSupplierPurchases();
-        }
+        if (typeof renderSupplierPurchaseStats === 'function') renderSupplierPurchaseStats();
+        if (typeof renderAdminSupplierPurchases === 'function') renderAdminSupplierPurchases();
 
         alert("✅ Historial de compras a proveedor limpiado correctamente.");
     }
@@ -2407,14 +2284,12 @@
         renderLocalMemory();
     }
 
-    // NUEVO: mostrar Datos Personales
     function showAdminPersonalData() {
         activateTab('personalDataTab');
         document.getElementById('adminPersonalDataSection').classList.remove('hidden');
         renderAdminPersonalData();
     }
 
-    // NUEVO: mostrar Reportes
     function showAdminReports() {
         activateTab('reportsTab');
         document.getElementById('adminReportsSection').classList.remove('hidden');
@@ -2460,7 +2335,7 @@
     }
 
     // ====================================================================================
-    // F U N C I O N E S  M E N Ú  C L I E N T E
+    // F U N C I O N E S  M E N Ú  C L I E N T E
     // ====================================================================================
 
     function renderProducts() {
@@ -2471,9 +2346,7 @@
 
         productList.innerHTML = filteredProducts.map(product => {
             const isOutOfStock = product.stock === 0 || (!product.isSupplierProduct && !checkRawMaterialStock(product, 1));
-            // Si es producto de proveedor y stock es 0, también está agotado.
-            // Si es hecho en casa y stock final es 0, o falta MP, está agotado.
-
+            
             return `
                 <div 
                     class="bg-white border rounded-lg p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
@@ -2516,14 +2389,12 @@
         document.getElementById('previewTime').textContent = product.time || 'N/A';
         document.getElementById('previewCalories').textContent = product.calories || 'N/A';
 
-        // Ocultar tiempo de preparación si es un producto de proveedor
         const timeContainer = document.getElementById('previewTimeContainer');
         if (product.isSupplierProduct) {
             timeContainer.classList.add('hidden');
         } else {
             timeContainer.classList.remove('hidden');
         }
-
 
         const isOutOfStock = product.stock === 0 || (!product.isSupplierProduct && !checkRawMaterialStock(product, 1));
         document.getElementById('previewStock').textContent = isOutOfStock ? 'Agotado' : `${product.stock} disp.`;
@@ -2654,7 +2525,6 @@
     }
 
     function renderCart() {
-        // ... (Esta función se mantiene igual que la original) ...
         const cartItems = document.getElementById('cartItems');
         const totalPrice = document.getElementById('totalPrice');
 
@@ -2708,7 +2578,6 @@
     }
 
     function showPaymentDetails() {
-        // ... (Esta función se mantiene igual que la original) ...
         const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
         const cardDetails = document.getElementById('cardPaymentDetails');
         const transferDetails = document.getElementById('transferDetails');
@@ -2724,7 +2593,6 @@
     }
 
     function validatePaymentInfo(paymentMethod) {
-        // ... (Esta función se mantiene igual que la original) ...
         if (paymentMethod === 'tarjeta') {
             const cardNumber = document.getElementById('cardNumber').value.trim();
             const cardExpiry = document.getElementById('cardExpiry').value.trim();
@@ -2740,15 +2608,10 @@
     }
 
     function generateReferenceNumber() {
-        // ... (Esta función se mantiene igual que la original) ...
         const timestamp = Date.now().toString();
         const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
         return `CT${timestamp.slice(-6)}${random}`;
     }
-
-    // ====================================================================================
-    // ========= FUNCIÓN `confirmOrder` MODIFICADA Y NUEVAS FUNCIONES DE MODAL =========
-    // ====================================================================================
 
     function confirmOrder() {
         if (cart.length === 0) {
@@ -2787,7 +2650,7 @@
         const newOrder = {
             id: orderIdCounter++,
             referenceNumber: referenceNumber,
-            items: [...cart], // Importante clonar el carrito
+            items: [...cart], 
             total: total,
             paymentMethod: paymentMethod,
             pickupTime: pickupTime,
@@ -2802,7 +2665,6 @@
 
         orders.push(newOrder);
 
-        // 1. Descontar stock de productos finales (Aplica a todos, hechos en casa y de proveedor)
         cart.forEach(cartItem => {
             const product = products.find(p => p.id === cartItem.id);
             if (product) {
@@ -2810,23 +2672,12 @@
             }
         });
 
-        // 2. Descontar materia prima (Solo aplica a productos hechos en casa)
         depleteRawMaterialStock(cart);
-
-        // 3. Poblar el modal del ticket
         populateTicket(newOrder);
-
-        // 4. Mostrar el modal
         document.getElementById('orderConfirmationModal').classList.remove('hidden');
-
-        // El código de limpieza se movió a `closeConfirmationModal()` para que el usuario pueda ver su ticket antes de que el carrito se vacíe.
     }
 
-    /**
-     * NUEVA FUNCIÓN: Rellena el modal del ticket con los datos del pedido.
-     */
     function populateTicket(order) {
-        // ... (Se mantiene igual)
         document.getElementById('ticket-ref').textContent = order.referenceNumber;
         document.getElementById('ticket-user').textContent = order.user.fullName;
         document.getElementById('ticket-time').textContent = order.pickupTimeFormatted;
@@ -2843,12 +2694,7 @@
         `).join('');
     }
 
-    /**
-     * NUEVA FUNCIÓN: Se llama al presionar "Aceptar" en el modal de confirmación.
-     * Limpia el carrito y regresa al menú.
-     */
     function closeConfirmationModal() {
-        // Ahora movemos aquí toda la lógica de limpieza
         cart = [];
         document.getElementById('orderNotes').value = '';
         document.getElementById('cardNumber').value = '';
@@ -2857,17 +2703,13 @@
         document.getElementById('cardHolder').value = '';
 
         updateCartCount();
-        saveState(); // Guardamos el estado después de vaciar el carrito y actualizar stock
+        saveState(); 
 
-        // Ocultamos el modal
         document.getElementById('orderConfirmationModal').classList.add('hidden');
-
-        // Regresamos al menú
         showCustomerMenu();
     }
 
     function formatTime(time) {
-        // ... (Esta función se mantiene igual que la original) ...
         const [hours, minutes] = time.split(':');
         const hour = parseInt(hours);
         const ampm = hour >= 12 ? 'PM' : 'AM';
@@ -2876,10 +2718,9 @@
     }
 
     // ====================================================================================
-    // F U N C I O N E S  P A N E L  A D M I N I S T R A D O R  ( G E S T I Ó N )
+    // F U N C I O N E S  P A N E L  A D M I N I S T R A D O R  ( G E S T I Ó N )
     // ====================================================================================
 
-    // FUNCIÓN MODIFICADA: Ahora recibe el tipo de producto (manufactured o supplier)
     function renderAdminProducts(type) {
         const listContainer = type === 'manufactured' ? document.getElementById('adminProductList') : document.getElementById('adminSupplierProductList');
         const filteredProducts = products.filter(p => (p.isSupplierProduct === true && type === 'supplier') || (p.isSupplierProduct !== true && type === 'manufactured'));
@@ -2890,11 +2731,6 @@
         }
 
         listContainer.innerHTML = filteredProducts.map(product => {
-            const getMaterialInfo = (id) => {
-                const material = getRawMaterial(id);
-                return material ? `${material.emoji} ${material.name} (${material.unit})` : 'MP Desconocida';
-            };
-
             const recipeHtml = product.isSupplierProduct ?
                 '<span class="text-xs text-green-500 italic">✅ Producto Final de Proveedor</span>' :
                 (product.materialsNeeded && product.materialsNeeded.length > 0
@@ -2907,7 +2743,6 @@
                             </span>`;
                     }).join('')
                     : '<span class="text-xs text-red-500 italic">⚠️ Sin Receta Vinculada</span>');
-
 
             return `
                 <div class="bg-gray-50 border rounded-lg p-4">
@@ -2951,9 +2786,7 @@
     }
 
     function renderAdminRawMaterials() {
-        // ... (Esta función se mantiene igual que la original) ...
         const adminRawMaterialsList = document.getElementById('adminRawMaterialsList');
-
         adminRawMaterialsList.innerHTML = rawMaterials.map(material => `
             <div class="bg-gray-50 border rounded-lg p-4">
                 <div class="flex items-center justify-between">
@@ -2980,7 +2813,6 @@
         `).join('');
     }
 
-    // NUEVA FUNCIÓN: Renderizar stock de productos de proveedor (misma estructura que MP)
     function renderAdminSupplierStock() {
         const listContainer = document.getElementById('adminSupplierStockList');
         const supplierProducts = products.filter(p => p.isSupplierProduct);
@@ -3016,17 +2848,15 @@
         `).join('');
     }
 
-    // Función para ABRIR MODAL de producto de proveedor
     function addNewSupplierProduct() {
         document.getElementById('supplierModalTitle').textContent = 'Nuevo Producto de Proveedor';
         document.getElementById('supplierProductForm').reset();
         document.getElementById('supplierProductId').value = '';
         document.getElementById('supplierProductDeleteContainer').classList.add('hidden');
-        document.getElementById('supplierProductCategory').value = 'golosinas'; // Predeterminado a golosinas
+        document.getElementById('supplierProductCategory').value = 'golosinas'; 
         document.getElementById('supplierProductModal').classList.remove('hidden');
     }
 
-    // Función para EDITAR MODAL de producto de proveedor
     function editSupplierProduct(id) {
         const product = products.find(p => p.id === id);
         if (!product || !product.isSupplierProduct) return;
@@ -3039,29 +2869,26 @@
         document.getElementById('supplierProductImageURL').value = product.imageURL || '';
         document.getElementById('supplierProductPrice').value = product.price;
         document.getElementById('supplierProductStock').value = product.stock;
-        document.getElementById('supplierProductCategory').value = product.category; // Mantiene la categoría actual (ej: golosinas)
+        document.getElementById('supplierProductCategory').value = product.category;
 
         document.getElementById('supplierProductDeleteContainer').classList.remove('hidden');
         document.getElementById('supplierProductModal').classList.remove('hidden');
     }
 
-    // Cerrar Modal de Producto de Proveedor
     function closeSupplierProductModal() {
         document.getElementById('supplierProductModal').classList.add('hidden');
     }
 
-    // Eliminar Producto de Proveedor
     function deleteSupplierProduct(id) {
         if (confirm('¿Estás seguro de que quieres eliminar este producto de proveedor? Esta acción es permanente.')) {
             products = products.filter(p => p.id !== id);
             saveState();
             renderAdminSupplierStock();
             closeSupplierProductModal();
-            renderProducts(); // Actualizar menú cliente
+            renderProducts();
         }
     }
 
-    // Manejar el envío del formulario de Producto de Proveedor
     document.getElementById('supplierProductForm').addEventListener('submit', function (e) {
         e.preventDefault();
 
@@ -3077,11 +2904,11 @@
         const productToSave = {
             id: id ? parseInt(id) : null,
             name, price, category, stock, emoji,
-            materialsNeeded: [], // SIEMPRE vacío para productos de proveedor
-            isSupplierProduct: true, // SIEMPRE true
+            materialsNeeded: [], 
+            isSupplierProduct: true, 
             description,
-            time: '0 min', // Siempre 0 min
-            calories: 'N/A', // Se podría añadir un campo en el futuro, por ahora N/A
+            time: '0 min', 
+            calories: 'N/A', 
             imageURL: imageURL,
             imageLocal: '',
         };
@@ -3097,12 +2924,11 @@
         saveState();
         renderAdminSupplierStock();
         closeSupplierProductModal();
-        renderProducts(); // Actualizar menú cliente
+        renderProducts(); 
     });
 
 
     function renderSupplierPurchaseStats() {
-        // ... (Esta función se mantiene igual que la original) ...
         const statsContainer = document.getElementById('supplierStatsContainer');
 
         if (supplierPurchases.length === 0) {
@@ -3113,18 +2939,27 @@
             return;
         }
 
-        const totalSpent = supplierPurchases.reduce((sum, purchase) => sum + purchase.cost, 0);
+        const totalSpent = supplierPurchases.reduce((sum, purchase) => sum + purchase.totalCost, 0);
         const totalPurchases = supplierPurchases.length;
+        
+        // Calcular gastos por proveedor (Adaptado a V2)
         const spendingBySupplier = supplierPurchases.reduce((acc, purchase) => {
             const supplier = purchase.supplierName || 'No especificado';
-            acc[supplier] = (acc[supplier] || 0) + purchase.cost;
+            acc[supplier] = (acc[supplier] || 0) + (purchase.totalCost || 0);
             return acc;
         }, {});
+        
         const topSuppliers = Object.entries(spendingBySupplier).sort(([, a], [, b]) => b - a).slice(0, 3);
-        const quantityByMaterial = supplierPurchases.reduce((acc, purchase) => {
-            acc[purchase.materialId] = (acc[purchase.materialId] || 0) + purchase.quantity;
-            return acc;
-        }, {});
+        
+        // Calcular materia prima más comprada
+        const quantityByMaterial = {};
+        supplierPurchases.forEach(p => {
+            if (p.items) {
+                p.items.forEach(it => {
+                    quantityByMaterial[it.materialId] = (quantityByMaterial[it.materialId] || 0) + Number(it.quantity || 0);
+                });
+            }
+        });
 
         let topMaterialByQuantity = { name: 'N/A', quantity: 0, unit: '' };
         if (Object.keys(quantityByMaterial).length > 0) {
@@ -3177,48 +3012,52 @@
     }
 
     function renderAdminSupplierPurchases() {
-        // ... (Esta función se mantiene igual que la original) ...
-        const listContainer = document.getElementById('adminSupplierPurchasesList');
+        const container = document.getElementById('adminSupplierPurchasesList');
+        if (!container) return;
 
-        if (supplierPurchases.length === 0) {
-            listContainer.innerHTML = '';
+        if (!supplierPurchases || supplierPurchases.length === 0) {
+            container.innerHTML = `
+            <p class="text-center text-gray-500 text-sm py-4">
+                Todavía no hay compras registradas.
+            </p>`;
             return;
         }
 
         const sortedPurchases = [...supplierPurchases].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        listContainer.innerHTML = sortedPurchases.map(purchase => {
-            const material = getRawMaterial(purchase.materialId);
-            if (!material) return '';
+        container.innerHTML = sortedPurchases.map(p => {
+            const d = new Date(p.date);
+            const dateStr = isNaN(d.getTime()) ? p.date : d.toLocaleString();
+            const itemsHtml = (p.items || []).map(it => `
+            <li class="flex justify-between text-[0.7rem]">
+              <span>${it.materialName} (${it.quantity} ${it.unit})</span>
+              <span>$${(it.totalCost || 0).toFixed(2)}</span>
+            </li>
+        `).join('');
 
             return `
-                <div class="bg-white border rounded-lg p-4 shadow-sm">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs text-gray-500">${new Date(purchase.date).toLocaleString()}</p>
-                            <h4 class="font-bold text-lg">${material.emoji} ${material.name}</h4>
-                            <p class="text-sm text-gray-600">Proveedor: <span class="font-medium">${purchase.supplierName || 'No especificado'}</span></p>
-                        </div>
-                        <div class="text-right flex-shrink-0 ml-4">
-                            <p class="font-bold text-xl text-green-600">$${purchase.cost.toFixed(2)}</p>
-                            <p class="text-gray-700">${purchase.quantity} ${material.unit}</p>
-                            <div class="flex space-x-2 mt-2 justify-end">
-                                <button onclick="editSupplierPurchase(${purchase.id})" title="Editar" class="p-2 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z"></path></svg>
-                                </button>
-                                <button onclick="deleteSupplierPurchase(${purchase.id})" title="Eliminar" class="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
+          <div class="border rounded-lg p-3 bg-white shadow-sm text-xs mb-2">
+            <div class="flex justify-between mb-1">
+              <span class="font-semibold">${p.supplierName || 'Proveedor'}</span>
+              <span class="text-gray-500">${dateStr}</span>
+            </div>
+            <p class="text-[0.7rem] text-gray-600 mb-1">
+              Pago: ${p.paymentSummary || p.paymentMethod || '—'}
+            </p>
+            <ul class="mb-2">
+              ${itemsHtml}
+            </ul>
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-sm">
+                Total: $${(p.totalCost || 0).toFixed(2)}
+              </span>
+            </div>
+          </div>
+        `;
         }).join('');
     }
 
     function addNewRawMaterial() {
-        // ... (Esta función se mantiene igual que la original) ...
         document.getElementById('materialModalTitle').textContent = 'Nueva Materia Prima';
         document.getElementById('rawMaterialForm').reset();
         document.getElementById('materialId').value = '';
@@ -3229,7 +3068,6 @@
     }
 
     function editRawMaterial(id) {
-        // ... (Esta función se mantiene igual que la original) ...
         const material = rawMaterials.find(m => m.id === id);
         if (material) {
             document.getElementById('materialModalTitle').textContent = 'Editar Materia Prima';
@@ -3248,7 +3086,6 @@
     }
 
     function deleteRawMaterial(id) {
-        // ... (Esta función se mantiene igual que la original) ...
         if (confirm('¿Estás seguro de que quieres eliminar esta materia prima? Se eliminará de todas las recetas.')) {
             rawMaterials = rawMaterials.filter(m => m.id !== id);
 
@@ -3266,13 +3103,11 @@
     }
 
     function closeRawMaterialModal() {
-        // ... (Esta función se mantiene igual que la original) ...
         document.getElementById('rawMaterialModal').classList.add('hidden');
         document.getElementById('materialDeleteContainer').classList.add('hidden');
     }
 
     document.getElementById('rawMaterialForm').addEventListener('submit', function (e) {
-        // ... (Esta función se mantiene igual que la original) ...
         e.preventDefault();
 
         const id = document.getElementById('materialId').value;
@@ -3299,137 +3134,7 @@
         closeRawMaterialModal();
     });
 
-    function showNewPurchaseModal() {
-        // ... (Esta función se mantiene igual que la original) ...
-        document.getElementById('purchaseModalTitle').textContent = 'Registrar Compra';
-        document.getElementById('supplierPurchaseForm').reset();
-        document.getElementById('purchaseId').value = '';
-
-        const selectEl = document.getElementById('purchaseMaterialId');
-        selectEl.innerHTML = '<option value="">Seleccionar Materia Prima</option>' + rawMaterials.map(m =>
-            `<option value="${m.id}">${m.emoji} ${m.name}</option>`
-        ).join('');
-        selectEl.disabled = false;
-
-        document.getElementById('purchaseUnit').value = '';
-        document.getElementById('supplierPurchaseModal').classList.remove('hidden');
-    }
-
-    function editSupplierPurchase(purchaseId) {
-        // ... (Esta función se mantiene igual que la original) ...
-        const purchase = supplierPurchases.find(p => p.id === purchaseId);
-        if (!purchase) return;
-
-        showNewPurchaseModal();
-
-        document.getElementById('purchaseModalTitle').textContent = 'Editar Compra';
-        document.getElementById('purchaseId').value = purchase.id;
-        document.getElementById('purchaseMaterialId').value = purchase.materialId;
-        document.getElementById('purchaseMaterialId').disabled = true;
-        document.getElementById('purchaseQuantity').value = purchase.quantity;
-        document.getElementById('purchaseCost').value = purchase.cost;
-        document.getElementById('supplierName').value = purchase.supplierName;
-
-        const material = getRawMaterial(purchase.materialId);
-        if (material) {
-            document.getElementById('purchaseUnit').value = material.unit;
-        }
-    }
-
-    function deleteSupplierPurchase(purchaseId) {
-        // ... (Esta función se mantiene igual que la original) ...
-        const purchase = supplierPurchases.find(p => p.id === purchaseId);
-        if (!purchase) return;
-
-        if (confirm('¿Seguro que quieres eliminar este registro de compra? Esta acción descontará la cantidad del stock de materia prima.')) {
-            const material = getRawMaterial(purchase.materialId);
-            if (material) {
-                material.stock = Math.max(0, material.stock - purchase.quantity);
-            }
-
-            supplierPurchases = supplierPurchases.filter(p => p.id !== purchaseId);
-
-            saveState();
-            alert('Registro de compra eliminado y stock ajustado.');
-            showAdminSupplierPurchases();
-            renderAdminRawMaterials();
-            renderAdminProducts();
-        }
-    }
-
-    function closePurchaseModal() {
-        // ... (Esta función se mantiene igual que la original) ...
-        document.getElementById('supplierPurchaseModal').classList.add('hidden');
-    }
-
-    document.getElementById('purchaseMaterialId').addEventListener('change', function (e) {
-        // ... (Esta función se mantiene igual que la original) ...
-        const materialId = e.target.value;
-        if (materialId) {
-            const material = getRawMaterial(parseInt(materialId));
-            if (material) {
-                document.getElementById('purchaseUnit').value = material.unit;
-            }
-        } else {
-            document.getElementById('purchaseUnit').value = '';
-        }
-    });
-
-    document.getElementById('supplierPurchaseForm').addEventListener('submit', function (e) {
-        // ... (Esta función se mantiene igual que la original) ...
-        e.preventDefault();
-
-        const purchaseId = document.getElementById('purchaseId').value;
-        const materialId = parseInt(document.getElementById('purchaseMaterialId').value);
-        const newQuantity = parseFloat(document.getElementById('purchaseQuantity').value);
-        const newCost = parseFloat(document.getElementById('purchaseCost').value);
-        const newSupplierName = document.getElementById('supplierName').value.trim();
-
-        if (!materialId || isNaN(newQuantity) || isNaN(newCost) || newQuantity <= 0 || newCost < 0) {
-            alert("Por favor, completa los campos correctamente. La cantidad debe ser mayor a 0 y el costo no puede ser negativo.");
-            return;
-        }
-
-        const material = getRawMaterial(materialId);
-        if (!material) {
-            alert("Error: Materia prima no encontrada.");
-            return;
-        }
-
-        if (purchaseId) {
-            const existingPurchase = supplierPurchases.find(p => p.id === parseInt(purchaseId));
-            if (existingPurchase) {
-                const quantityDifference = newQuantity - existingPurchase.quantity;
-                material.stock += quantityDifference;
-
-                existingPurchase.quantity = newQuantity;
-                existingPurchase.cost = newCost;
-                existingPurchase.supplierName = newSupplierName;
-                alert('Compra actualizada y stock ajustado.');
-            }
-        } else {
-            material.stock += newQuantity;
-            const newPurchase = {
-                id: (Math.max(0, ...supplierPurchases.map(p => p.id))) + 1,
-                materialId,
-                quantity: newQuantity,
-                cost: newCost,
-                supplierName: newSupplierName,
-                date: new Date().toISOString()
-            };
-            supplierPurchases.push(newPurchase);
-            alert(`Compra registrada. El nuevo stock de ${material.name} es ${material.stock.toFixed(2)} ${material.unit}.`);
-        }
-
-        saveState();
-        showAdminSupplierPurchases();
-        renderAdminRawMaterials();
-        renderAdminProducts(currentAdminProductType); // Pasa el tipo de producto actual para refrescar la lista
-        closePurchaseModal();
-    });
-
     function renderAdminOrders() {
-        // ... (Esta función se mantiene igual que la original) ...
         const adminOrdersList = document.getElementById('adminOrdersList');
 
         if (orders.length === 0) {
@@ -3542,8 +3247,6 @@
     }
 
     // =================== FACTURACIÓN CFDI (SIMULADA SAT) ===================
-
-    // Datos del emisor (simulados). Cámbialos por los reales de tu cafetería si los tienes:
     const EMISOR_FISCAL = {
         nombre: 'CAFE-TEC S.A. de C.V.',
         rfc: 'CACX7605101P8',
@@ -3552,7 +3255,6 @@
     };
 
     function generateFakeUuid() {
-        // Patrón tipo UUID v4
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             const r = Math.random() * 16 | 0;
             const v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -3629,7 +3331,6 @@
 
         const invoice = order.invoice;
 
-        // Si ya hay factura, rellenamos datos; si no, ponemos valores por defecto
         document.getElementById('invoiceRfc').value = invoice?.receptor?.rfc || '';
         document.getElementById('invoiceRazon').value = invoice?.receptor?.nombre || (order.user ? order.user.fullName : '');
         document.getElementById('invoiceCp').value = invoice?.receptor?.cp || '30000';
@@ -3637,8 +3338,7 @@
         document.getElementById('invoiceUsoCfdi').value = invoice?.usoCfdi || 'G03';
         document.getElementById('invoiceEmail').value = invoice?.receptor?.email || '';
 
-        // Mapear método de pago de la orden a forma de pago SAT
-        let formaPagoDefault = '01'; // Efectivo
+        let formaPagoDefault = '01'; 
         if (order.paymentMethod === 'tarjeta') formaPagoDefault = '04';
         if (order.paymentMethod === 'transferencia') formaPagoDefault = '03';
 
@@ -3653,7 +3353,6 @@
     }
 
     function renderSalesStats() {
-        // ... (Esta función se mantiene igual que la original) ...
         const adminStatsList = document.getElementById('adminStatsList');
 
         if (orders.length === 0) {
@@ -3736,7 +3435,6 @@
     }
 
     function renderAdminUsers() {
-        // ... (Esta función se mantiene igual que la original) ...
         const adminUsersList = document.getElementById('adminUsersList');
 
         if (users.length === 0) {
@@ -3802,10 +3500,7 @@
         }).join('');
     }
 
-    // ===================== NUEVO: Datos Personales (render + edición + ACTIVAR/DESACTIVAR) =====================
-
     function renderAdminPersonalData() {
-        // ... (Esta función se mantiene igual que la original) ...
         const list = document.getElementById('adminPersonalDataList');
         const q = (document.getElementById('personalSearchInput').value || '').toLowerCase().trim();
         const type = document.getElementById('personalFilterSelect').value;
@@ -3835,7 +3530,15 @@
             return;
         }
 
-        list.innerHTML = filtered.map(u => `
+        list.innerHTML = filtered.map(u => {
+            // Protección de Fechas
+            let regDateText = "N/D";
+            if (u.registrationDate) {
+                const rd = u.registrationDate instanceof Date ? u.registrationDate : (u.registrationDate.toDate ? u.registrationDate.toDate() : new Date(u.registrationDate));
+                if (!isNaN(rd.getTime())) regDateText = rd.toLocaleDateString();
+            }
+
+            return `
             <div class="bg-white border rounded-lg p-4 shadow-sm">
                 <div class="flex items-start justify-between">
                     <div class="flex-1">
@@ -3855,7 +3558,7 @@
                                 <div><span class="font-medium">Teléfono:</span> ${u.phoneNumber || ''}</div>
                             `}
                             <div><span class="font-medium">Credencial:</span> ${u.hasCredential ? '✅' : '❌'}</div>
-                            <div><span class="font-medium">Registro:</span> ${u.registrationDate.toLocaleDateString()}</div>
+                            <div><span class="font-medium">Registro:</span> ${regDateText}</div>
                         </div>
                     </div>
                     <div class="ml-4 space-y-2 text-right">
@@ -3872,20 +3575,18 @@
                     </div>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     function toggleUserActive(userId, isActive) {
-        // ... (Esta función se mantiene igual que la original) ...
         const user = users.find(u => u.id === userId);
         if (!user) return;
         user.isActive = !!isActive;
         saveState();
-        // refrescar vistas que muestran estado
         renderAdminPersonalData();
         renderAdminUsers();
 
-        // Si el admin desactiva a alguien que está logueado actualmente (raro, pero por si acaso)
         if (currentUser && currentUser.id === user.id && user.isActive === false) {
             alert('Esta cuenta ha sido desactivada y se cerrará la sesión.');
             logout();
@@ -3913,20 +3614,17 @@
         document.getElementById('editNewPassword').value = '';
         document.getElementById('editConfirmPassword').value = '';
 
-        // --- SOLUCIÓN DE FECHAS FIREBASE ---
-        // Extraemos la fecha de registro de forma segura
+        // Manejo Seguro de Fechas Firebase
         let regDate = null;
         if (user.registrationDate) {
-            regDate = user.registrationDate.toDate ? user.registrationDate.toDate() : (user.registrationDate.seconds ? new Date(user.registrationDate.seconds * 1000) : new Date(user.registrationDate));
+            regDate = user.registrationDate.toDate ? user.registrationDate.toDate() : new Date(user.registrationDate);
         }
 
-        // Extraemos la fecha de expiración de la cuenta de forma segura
         let activeUntilDate = null;
         if (user.accountActiveUntil) {
-            activeUntilDate = user.accountActiveUntil.toDate ? user.accountActiveUntil.toDate() : (user.accountActiveUntil.seconds ? new Date(user.accountActiveUntil.seconds * 1000) : new Date(user.accountActiveUntil));
+            activeUntilDate = user.accountActiveUntil.toDate ? user.accountActiveUntil.toDate() : new Date(user.accountActiveUntil);
         }
 
-        // Asignamos las fechas a los inputs solo si son válidas
         if (regDate && !isNaN(regDate.getTime())) {
             document.getElementById('editRegistrationDate').value = new Date(regDate.getTime() - (regDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
         } else {
@@ -3938,7 +3636,6 @@
         } else {
             document.getElementById('editAccountActiveUntil').value = '';
         }
-        // -----------------------------------
 
         const isAdmin = currentUser && currentUser.username === 'ADMIN';
         document.getElementById('editRegistrationDate').disabled = !isAdmin;
@@ -3949,12 +3646,10 @@
     }
 
     function closeEditUserModal() {
-        // ... (Esta función se mantiene igual que la original) ...
         document.getElementById('editUserModal').classList.add('hidden');
     }
 
     function toggleEditUserFields() {
-        // ... (Esta función se mantiene igual que la original) ...
         const type = document.getElementById('editUserType').value;
         const stu = document.getElementById('editStudentFields');
         const staff = document.getElementById('editStaffFields');
@@ -3969,7 +3664,6 @@
     }
 
     function propagateUserChanges(updatedUser) {
-        // ... (Esta función se mantiene igual que la original) ...
         orders.forEach(o => {
             if (o.user && o.user.id === updatedUser.id) {
                 o.user = {
@@ -3989,7 +3683,6 @@
     }
 
     document.getElementById('editUserForm').addEventListener('submit', function (e) {
-        // ... (Esta función se mantiene igual que la original) ...
         e.preventDefault();
 
         const id = parseInt(document.getElementById('editUserId').value);
@@ -4015,7 +3708,7 @@
         const dupUsername = users.some(u => u.id !== id && u.username.toLowerCase() === username.toLowerCase());
         if (dupUsername) {
             alert('Este nombre de usuario ya está registrado en otro usuario.');
-            return; // Se mantiene alert aquí porque es un modal de admin, no la pantalla de login.
+            return;
         }
 
         user.fullName = fullName;
@@ -4030,36 +3723,29 @@
             const group = document.getElementById('editGroup').value || '';
 
             if (!controlNumber) {
-                alert('Ingresa el número de control.');
-                return;
+                alert('Ingresa el número de control.'); return;
             }
             const dup = users.some(u => u.id !== id && u.controlNumber === controlNumber && u.userType === 'estudiante');
             if (dup) {
-                alert('Este número de control ya está registrado en otro estudiante.');
-                return; // Se mantiene alert aquí porque es un modal de admin.
+                alert('Este número de control ya está registrado en otro estudiante.'); return;
             }
 
             user.controlNumber = controlNumber;
             user.career = career;
             user.semester = semester;
             user.group = group;
-
             delete user.phoneNumber;
 
         } else {
             const phoneNumber = (document.getElementById('editPhoneNumber').value || '').trim();
             if (!phoneNumber) {
-                alert('Ingresa el número de teléfono.');
-                return;
+                alert('Ingresa el número de teléfono.'); return;
             }
             const dup = users.some(u => u.id !== id && u.phoneNumber === phoneNumber);
             if (dup) {
-                alert('Este número de teléfono ya está registrado en otro usuario.');
-                return; // Se mantiene alert aquí porque es un modal de admin.
+                alert('Este número de teléfono ya está registrado en otro usuario.'); return;
             }
-
             user.phoneNumber = phoneNumber;
-
             delete user.controlNumber;
             delete user.career;
             delete user.semester;
@@ -4068,8 +3754,7 @@
 
         if (newPass || confirmPass) {
             if (newPass !== confirmPass) {
-                alert('Las contraseñas no coinciden.');
-                return;
+                alert('Las contraseñas no coinciden.'); return;
             }
             user.password = newPass;
         }
@@ -4089,32 +3774,16 @@
         }
     });
 
-    function forcePropagateAllUsers() {
-        // ... (Esta función se mantiene igual que la original) ...
-        if (!confirm("¿Estás seguro de que quieres sincronizar los datos de TODOS los usuarios con sus pedidos existentes?")) {
-            return;
-        }
-
-        users.forEach(user => {
-            propagateUserChanges(user);
-        });
-
-        saveState();
-        alert("Sincronización completada. Los datos de los usuarios han sido actualizados en todos los pedidos.");
-    }
-
     document.getElementById('invoiceForm').addEventListener('submit', function (e) {
-        e.preventDefault(); // MUY IMPORTANTE: no recargar la página
+        e.preventDefault(); 
 
         const orderId = parseInt(document.getElementById('invoiceOrderId').value, 10);
         const order = orders.find(o => o.id === orderId);
 
         if (!order) {
-            alert('No se encontró el pedido a facturar.');
-            return;
+            alert('No se encontró el pedido a facturar.'); return;
         }
 
-        // Datos receptor
         const rfcReceptor = document.getElementById('invoiceRfc').value.trim().toUpperCase();
         const razonReceptor = document.getElementById('invoiceRazon').value.trim();
         const cpReceptor = document.getElementById('invoiceCp').value.trim();
@@ -4122,58 +3791,29 @@
         const usoCfdi = document.getElementById('invoiceUsoCfdi').value;
         const emailReceptor = document.getElementById('invoiceEmail').value.trim();
 
-        // Datos pago
         const metodoPago = document.getElementById('invoiceMetodoPago').value;
         const formaPago = document.getElementById('invoiceFormaPago').value;
 
-        // Cálculo de impuestos (simulado)
         const total = order.total;
         const subtotal = +(total / 1.16).toFixed(2);
         const iva = +(total - subtotal).toFixed(2);
 
-        // Si ya tenía factura, respetamos folio/UUID; si no, generamos
         const previousInvoice = order.invoice;
         const folio = previousInvoice?.folio || `A-${String(order.id).padStart(4, '0')}`;
         const uuid = previousInvoice?.uuid || generateFakeUuid();
         const fechaEmision = previousInvoice?.fecha || new Date().toISOString();
 
         const invoice = {
-            folio,
-            uuid,
-            fecha: fechaEmision,
-            emisor: { ...EMISOR_FISCAL },
-            receptor: {
-                rfc: rfcReceptor,
-                nombre: razonReceptor,
-                cp: cpReceptor,
-                regimen: regimenReceptor,
-                email: emailReceptor || null
-            },
-            usoCfdi,
-            metodoPago,
-            formaPago,
-            moneda: 'MXN',
-            subtotal,
-            iva,
-            total,
-            // Conceptos: se basan en los items del pedido
-            conceptos: order.items.map(item => ({
-                cantidad: item.quantity,
-                descripcion: item.name,
-                valorUnitario: item.price,
-                importe: +(item.price * item.quantity).toFixed(2)
-            }))
+            folio, uuid, fecha: fechaEmision, emisor: { ...EMISOR_FISCAL },
+            receptor: { rfc: rfcReceptor, nombre: razonReceptor, cp: cpReceptor, regimen: regimenReceptor, email: emailReceptor || null },
+            usoCfdi, metodoPago, formaPago, moneda: 'MXN', subtotal, iva, total,
+            conceptos: order.items.map(item => ({ cantidad: item.quantity, descripcion: item.name, valorUnitario: item.price, importe: +(item.price * item.quantity).toFixed(2) }))
         };
 
-        // Guardar la factura dentro del pedido
         order.invoice = invoice;
-
-        // Guardar en localStorage
         saveState();
-
         closeInvoiceModal();
         renderAdminInvoicing();
-        // Mostrar ticket inmediatamente
         openInvoiceTicket(orderId);
         alert('Factura CFDI (simulada) guardada correctamente.');
     });
@@ -4181,30 +3821,24 @@
     function openInvoiceTicket(orderId) {
         const order = orders.find(o => o.id === orderId);
         if (!order || !order.invoice) {
-            alert('Este pedido aún no tiene factura generada.');
-            return;
+            alert('Este pedido aún no tiene factura generada.'); return;
         }
 
         const inv = order.invoice;
 
-        // Encabezado
         document.getElementById('invoiceTicketEmisorRfc').textContent = inv.emisor.rfc;
         document.getElementById('invoiceTicketFolio').textContent = inv.folio;
         document.getElementById('invoiceTicketUuid').textContent = inv.uuid;
-        document.getElementById('invoiceTicketDate').textContent =
-            new Date(inv.fecha).toLocaleString();
-
+        document.getElementById('invoiceTicketDate').textContent = new Date(inv.fecha).toLocaleString();
         document.getElementById('invoiceTicketMetodo').textContent = inv.metodoPago;
         document.getElementById('invoiceTicketForma').textContent = inv.formaPago;
 
-        // Receptor
         document.getElementById('invoiceTicketReceptorRfc').textContent = inv.receptor.rfc;
         document.getElementById('invoiceTicketReceptorNombre').textContent = inv.receptor.nombre;
         document.getElementById('invoiceTicketUsoCfdi').textContent = inv.usoCfdi;
         document.getElementById('invoiceTicketRegimenReceptor').textContent = inv.receptor.regimen;
         document.getElementById('invoiceTicketCpReceptor').textContent = inv.receptor.cp;
 
-        // Conceptos
         const itemsBody = document.getElementById('invoiceTicketItems');
         itemsBody.innerHTML = inv.conceptos.map(c => `
         <tr class="align-top">
@@ -4214,7 +3848,6 @@
         </tr>
     `).join('');
 
-        // Totales
         document.getElementById('invoiceTicketSubtotal').textContent = `$${inv.subtotal.toFixed(2)}`;
         document.getElementById('invoiceTicketIva').textContent = `$${inv.iva.toFixed(2)}`;
         document.getElementById('invoiceTicketTotal').textContent = `$${inv.total.toFixed(2)}`;
@@ -4226,14 +3859,8 @@
         document.getElementById('invoiceTicketModal').classList.add('hidden');
     }
 
-    // ====================================================================================
-    // (Resto de utilidades y formularios existentes)
-    // ====================================================================================
-
     function addMaterialFieldToProductModal(materialId = '', quantity = '') {
-        // ... (Esta función se mantiene igual que la original) ...
         const container = document.getElementById('productMaterialsContainer');
-
         if (container.querySelector('.text-sm.text-gray-500')) {
             container.innerHTML = '';
         }
@@ -4266,20 +3893,16 @@
     }
 
     function removeMaterialField(button) {
-        // ... (Esta función se mantiene igual que la original) ...
         const container = document.getElementById('productMaterialsContainer');
         button.closest('.flex').remove();
-
         if (container.children.length === 0) {
             container.innerHTML = '<p class="text-sm text-gray-500">Haz clic en "Añadir Materia Prima" para empezar.</p>';
         }
     }
 
     function renderProductMaterials(product) {
-        // ... (Esta función se mantiene igual que la original) ...
         const container = document.getElementById('productMaterialsContainer');
         container.innerHTML = '';
-
         if (product.materialsNeeded && product.materialsNeeded.length > 0) {
             product.materialsNeeded.forEach(mat => {
                 addMaterialFieldToProductModal(mat.materialId, mat.quantity);
@@ -4289,7 +3912,6 @@
         }
     }
 
-    // FUNCIÓN MODIFICADA: Se valida el tipo de producto antes de abrir el modal
     function addNewProduct() {
         if (currentAdminProductType === 'supplier') {
             addNewSupplierProduct();
@@ -4299,11 +3921,10 @@
         document.getElementById('modalTitle').textContent = 'Agregar Producto';
         document.getElementById('productForm').reset();
         document.getElementById('productId').value = '';
-        document.getElementById('productIsSupplier').value = 'false'; // Asegura que es false
+        document.getElementById('productIsSupplier').value = 'false'; 
         document.getElementById('productEmoji').value = '';
         document.getElementById('imagePreviewStatus').textContent = 'Ningún archivo seleccionado.';
 
-        // Mostrar campos de receta/tiempo
         document.getElementById('productRecipeSection').classList.remove('hidden');
         document.getElementById('productTimeField').classList.remove('hidden');
 
@@ -4311,7 +3932,6 @@
         document.getElementById('productModal').classList.remove('hidden');
     }
 
-    // FUNCIÓN MODIFICADA: Se valida el tipo de producto antes de abrir el modal
     function editProduct(id) {
         const product = products.find(p => p.id === id);
         if (!product) return;
@@ -4321,11 +3941,9 @@
             return;
         }
 
-        // Producto hecho en casa
         document.getElementById('modalTitle').textContent = 'Editar Producto';
         document.getElementById('productId').value = product.id;
-        document.getElementById('productIsSupplier').value = 'false'; // Asegura que es false
-
+        document.getElementById('productIsSupplier').value = 'false'; 
         document.getElementById('productName').value = product.name;
         document.getElementById('productEmoji').value = product.emoji || '';
         document.getElementById('productDescription').value = product.description || '';
@@ -4336,10 +3954,8 @@
         document.getElementById('productCategory').value = product.category;
         document.getElementById('productStock').value = product.stock;
 
-        // Mostrar campos de receta/tiempo
         document.getElementById('productRecipeSection').classList.remove('hidden');
         document.getElementById('productTimeField').classList.remove('hidden');
-
 
         if (product.imageLocal) {
             document.getElementById('imagePreviewStatus').textContent = 'Imagen Local Cargada ✓';
@@ -4351,27 +3967,23 @@
         document.getElementById('productImageFile').value = null;
 
         renderProductMaterials(product);
-
         document.getElementById('productModal').classList.remove('hidden');
     }
 
     function deleteProduct(id) {
-        // ... (Esta función se mantiene igual que la original) ...
         if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
             products = products.filter(p => p.id !== id);
             saveState();
-            renderAdminProducts(currentAdminProductType); // Pasa el tipo de producto actual para refrescar la lista
-            renderProducts(); // Refrescar menú cliente
+            renderAdminProducts(currentAdminProductType); 
+            renderProducts(); 
         }
     }
 
     function closeModal() {
-        // ... (Esta función se mantiene igual que la original) ...
         document.getElementById('productModal').classList.add('hidden');
     }
 
     function toggleOrderStatus(orderId) {
-        // ... (Esta función se mantiene igual que la original) ...
         const order = orders.find(o => o.id === orderId);
         if (order) {
             order.status = order.status === 'pendiente' ? 'listo' : 'pendiente';
@@ -4381,7 +3993,6 @@
     }
 
     function togglePaymentStatus(orderId) {
-        // ... (Esta función se mantiene igual que la original) ...
         const order = orders.find(o => o.id === orderId);
         if (order) {
             order.isPaid = !order.isPaid;
@@ -4391,7 +4002,6 @@
     }
 
     function previewLocalImage(event) {
-        // ... (Esta función se mantiene igual que la original) ...
         const file = event.target.files && event.target.files[0];
         const status = document.getElementById('imagePreviewStatus');
         if (!file) {
@@ -4411,7 +4021,6 @@
         const id = document.getElementById('productId').value;
         const isSupplierProduct = document.getElementById('productIsSupplier').value === 'true';
 
-        // Redirigir al formulario de producto de proveedor si el flag está activo (aunque no debería suceder si se usa addNew/editProduct)
         if (isSupplierProduct) {
             alert("Error interno: Intentando guardar un producto de proveedor en el formulario de recetas.");
             return;
@@ -4448,7 +4057,7 @@
             id: id ? parseInt(id) : null,
             name, price, category, stock, emoji,
             materialsNeeded: materialsNeeded,
-            isSupplierProduct: false, // Producto hecho en casa
+            isSupplierProduct: false,
             description, time, calories,
             imageURL: '', imageLocal: '',
         };
@@ -4477,7 +4086,7 @@
 
             saveState();
             renderAdminProducts(currentAdminProductType);
-            renderProducts(); // Actualizar menú cliente
+            renderProducts(); 
             closeModal();
         };
 
@@ -4493,7 +4102,6 @@
     });
 
     document.getElementById('cardNumber').addEventListener('input', function (e) {
-        // ... (Esta función se mantiene igual que la original) ...
         let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
         let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
         if (formattedValue.length > 19) formattedValue = formattedValue.substr(0, 19);
@@ -4501,7 +4109,6 @@
     });
 
     document.getElementById('cardExpiry').addEventListener('input', function (e) {
-        // ... (Esta función se mantiene igual que la original) ...
         let value = e.target.value.replace(/\D/g, '');
         if (value.length >= 2) {
             value = value.substring(0, 2) + '/' + value.substring(2, 4);
@@ -4510,23 +4117,10 @@
     });
 
     document.getElementById('cardCvv').addEventListener('input', function (e) {
-        // ... (Esta función se mantiene igual que la original) ...
         e.target.value = e.target.value.replace(/[^0-9]/g, '');
     });
 
-    loadState();
-
-    // ========================= R E P O R T E S  (Vista previa + Copiar) =========================
-
-    function showAdminReports() {
-        // ... (Esta función se mantiene igual que la original) ...
-        activateTab('reportsTab');
-        document.getElementById('adminReportsSection').classList.remove('hidden');
-        renderReportPreview();
-    }
-
     function generateReportText() {
-        // ... (Esta función se mantiene igual que la original) ...
         const now = new Date();
         const d = (n) => String(n).padStart(2, '0');
         const iso = `${now.getFullYear()}-${d(now.getMonth() + 1)}-${d(now.getDate())} ${d(now.getHours())}:${d(now.getMinutes())}:${d(now.getSeconds())}`;
@@ -4536,7 +4130,7 @@
 
         const lines = [];
         lines.push("==============================================");
-        lines.push("              CAFE-TEC — REPORTE TXT            ");
+        lines.push("              CAFE-TEC — REPORTE TXT            ");
         lines.push("==============================================");
         lines.push(`Generado: ${iso}`);
         lines.push("");
@@ -4546,30 +4140,26 @@
         if (usersSafe.length === 0) {
             lines.push("(sin usuarios)");
         } else {
-            usersSafe
-                .filter(u => u && u.id !== 0)
-                .forEach((u, idx) => {
-                    const regDate = (u.registrationDate instanceof Date)
-                        ? u.registrationDate
-                        : (u.registrationDate ? new Date(u.registrationDate) : null);
-                    const regStr = regDate ? regDate.toLocaleString() : "N/D";
-                    lines.push(`#${idx + 1}`);
-                    lines.push(`- Nombre: ${u.fullName || "N/D"}`);
-                    lines.push(`- Usuario: ${u.username || "N/D"}`);
-                    lines.push(`- Tipo: ${u.userType || "N/D"}`);
-                    lines.push(`- Estado: ${u.isActive === false ? "DESACTIVADA" : "ACTIVA"}`);
-                    if (u.userType === 'estudiante') {
-                        lines.push(`- No. Control: ${u.controlNumber || "N/D"}`);
-                        lines.push(`- Carrera: ${u.career || "N/D"}`);
-                        lines.push(`- Semestre: ${u.semester || "N/D"}`);
-                        lines.push(`- Grupo: ${u.group || "N/D"}`);
-                    } else {
-                        lines.push(`- Teléfono: ${u.phoneNumber || "N/D"}`);
-                    }
-                    lines.push(`- Credencial: ${u.hasCredential ? "Sí" : "No"}`);
-                    lines.push(`- Fecha Registro: ${regStr}`);
-                    lines.push("");
-                });
+            usersSafe.filter(u => u && u.id !== 0).forEach((u, idx) => {
+                const regDate = (u.registrationDate instanceof Date) ? u.registrationDate : (u.registrationDate ? new Date(u.registrationDate) : null);
+                const regStr = regDate ? regDate.toLocaleString() : "N/D";
+                lines.push(`#${idx + 1}`);
+                lines.push(`- Nombre: ${u.fullName || "N/D"}`);
+                lines.push(`- Usuario: ${u.username || "N/D"}`);
+                lines.push(`- Tipo: ${u.userType || "N/D"}`);
+                lines.push(`- Estado: ${u.isActive === false ? "DESACTIVADA" : "ACTIVA"}`);
+                if (u.userType === 'estudiante') {
+                    lines.push(`- No. Control: ${u.controlNumber || "N/D"}`);
+                    lines.push(`- Carrera: ${u.career || "N/D"}`);
+                    lines.push(`- Semestre: ${u.semester || "N/D"}`);
+                    lines.push(`- Grupo: ${u.group || "N/D"}`);
+                } else {
+                    lines.push(`- Teléfono: ${u.phoneNumber || "N/D"}`);
+                }
+                lines.push(`- Credencial: ${u.hasCredential ? "Sí" : "No"}`);
+                lines.push(`- Fecha Registro: ${regStr}`);
+                lines.push("");
+            });
         }
 
         lines.push("");
@@ -4585,8 +4175,6 @@
                 lines.push(`- Categoría: ${p.category || "N/D"}`);
                 lines.push(`- Precio: $${(p.price ?? 0).toFixed(2)}`);
                 lines.push(`- Stock: ${p.stock ?? 0}`);
-
-                // Muestra si es de proveedor o hecho en casa
                 lines.push(`- Origen: ${p.isSupplierProduct ? "Proveedor" : "Hecho en Casa"}`);
 
                 if (p.time) lines.push(`- Tiempo: ${p.time}`);
@@ -4598,24 +4186,21 @@
                     p.materialsNeeded.forEach(mat => {
                         const rm = getRawMaterial(mat.materialId);
                         if (rm) {
-                            lines.push(`  • ${mat.quantity} ${rm.unit} de ${rm.name}`);
+                            lines.push(`  • ${mat.quantity} ${rm.unit} de ${rm.name}`);
                         } else {
-                            lines.push(`  • ${mat.quantity} (MP id ${mat.materialId})`);
+                            lines.push(`  • ${mat.quantity} (MP id ${mat.materialId})`);
                         }
                     });
                 } else if (!p.isSupplierProduct) {
                     lines.push("- Receta por unidad: (sin receta vinculada)");
                 }
-
                 lines.push("");
             });
         }
-
         return lines.join("\n");
     }
 
     function renderReportPreview() {
-        // ... (Esta función se mantiene igual que la original) ...
         const previewEl = document.getElementById('reportPreview');
         const summaryEl = document.getElementById('reportSummary');
         if (!previewEl) return;
@@ -4629,7 +4214,6 @@
     }
 
     function copyReportToClipboard() {
-        // ... (Esta función se mantiene igual que la original) ...
         const previewEl = document.getElementById('reportPreview');
         if (!previewEl) return;
         const text = previewEl.value || "";
@@ -4652,171 +4236,76 @@
             alert(ok ? "Reporte copiado al portapapeles." : "No se pudo copiar. Selecciona y copia manualmente.");
         }
     }
-    const reports = document.getElementById('adminReportsSection');
-    if (reports && !reports.classList.contains('hidden')) {
-        renderReportPreview();
-    }
 
     // ====================================================================================
-    //  MÓDULO MEJORADO: COMPRAS A PROVEEDOR
-    //  - Múltiples materias primas por compra
-    //  - Simulación de pasarela de pago (efectivo, tarjeta, transferencia)
-    //  - Todo se guarda en localStorage y respeta compras antiguas
+    // MÓDULO MEJORADO: COMPRAS A PROVEEDOR
     // ====================================================================================
-
     (function () {
-
-        // -------------------------------------------------------------------------
-        // 1) Inyectar un NUEVO modal para compras de proveedor (V2)
-        //    No toca tu modal original (supplierPurchaseModal), solo crea otro.
-        // -------------------------------------------------------------------------
         function injectSupplierPurchaseModalV2() {
-            if (document.getElementById('supplierPurchaseModalV2')) return; // ya existe
+            if (document.getElementById('supplierPurchaseModalV2')) return; 
 
             const modalHtml = `
-    <div id="supplierPurchaseModalV2"
-         class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up max-h-[90vh] overflow-y-auto">
-        <h3 id="purchaseModalTitleV2" class="text-lg font-bold mb-4">
-          Registrar Compra a Proveedor
-        </h3>
-
-        <form id="supplierPurchaseFormV2" class="space-y-4">
-          <input type="hidden" id="purchaseIdV2">
-
-          <div>
-            <label class="block text-sm font-medium mb-1">Nombre del Proveedor</label>
-            <input type="text" id="purchaseSupplierName"
-                   class="w-full border rounded-lg px-3 py-2"
-                   placeholder="Ej: Proveedora del Sur">
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-1">Fecha de Compra</label>
-            <input type="datetime-local" id="purchaseDate"
-                   class="w-full border rounded-lg px-3 py-2 text-sm">
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-1">
-              Materias Primas de esta Compra
-            </label>
-            <div id="purchaseItemsContainer"
-                 class="space-y-3 border rounded-lg p-3 bg-gray-50 text-xs">
-            </div>
-            <button type="button"
-                    onclick="addPurchaseItemRow()"
-                    class="mt-2 w-full py-2 px-3 bg-indigo-500 text-white rounded-lg text-sm font-medium hover:bg-indigo-600">
-              + Añadir materia prima
-            </button>
-          </div>
-
-          <div class="border-t pt-3">
-            <p class="text-xs font-semibold text-gray-600 mb-1">
-              Total de la compra (suma de todas las materias primas)
-            </p>
-            <p id="purchaseTotalLabel"
-               class="text-2xl font-bold text-green-600">
-              $0.00
-            </p>
-          </div>
-
-          <div class="border-t pt-3 space-y-2">
-            <p class="text-sm font-semibold mb-1">Método de pago</p>
-            <div class="space-y-1 text-sm">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="purchasePaymentMethod" value="efectivo" checked>
-                <span>💵 Efectivo</span>
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="purchasePaymentMethod" value="tarjeta">
-                <span>💳 Tarjeta</span>
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="purchasePaymentMethod" value="transferencia">
-                <span>📱 Transferencia</span>
-              </label>
-            </div>
-
-            <div id="purchaseCardDetails"
-                 class="hidden mt-2 p-3 bg-blue-50 rounded-lg border border-blue-100 text-xs space-y-2">
-              <p class="font-semibold text-blue-700">Datos de Tarjeta (Simulados)</p>
-              <div>
-                <label class="block mb-1">Número de tarjeta</label>
-                <input type="text" id="purchaseCardNumber"
-                       class="w-full border rounded-lg px-2 py-1"
-                       maxlength="19" placeholder="1234 5678 9012 3456">
-              </div>
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="block mb-1">Vencimiento (MM/AA)</label>
-                  <input type="text" id="purchaseCardExpiry"
-                         class="w-full border rounded-lg px-2 py-1"
-                         maxlength="5" placeholder="12/28">
-                </div>
-                <div>
-                  <label class="block mb-1">CVV</label>
-                  <input type="text" id="purchaseCardCvv"
-                         class="w-full border rounded-lg px-2 py-1"
-                         maxlength="3" placeholder="123">
-                </div>
-              </div>
-              <div>
-                <label class="block mb-1">Titular</label>
-                <input type="text" id="purchaseCardHolder"
-                       class="w-full border rounded-lg px-2 py-1"
-                       placeholder="Nombre del titular">
-              </div>
-              <p class="text-[0.65rem] text-blue-700 mt-1">
-                🔐 Solo se guardará la terminación de la tarjeta como referencia.
-              </p>
-            </div>
-
-            <div id="purchaseTransferDetails"
-                 class="hidden mt-2 p-3 bg-green-50 rounded-lg border border-green-100 text-xs space-y-2">
-              <p class="font-semibold text-green-800">Datos de Transferencia (Simulados)</p>
-              <p>Banco destino: BBVA Bancomer (Cta. interna del sistema)</p>
-              <p class="text-[0.7rem] text-gray-700">
-                Captura el folio o referencia de la transferencia para control interno.
-              </p>
-              <div>
-                <label class="block mb-1">Folio / Referencia</label>
-                <input type="text" id="purchaseTransferRef"
-                       class="w-full border rounded-lg px-2 py-1"
-                       placeholder="Ej: TRX-123456789">
+            <div id="supplierPurchaseModalV2" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up max-h-[90vh] overflow-y-auto">
+                <h3 id="purchaseModalTitleV2" class="text-lg font-bold mb-4">Registrar Compra a Proveedor</h3>
+                <form id="supplierPurchaseFormV2" class="space-y-4">
+                  <input type="hidden" id="purchaseIdV2">
+                  <div>
+                    <label class="block text-sm font-medium mb-1">Nombre del Proveedor</label>
+                    <input type="text" id="purchaseSupplierName" class="w-full border rounded-lg px-3 py-2" placeholder="Ej: Proveedora del Sur">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium mb-1">Fecha de Compra</label>
+                    <input type="datetime-local" id="purchaseDate" class="w-full border rounded-lg px-3 py-2 text-sm">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium mb-1">Materias Primas de esta Compra</label>
+                    <div id="purchaseItemsContainer" class="space-y-3 border rounded-lg p-3 bg-gray-50 text-xs"></div>
+                    <button type="button" onclick="addPurchaseItemRow()" class="mt-2 w-full py-2 px-3 bg-indigo-500 text-white rounded-lg text-sm font-medium hover:bg-indigo-600">+ Añadir materia prima</button>
+                  </div>
+                  <div class="border-t pt-3">
+                    <p class="text-xs font-semibold text-gray-600 mb-1">Total de la compra (suma de todas las materias primas)</p>
+                    <p id="purchaseTotalLabel" class="text-2xl font-bold text-green-600">$0.00</p>
+                  </div>
+                  <div class="border-t pt-3 space-y-2">
+                    <p class="text-sm font-semibold mb-1">Método de pago</p>
+                    <div class="space-y-1 text-sm">
+                      <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="purchasePaymentMethod" value="efectivo" checked><span>💵 Efectivo</span></label>
+                      <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="purchasePaymentMethod" value="tarjeta"><span>💳 Tarjeta</span></label>
+                      <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="purchasePaymentMethod" value="transferencia"><span>📱 Transferencia</span></label>
+                    </div>
+                    <div id="purchaseCardDetails" class="hidden mt-2 p-3 bg-blue-50 rounded-lg border border-blue-100 text-xs space-y-2">
+                      <p class="font-semibold text-blue-700">Datos de Tarjeta (Simulados)</p>
+                      <div><label class="block mb-1">Número de tarjeta</label><input type="text" id="purchaseCardNumber" class="w-full border rounded-lg px-2 py-1" maxlength="19" placeholder="1234 5678 9012 3456"></div>
+                      <div class="grid grid-cols-2 gap-2">
+                        <div><label class="block mb-1">Vencimiento (MM/AA)</label><input type="text" id="purchaseCardExpiry" class="w-full border rounded-lg px-2 py-1" maxlength="5" placeholder="12/28"></div>
+                        <div><label class="block mb-1">CVV</label><input type="text" id="purchaseCardCvv" class="w-full border rounded-lg px-2 py-1" maxlength="3" placeholder="123"></div>
+                      </div>
+                      <div><label class="block mb-1">Titular</label><input type="text" id="purchaseCardHolder" class="w-full border rounded-lg px-2 py-1" placeholder="Nombre del titular"></div>
+                      <p class="text-[0.65rem] text-blue-700 mt-1">🔐 Solo se guardará la terminación de la tarjeta como referencia.</p>
+                    </div>
+                    <div id="purchaseTransferDetails" class="hidden mt-2 p-3 bg-green-50 rounded-lg border border-green-100 text-xs space-y-2">
+                      <p class="font-semibold text-green-800">Datos de Transferencia (Simulados)</p>
+                      <p>Banco destino: BBVA Bancomer (Cta. interna del sistema)</p>
+                      <p class="text-[0.7rem] text-gray-700">Captura el folio o referencia de la transferencia para control interno.</p>
+                      <div><label class="block mb-1">Folio / Referencia</label><input type="text" id="purchaseTransferRef" class="w-full border rounded-lg px-2 py-1" placeholder="Ej: TRX-123456789"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium mb-1">Notas internas</label>
+                    <textarea id="purchaseNotes" class="w-full border rounded-lg px-3 py-2 text-sm resize-none h-16" placeholder="Observaciones de la compra (opcional)"></textarea>
+                  </div>
+                  <div class="flex space-x-3 pt-2">
+                    <button type="button" onclick="closePurchaseModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium">Cancelar</button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">Guardar compra</button>
+                  </div>
+                </form>
               </div>
             </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-1">Notas internas</label>
-            <textarea id="purchaseNotes"
-                      class="w-full border rounded-lg px-3 py-2 text-sm resize-none h-16"
-                      placeholder="Observaciones de la compra (opcional)"></textarea>
-          </div>
-
-          <div class="flex space-x-3 pt-2">
-            <button type="button"
-                    onclick="closePurchaseModal()"
-                    class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium">
-              Cancelar
-            </button>
-            <button type="submit"
-                    class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">
-              Guardar compra
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-    `;
-
+            `;
             document.body.insertAdjacentHTML('beforeend', modalHtml);
         }
 
-        // -------------------------------------------------------------------------
-        // 2) Helpers para filas de materias primas
-        // -------------------------------------------------------------------------
         function buildMaterialOptionsHtml(selectedId) {
             let html = '<option value="">Seleccionar materia prima</option>';
             rawMaterials.forEach(m => {
@@ -4836,7 +4325,6 @@
             if (lbl) lbl.textContent = `$${total.toFixed(2)}`;
         }
 
-        // Hacemos global para poder usarla en el onclick del botón + de la UI
         window.addPurchaseItemRow = function (data) {
             const container = document.getElementById('purchaseItemsContainer');
             if (!container) return;
@@ -4845,40 +4333,24 @@
             row.className = 'purchase-item-row grid grid-cols-12 gap-2 items-end text-xs';
 
             row.innerHTML = `
-      <div class="col-span-7">
-        <label class="block mb-1">Materia prima</label>
-        <select class="purchase-material w-full border rounded-lg px-2 py-1" required>
-          ${buildMaterialOptionsHtml(data && data.materialId)}
-        </select>
-      </div>
-      <div class="col-span-5 grid grid-cols-2 gap-2">
-        <div>
-          <label class="block mb-1">Cantidad</label>
-          <input type="number" step="0.01"
-                 class="purchase-quantity w-full border rounded-lg px-2 py-1"
-                 value="${data && data.quantity ? data.quantity : ''}" required>
-        </div>
-        <div>
-          <label class="block mb-1">Unidad</label>
-          <input type="text"
-                 class="purchase-unit w-full border rounded-lg px-2 py-1 bg-gray-100"
-                 value="${data && data.unit ? data.unit : ''}" readonly>
-        </div>
-      </div>
-      <div class="col-span-7">
-        <label class="block mb-1">Costo total de esta MP ($)</label>
-        <input type="number" step="0.01"
-               class="purchase-cost w-full border rounded-lg px-2 py-1"
-               value="${data && data.totalCost ? data.totalCost : ''}" required>
-      </div>
-      <div class="col-span-5 flex justify-end">
-        <button type="button"
-                class="mt-6 text-[0.7rem] text-red-600 underline"
-                onclick="this.closest('.purchase-item-row').remove(); recalcPurchaseTotal();">
-          Quitar
-        </button>
-      </div>
-    `;
+              <div class="col-span-7">
+                <label class="block mb-1">Materia prima</label>
+                <select class="purchase-material w-full border rounded-lg px-2 py-1" required>
+                  ${buildMaterialOptionsHtml(data && data.materialId)}
+                </select>
+              </div>
+              <div class="col-span-5 grid grid-cols-2 gap-2">
+                <div><label class="block mb-1">Cantidad</label><input type="number" step="0.01" class="purchase-quantity w-full border rounded-lg px-2 py-1" value="${data && data.quantity ? data.quantity : ''}" required></div>
+                <div><label class="block mb-1">Unidad</label><input type="text" class="purchase-unit w-full border rounded-lg px-2 py-1 bg-gray-100" value="${data && data.unit ? data.unit : ''}" readonly></div>
+              </div>
+              <div class="col-span-7">
+                <label class="block mb-1">Costo total de esta MP ($)</label>
+                <input type="number" step="0.01" class="purchase-cost w-full border rounded-lg px-2 py-1" value="${data && data.totalCost ? data.totalCost : ''}" required>
+              </div>
+              <div class="col-span-5 flex justify-end">
+                <button type="button" class="mt-6 text-[0.7rem] text-red-600 underline" onclick="this.closest('.purchase-item-row').remove(); recalcPurchaseTotal();">Quitar</button>
+              </div>
+            `;
 
             const select = row.querySelector('.purchase-material');
             const unitInput = row.querySelector('.purchase-unit');
@@ -4897,7 +4369,6 @@
             }
 
             costInput.addEventListener('input', recalcPurchaseTotal);
-
             container.appendChild(row);
             recalcPurchaseTotal();
         };
@@ -4928,188 +4399,31 @@
             if (method === 'transferencia') trBox.classList.remove('hidden');
         }
 
-        // -------------------------------------------------------------------------
-        // 3) Normalizar compras (soporta viejo formato y nuevo formato)
-        // -------------------------------------------------------------------------
-        function normalizePurchase(pRaw) {
-            const p = Object.assign({}, pRaw);
-            let items = [];
-
-            if (Array.isArray(p.items) && p.items.length) {
-                items = p.items.map(it => {
-                    const mat = getRawMaterial(it.materialId);
-                    return {
-                        materialId: it.materialId,
-                        materialName: it.materialName || (mat ? mat.name : `MP ${it.materialId}`),
-                        quantity: Number(it.quantity || 0),
-                        unit: it.unit || (mat ? mat.unit : ''),
-                        totalCost: Number(it.totalCost || 0)
-                    };
-                });
-            } else if (p.materialId) {
-                const mat = getRawMaterial(p.materialId);
-                items = [{
-                    materialId: p.materialId,
-                    materialName: p.materialName || (mat ? mat.name : `MP ${p.materialId}`),
-                    quantity: Number(p.quantity || 0),
-                    unit: p.unit || (mat ? mat.unit : ''),
-                    totalCost: Number(p.totalCost || 0)
-                }];
-            }
-
-            const totalCost = (p.totalCost != null)
-                ? Number(p.totalCost)
-                : items.reduce((s, it) => s + (it.totalCost || 0), 0);
-
-            return {
-                id: p.id,
-                supplierName: p.supplierName || 'Proveedor',
-                date: p.date || new Date().toISOString(),
-                notes: p.notes || '',
-                items,
-                totalCost,
-                paymentMethod: p.paymentMethod || p.payment || 'desconocido',
-                paymentSummary: p.paymentSummary || ''
-            };
-        }
-
-        // -------------------------------------------------------------------------
-        // 4) NUEVAS versiones de render de estadísticas e historial
-        // -------------------------------------------------------------------------
-        window.renderSupplierPurchaseStats = function () {
-            const container = document.getElementById('supplierStatsContainer');
-            if (!container) return;
-
-            if (!supplierPurchases || supplierPurchases.length === 0) {
-                container.innerHTML = `
-            <p class="text-center text-gray-500 text-sm py-4">
-                Todavía no hay compras registradas.
-            </p>`;
-                return;
-            }
-
-            const normalized = supplierPurchases.map(normalizePurchase);
-            const totalPurchases = normalized.length;
-            const totalSpend = normalized.reduce((s, p) => s + (p.totalCost || 0), 0);
-
-            const materialMap = {};
-            normalized.forEach(p => {
-                p.items.forEach(it => {
-                    if (!materialMap[it.materialId]) {
-                        materialMap[it.materialId] = {
-                            materialId: it.materialId,
-                            materialName: it.materialName,
-                            unit: it.unit,
-                            quantity: 0,
-                            totalCost: 0
-                        };
-                    }
-                    materialMap[it.materialId].quantity += Number(it.quantity || 0);
-                    materialMap[it.materialId].totalCost += Number(it.totalCost || 0);
-                });
-            });
-
-            const topMaterials = Object.values(materialMap)
-                .sort((a, b) => b.totalCost - a.totalCost)
-                .slice(0, 3);
-
-            container.innerHTML = `
-      <div class="grid grid-cols-2 gap-3 text-sm mb-3">
-        <div class="bg-blue-50 border border-blue-100 rounded-lg p-3">
-          <p class="text-xs text-blue-600 font-semibold mb-1">
-            Compras registradas
-          </p>
-          <p class="text-2xl font-bold">${totalPurchases}</p>
-        </div>
-        <div class="bg-green-50 border border-green-100 rounded-lg p-3">
-          <p class="text-xs text-green-600 font-semibold mb-1">
-            Monto total invertido
-          </p>
-          <p class="text-2xl font-bold">$${totalSpend.toFixed(2)}</p>
-        </div>
-      </div>
-      ${topMaterials.length
-                    ? `<div class="bg-gray-50 border rounded-lg p-3 text-xs">
-               <p class="font-semibold mb-2">
-                 Materias primas con mayor gasto
-               </p>
-               ${topMaterials.map(m => `
-                 <div class="flex justify-between mb-1">
-                   <span>${m.materialName} (${m.unit})</span>
-                   <span>$${m.totalCost.toFixed(2)}</span>
-                 </div>
-               `).join('')}
-             </div>`
-                    : ''
-                }
-    `;
+        window.showNewPurchaseModal = function () {
+            injectSupplierPurchaseModalV2();
+            resetPurchaseFormV2();
+            const modal = document.getElementById('supplierPurchaseModalV2');
+            const dateEl = document.getElementById('purchaseDate');
+            const now = new Date();
+            if (dateEl) dateEl.value = now.toISOString().slice(0, 16);
+            window.addPurchaseItemRow();
+            if (modal) modal.classList.remove('hidden');
         };
 
-        window.renderAdminSupplierPurchases = function () {
-            const container = document.getElementById('adminSupplierPurchasesList');
-            if (!container) return;
-
-            if (!supplierPurchases || supplierPurchases.length === 0) {
-                container.innerHTML = `
-            <p class="text-center text-gray-500 text-sm py-4">
-                Todavía no hay compras registradas.
-            </p>`;
-                return;
-            }
-
-            const normalized = supplierPurchases
-                .map(normalizePurchase)
-                .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            container.innerHTML = normalized.map(p => {
-                const d = new Date(p.date);
-                const dateStr = isNaN(d.getTime()) ? p.date : d.toLocaleString();
-                const itemsHtml = p.items.map(it => `
-            <li class="flex justify-between text-[0.7rem]">
-              <span>${it.materialName} (${it.quantity} ${it.unit})</span>
-              <span>$${(it.totalCost || 0).toFixed(2)}</span>
-            </li>
-        `).join('');
-
-                return `
-          <div class="border rounded-lg p-3 bg-white shadow-sm text-xs">
-            <div class="flex justify-between mb-1">
-              <span class="font-semibold">${p.supplierName}</span>
-              <span class="text-gray-500">${dateStr}</span>
-            </div>
-            <p class="text-[0.7rem] text-gray-600 mb-1">
-              Pago: ${p.paymentSummary || p.paymentMethod || '—'}
-            </p>
-            <ul class="mb-2">
-              ${itemsHtml}
-            </ul>
-            <div class="flex justify-between items-center">
-              <span class="font-bold text-sm">
-                Total: $${(p.totalCost || 0).toFixed(2)}
-              </span>
-            </div>
-          </div>
-        `;
-            }).join('');
+        window.closePurchaseModal = function () {
+            const modal = document.getElementById('supplierPurchaseModalV2');
+            if (modal) modal.classList.add('hidden');
+            resetPurchaseFormV2();
         };
 
-        // -------------------------------------------------------------------------
-        // 5) Guardar compra desde el nuevo formulario V2
-        // -------------------------------------------------------------------------
         function savePurchaseFromFormV2() {
-            const form = document.getElementById('supplierPurchaseFormV2');
-            if (!form) return;
-
             const purchaseIdInput = document.getElementById('purchaseIdV2');
             const supplierNameEl = document.getElementById('purchaseSupplierName');
             const dateEl = document.getElementById('purchaseDate');
             const notesEl = document.getElementById('purchaseNotes');
-
             const rows = document.querySelectorAll('#purchaseItemsContainer .purchase-item-row');
-            if (!rows.length) {
-                alert('Agrega al menos una materia prima a la compra.');
-                return;
-            }
+            
+            if (!rows.length) { alert('Agrega al menos una materia prima a la compra.'); return; }
 
             let items = [];
             let totalCost = 0;
@@ -5128,22 +4442,14 @@
                 if (!materialId || isNaN(quantity) || isNaN(cost)) return;
 
                 items.push({
-                    materialId,
-                    materialName: material ? material.name : `MP ${materialId}`,
-                    quantity,
-                    unit: unitInput.value || (material ? material.unit : ''),
-                    totalCost: cost
+                    materialId, materialName: material ? material.name : `MP ${materialId}`,
+                    quantity, unit: unitInput.value || (material ? material.unit : ''), totalCost: cost
                 });
-
                 totalCost += cost;
             });
 
-            if (!items.length) {
-                alert('Completa correctamente los datos de las materias primas.');
-                return;
-            }
+            if (!items.length) { alert('Completa correctamente los datos de las materias primas.'); return; }
 
-            // Método de pago
             const methodEl = document.querySelector('input[name="purchasePaymentMethod"]:checked');
             const method = methodEl ? methodEl.value : 'efectivo';
             let paymentSummary = '';
@@ -5151,26 +4457,17 @@
             if (method === 'tarjeta') {
                 const cardNumber = (document.getElementById('purchaseCardNumber').value || '').trim();
                 const cardHolder = (document.getElementById('purchaseCardHolder').value || '').trim();
-
-                if (!cardNumber || !cardHolder) {
-                    alert('Completa los datos básicos de la tarjeta (número y titular).');
-                    return;
-                }
-
+                if (!cardNumber || !cardHolder) { alert('Completa los datos básicos de la tarjeta.'); return; }
                 const last4 = cardNumber.replace(/\s+/g, '').slice(-4);
                 paymentSummary = `Tarjeta terminación ${last4} - ${cardHolder}`;
             } else if (method === 'transferencia') {
                 const ref = (document.getElementById('purchaseTransferRef').value || '').trim();
-                if (!ref) {
-                    alert('Ingresa un folio o referencia de la transferencia.');
-                    return;
-                }
+                if (!ref) { alert('Ingresa un folio de transferencia.'); return; }
                 paymentSummary = `Transferencia ref. ${ref}`;
             } else {
                 paymentSummary = 'Efectivo en caja';
             }
 
-            // Fecha
             const now = new Date();
             let purchaseDate = now;
             if (dateEl.value) {
@@ -5181,78 +4478,28 @@
             const newPurchase = {
                 id: purchaseIdInput.value ? parseInt(purchaseIdInput.value) : Date.now(),
                 supplierName: (supplierNameEl.value || 'Proveedor sin nombre').trim(),
-                date: purchaseDate.toISOString(),
-                notes: (notesEl.value || '').trim(),
-                items,
-                totalCost,
-                paymentMethod: method,
-                paymentSummary
+                date: purchaseDate.toISOString(), notes: (notesEl.value || '').trim(),
+                items, totalCost, paymentMethod: method, paymentSummary
             };
 
-            // Actualizar stock de materia prima (sumar lo comprado)
             items.forEach(it => {
                 const mat = rawMaterials.find(m => m.id === it.materialId);
-                if (mat) {
-                    mat.stock = parseFloat((Number(mat.stock || 0) + Number(it.quantity || 0)).toFixed(2));
-                }
+                if (mat) mat.stock = parseFloat((Number(mat.stock || 0) + Number(it.quantity || 0)).toFixed(2));
             });
 
-            // Fusionar con compras existentes (editar / nuevo)
             if (!Array.isArray(supplierPurchases)) supplierPurchases = [];
             const idx = supplierPurchases.findIndex(p => p.id === newPurchase.id);
-            if (idx >= 0) {
-                supplierPurchases[idx] = newPurchase;
-            } else {
-                supplierPurchases.push(newPurchase);
-            }
+            if (idx >= 0) supplierPurchases[idx] = newPurchase;
+            else supplierPurchases.push(newPurchase);
 
-            saveState(); // 👉 se guarda en localStorage (NO se borra nada)
-
-            // Refrescar vistas
-            if (typeof renderAdminRawMaterials === 'function') {
-                renderAdminRawMaterials();
-            }
-            if (typeof renderSupplierPurchaseStats === 'function') {
-                renderSupplierPurchaseStats();
-            }
-            if (typeof renderAdminSupplierPurchases === 'function') {
-                renderAdminSupplierPurchases();
-            }
-
+            saveState();
+            if (typeof renderAdminRawMaterials === 'function') renderAdminRawMaterials();
+            if (typeof renderSupplierPurchaseStats === 'function') renderSupplierPurchaseStats();
+            if (typeof renderAdminSupplierPurchases === 'function') renderAdminSupplierPurchases();
             alert('✅ Compra registrada y pago simulado correctamente.');
             window.closePurchaseModal();
         }
 
-        // -------------------------------------------------------------------------
-        // 6) Reemplazar funciones de abrir/cerrar modal de compra
-        // -------------------------------------------------------------------------
-        window.showNewPurchaseModal = function () {
-            injectSupplierPurchaseModalV2();
-            resetPurchaseFormV2();
-
-            const modal = document.getElementById('supplierPurchaseModalV2');
-            const dateEl = document.getElementById('purchaseDate');
-            const now = new Date();
-            if (dateEl) {
-                // yyyy-MM-ddTHH:mm
-                dateEl.value = now.toISOString().slice(0, 16);
-            }
-
-            // Crear al menos una fila por defecto
-            window.addPurchaseItemRow();
-
-            if (modal) modal.classList.remove('hidden');
-        };
-
-        window.closePurchaseModal = function () {
-            const modal = document.getElementById('supplierPurchaseModalV2');
-            if (modal) modal.classList.add('hidden');
-            resetPurchaseFormV2();
-        };
-
-        // -------------------------------------------------------------------------
-        // 7) Eventos globales: submit y cambio de método de pago
-        // -------------------------------------------------------------------------
         document.addEventListener('submit', function (e) {
             if (e.target && e.target.id === 'supplierPurchaseFormV2') {
                 e.preventDefault();
@@ -5266,13 +4513,18 @@
             }
         });
 
-        // Inyectar el modal cuando cargue la página
         window.addEventListener('load', function () {
             injectSupplierPurchaseModalV2();
         });
-
     })();
 
+    // ====================================================================================
+    // INICIALIZADOR DEL SISTEMA
+    // ====================================================================================
+    
+    // Iniciar carga de datos al abrir la página
+    loadState();
+    
 </script>
 </body>
 <html>
