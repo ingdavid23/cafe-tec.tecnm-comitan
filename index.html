@@ -1687,34 +1687,133 @@
         return JSON.parse(JSON.stringify(data));
     }
 
-    async function saveState() {
+   // 💾 Función para GUARDAR en Firestore
+   async function saveState() {
         if (!isDataLoaded) {
-            console.warn("⚠️ Bloqueado: Se intentó guardar antes de cargar los datos de Firebase.");
+            console.warn("⚠️ Guardado cancelado: Los datos de Firebase aún no se cargan.");
             return; 
         }
 
         try {
             const batch = db.batch();
             
-            batch.set(db.collection("cafetec").doc("products"), { data: sanitizeData(products) });
-            batch.set(db.collection("cafetec").doc("materials"), { data: sanitizeData(rawMaterials) });
-            batch.set(db.collection("cafetec").doc("purchases"), { data: sanitizeData(supplierPurchases) });
-            batch.set(db.collection("cafetec").doc("orders"), { data: sanitizeData(orders) });
-            batch.set(db.collection("cafetec").doc("users"), { data: sanitizeData(users) });
+            // Sanitizamos y ELIMINAMOS FANTASMAS antes de guardar
+            const sProducts = sanitizeData(products.filter(p => p !== null));
+            const sMaterials = sanitizeData(rawMaterials.filter(m => m !== null));
+            const sPurchases = sanitizeData(supplierPurchases.filter(p => p !== null));
+            const sOrders = sanitizeData(orders.filter(o => o !== null));
+            // El filtro exige que el usuario exista y tenga username, destruyendo los cuadros en blanco
+            const sUsers = sanitizeData(users.filter(u => u && u.username));
+
+            batch.set(db.collection("cafetec").doc("products"), { data: sProducts });
+            batch.set(db.collection("cafetec").doc("materials"), { data: sMaterials });
+            batch.set(db.collection("cafetec").doc("purchases"), { data: sPurchases });
+            batch.set(db.collection("cafetec").doc("orders"), { data: sOrders });
+            batch.set(db.collection("cafetec").doc("users"), { data: sUsers });
             batch.set(db.collection("cafetec").doc("metadata"), { orderIdCounter: orderIdCounter || 1 });
 
+            // Ejecutamos el guardado forzado
             await batch.commit();
-            console.log("✅ [Firebase] Datos guardados correctamente.");
+            console.log("✅ [Firebase] Datos guardados correctamente en la nube.");
         } catch (error) {
             console.error("🔥 [Firebase] ERROR AL GUARDAR:", error);
-            alert("Error al guardar en la nube. Revisa F12.");
         }
 
+        // Mantenemos la sesión activa en la memoria local
         if (currentUser) {
             localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
         } else {
             localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
         }
+    }
+
+    // 📥 Función Asíncrona para CARGAR y ESCUCHAR desde Firestore en TIEMPO REAL
+    async function loadState() {
+        try {
+            console.log("🔄 Iniciando conexión en Tiempo Real...");
+
+            // 1. Escuchar PEDIDOS en tiempo real
+            db.collection("cafetec").doc("orders").onSnapshot((doc) => {
+                orders = doc.exists ? (doc.data().data || []).filter(o => o !== null) : [];
+                
+                // Actualizar Admin si lo está viendo
+                if (document.getElementById('adminOrdersSection') && !document.getElementById('adminOrdersSection').classList.contains('hidden')) renderAdminOrders();
+                if (document.getElementById('adminInvoicingSection') && !document.getElementById('adminInvoicingSection').classList.contains('hidden')) renderAdminInvoicing();
+                
+                // Actualizar Cliente si está viendo el menú
+                if (document.getElementById('customerMenu') && !document.getElementById('customerMenu').classList.contains('hidden')) {
+                    if(typeof renderCustomerActiveOrders === 'function') renderCustomerActiveOrders();
+                }
+            });
+
+            // 2. Carga inicial OBLIGATORIA
+            const getDocData = async (docName) => {
+                const docRef = await db.collection("cafetec").doc(docName).get();
+                return docRef.exists ? docRef.data().data : null;
+            };
+
+            const fbProducts = await getDocData("products");
+            const fbMaterials = await getDocData("materials");
+            const fbPurchases = await getDocData("purchases");
+            const fbUsers = await getDocData("users"); 
+
+            const metaDoc = await db.collection("cafetec").doc("metadata").get();
+            if (metaDoc.exists) orderIdCounter = metaDoc.data().orderIdCounter || 1;
+
+            if (fbProducts && fbProducts.length > 0) products = fbProducts.filter(p => p !== null);
+            if (fbMaterials && fbMaterials.length > 0) rawMaterials = fbMaterials.filter(m => m !== null);
+            if (fbPurchases) supplierPurchases = fbPurchases.filter(p => p !== null);
+
+            if (fbUsers) {
+                // FILTRAMOS LOS FANTASMAS AL CARGAR POR PRIMERA VEZ
+                users = fbUsers.filter(u => u && u.username).map(u => {
+                    let regDate = new Date();
+                    if (u.registrationDate) regDate = u.registrationDate.toDate ? u.registrationDate.toDate() : new Date(u.registrationDate);
+                    let accountActiveUntil = null;
+                    if (u.accountActiveUntil) accountActiveUntil = u.accountActiveUntil.toDate ? u.accountActiveUntil.toDate() : new Date(u.accountActiveUntil);
+                    const isActive = (typeof u.isActive === 'boolean') ? u.isActive : true;
+                    return { ...u, isActive, registrationDate: regDate, accountActiveUntil };
+                });
+            }
+
+            console.log("✅ [Firebase] Datos base listos.");
+            isDataLoaded = true;
+
+            if (!fbProducts || fbProducts.length === 0) saveState();
+
+            // 3. Escuchar USUARIOS en tiempo real
+            db.collection("cafetec").doc("users").onSnapshot((doc) => {
+                if (doc.exists) {
+                    const fbUsersLive = doc.data().data || [];
+                    // FILTRAMOS LOS FANTASMAS EN TIEMPO REAL
+                    users = fbUsersLive.filter(u => u && u.username).map(u => {
+                        let regDate = new Date();
+                        if (u.registrationDate) regDate = u.registrationDate.toDate ? u.registrationDate.toDate() : new Date(u.registrationDate);
+                        let accountActiveUntil = null;
+                        if (u.accountActiveUntil) accountActiveUntil = u.accountActiveUntil.toDate ? u.accountActiveUntil.toDate() : new Date(u.accountActiveUntil);
+                        const isActive = (typeof u.isActive === 'boolean') ? u.isActive : true;
+                        return { ...u, isActive, registrationDate: regDate, accountActiveUntil };
+                    });
+
+                    // Actualizar pantallas del Admin
+                    if (document.getElementById('adminUsersSection') && !document.getElementById('adminUsersSection').classList.contains('hidden')) {
+                        renderAdminUsers();
+                    }
+                    if (document.getElementById('adminPersonalDataSection') && !document.getElementById('adminPersonalDataSection').classList.contains('hidden')) {
+                        renderAdminPersonalData();
+                    }
+                }
+            });
+
+        } catch (error) {
+            console.error("🔥 [Firebase] ERROR AL CARGAR:", error);
+            isDataLoaded = true; 
+        }
+
+        const storedCurrentUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+        if (storedCurrentUser) currentUser = JSON.parse(storedCurrentUser);
+
+        checkAuthAndRoute();
     }
 
     // 📥 Función para CARGAR y ESCUCHAR desde Firestore en TIEMPO REAL
