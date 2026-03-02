@@ -2190,22 +2190,24 @@
     }
 
     // Actualizamos el "Escuchador" en tiempo real para que refresque la pantalla del cliente automáticamente
+    // 📥 Función Asíncrona para CARGAR y ESCUCHAR desde Firestore en TIEMPO REAL
     async function loadState() {
         try {
             console.log("🔄 Iniciando conexión en Tiempo Real...");
 
-            // Escuchar PEDIDOS (¡Refleja los cambios de estado instantáneamente!)
+            // 1. Escuchar PEDIDOS en tiempo real (Refleja los cambios de estado instantáneamente)
             db.collection("cafetec").doc("orders").onSnapshot((doc) => {
                 orders = doc.exists ? (doc.data().data || []) : [];
                 
                 // Actualizar Admin si lo está viendo
-                if (!document.getElementById('adminOrdersSection').classList.contains('hidden')) renderAdminOrders();
-                if (!document.getElementById('adminInvoicingSection').classList.contains('hidden')) renderAdminInvoicing();
+                if (document.getElementById('adminOrdersSection') && !document.getElementById('adminOrdersSection').classList.contains('hidden')) renderAdminOrders();
+                if (document.getElementById('adminInvoicingSection') && !document.getElementById('adminInvoicingSection').classList.contains('hidden')) renderAdminInvoicing();
                 
                 // Actualizar Cliente si está viendo el menú
-                if (!document.getElementById('customerMenu').classList.contains('hidden')) renderCustomerActiveOrders();
+                if (document.getElementById('customerMenu') && !document.getElementById('customerMenu').classList.contains('hidden')) renderCustomerActiveOrders();
             });
 
+            // 2. Carga inicial OBLIGATORIA (Evita que la pantalla se quede congelada al inicio)
             const getDocData = async (docName) => {
                 const docRef = await db.collection("cafetec").doc(docName).get();
                 return docRef.exists ? docRef.data().data : null;
@@ -2214,7 +2216,7 @@
             const fbProducts = await getDocData("products");
             const fbMaterials = await getDocData("materials");
             const fbPurchases = await getDocData("purchases");
-            const fbUsers = await getDocData("users");
+            const fbUsers = await getDocData("users"); // Descargamos usuarios la primera vez
 
             const metaDoc = await db.collection("cafetec").doc("metadata").get();
             if (metaDoc.exists) orderIdCounter = metaDoc.data().orderIdCounter || 1;
@@ -2234,10 +2236,33 @@
                 });
             }
 
-            console.log("✅ [Firebase] Datos listos.");
+            console.log("✅ [Firebase] Datos base listos.");
             isDataLoaded = true;
 
             if (!fbProducts || fbProducts.length === 0) saveState();
+
+            // 3. Escuchar USUARIOS en tiempo real (Hace que aparezcan MÁGICAMENTE en Datos Personales)
+            db.collection("cafetec").doc("users").onSnapshot((doc) => {
+                if (doc.exists) {
+                    const fbUsersLive = doc.data().data || [];
+                    users = fbUsersLive.map(u => {
+                        let regDate = new Date();
+                        if (u.registrationDate) regDate = u.registrationDate.toDate ? u.registrationDate.toDate() : new Date(u.registrationDate);
+                        let accountActiveUntil = null;
+                        if (u.accountActiveUntil) accountActiveUntil = u.accountActiveUntil.toDate ? u.accountActiveUntil.toDate() : new Date(u.accountActiveUntil);
+                        const isActive = (typeof u.isActive === 'boolean') ? u.isActive : true;
+                        return { ...u, isActive, registrationDate: regDate, accountActiveUntil };
+                    });
+
+                    // Si el administrador está en la pestaña de Usuarios o Datos Personales, ¡actualizar en vivo!
+                    if (document.getElementById('adminUsersSection') && !document.getElementById('adminUsersSection').classList.contains('hidden')) {
+                        renderAdminUsers();
+                    }
+                    if (document.getElementById('adminPersonalDataSection') && !document.getElementById('adminPersonalDataSection').classList.contains('hidden')) {
+                        renderAdminPersonalData();
+                    }
+                }
+            });
 
         } catch (error) {
             console.error("🔥 [Firebase] ERROR AL CARGAR:", error);
