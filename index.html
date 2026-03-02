@@ -1567,7 +1567,7 @@
     // G E S T I Ó N  D E  M E M O R I A  L O C A L
     // ====================================================================================
 
-   // ====================================================================================
+    // ====================================================================================
     // G E S T I Ó N  D E  B A S E  D E  D A T O S  ( F I R E B A S E )
     // ====================================================================================
 
@@ -1586,39 +1586,68 @@
     const db = firebase.firestore();
 
     const STORAGE_KEYS = {
-        CURRENT_USER: 'cafetec_current_user' 
+        CURRENT_USER: 'cafetec_current_user'
     };
 
-   
+
 
 
     // Función para guardar en Firestore
     function saveState() {
-       // ====================================================================================
-    // V A R I A B L E S   G L O B A L E S
-    // ====================================================================================
-    let rawMaterials = [];
-    let products = [];
-    let cart = [];
-    let currentCategory = 'all';
-    let orders = [];
-    let supplierPurchases = [];
-    let orderIdCounter = 1;
-    let users = [];
-    let currentUser = null;
-    let previewProduct = null;
-    let currentAdminProductType = 'manufactured';
-        // Mantenemos la sesión activa en el navegador
-        if (currentUser) {
-            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
-        } else {
-            localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+
+        // ====================================================================================
+        // V A R I A B L E S   G L O B A L E S
+        // ====================================================================================
+        let rawMaterials = [];
+        let products = [];
+        let cart = [];
+        let currentCategory = 'all';
+        let orders = [];
+        let supplierPurchases = [];
+        let orderIdCounter = 1;
+        let users = [];
+        let currentUser = null;
+        let previewProduct = null;
+        let currentAdminProductType = 'manufactured';
+
+        // 🔒 CANDADO DE SEGURIDAD: Evita borrar la base de datos por accidente
+        let isDataLoaded = false;
+
+        const STORAGE_KEYS = {
+            CURRENT_USER: 'cafetec_current_user'
+        };
+
+        // Función para guardar en Firestore
+        function saveState() {
+            // Si los datos no han terminado de cargar desde la nube, ABORTAMOS el guardado.
+            // Esto evita que el sistema guarde listas vacías [] y borre tu información.
+            if (!isDataLoaded) {
+                console.warn("Intento de guardado bloqueado: Los datos aún no cargan desde Firebase.");
+                return;
+            }
+
+            db.collection("cafetec").doc("products").set({ data: products });
+            db.collection("cafetec").doc("materials").set({ data: rawMaterials });
+            db.collection("cafetec").doc("purchases").set({ data: supplierPurchases });
+            db.collection("cafetec").doc("orders").set({ data: orders });
+            db.collection("cafetec").doc("users").set({ data: users });
+            db.collection("cafetec").doc("metadata").set({ orderIdCounter: orderIdCounter });
+
+            // Mantenemos la sesión activa en el navegador
+            if (currentUser) {
+                localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+            } else {
+                localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+            }
         }
     }
+
+
 
     // Función Asíncrona para cargar desde Firestore
     async function loadState() {
         try {
+            console.log("Intentando conectar con Firebase...");
             const getDocData = async (docName) => {
                 const docRef = await db.collection("cafetec").doc(docName).get();
                 return docRef.exists ? docRef.data().data : null;
@@ -1631,7 +1660,7 @@
             const fbUsers = await getDocData("users");
 
             const metaDoc = await db.collection("cafetec").doc("metadata").get();
-            if (metaDoc.exists) orderIdCounter = metaDoc.data().orderIdCounter;
+            if (metaDoc.exists) orderIdCounter = metaDoc.data().orderIdCounter || 1;
 
             if (fbProducts) products = fbProducts;
             if (fbMaterials) rawMaterials = fbMaterials;
@@ -1640,18 +1669,26 @@
 
             if (fbUsers) {
                 users = fbUsers.map(u => {
-                    const registrationDate = u.registrationDate ? new Date(u.registrationDate) : new Date(0);
-                    let accountActiveUntil = u.accountActiveUntil ? new Date(u.accountActiveUntil) : null;
+                    let regDate = new Date(0);
+                    if (u.registrationDate) {
+                        regDate = u.registrationDate.toDate ? u.registrationDate.toDate() : new Date(u.registrationDate);
+                    }
+                    let accountActiveUntil = null;
+                    if (u.accountActiveUntil) {
+                        accountActiveUntil = u.accountActiveUntil.toDate ? u.accountActiveUntil.toDate() : new Date(u.accountActiveUntil);
+                    }
                     const isActive = (typeof u.isActive === 'boolean') ? u.isActive : true;
-                    return { ...u, isActive, registrationDate, accountActiveUntil };
+                    return { ...u, isActive, registrationDate: regDate, accountActiveUntil };
                 });
-            } else {
-                // Si la BD está vacía (primera vez), guardamos los datos quemados (Hardcoded) por defecto
-                saveState(); 
             }
 
+            console.log("✅ Datos descargados correctamente.");
+            isDataLoaded = true; // Abrimos el candado
+
         } catch (error) {
-            console.error("Error cargando Firebase. Verifica tus reglas de seguridad de Firestore.", error);
+            console.error("🔥 ERROR DE LECTURA FIREBASE:", error);
+            alert("⚠️ Firebase denegó la lectura. Revisa tus Reglas de Firestore.");
+            isDataLoaded = true; 
         }
 
         // Restaurar sesión
@@ -1661,6 +1698,40 @@
         checkAuthAndRoute();
     }
 
+    // Función para guardar en Firestore
+    function saveState() {
+        if (!isDataLoaded) {
+            console.warn("Bloqueado: intentando guardar antes de que carguen los datos.");
+            return; 
+        }
+
+        console.log("⏳ Guardando datos en la nube...");
+
+        // Guardamos todo en un "Lote" (Batch) para que sea instantáneo y seguro
+        const batch = db.batch();
+        batch.set(db.collection("cafetec").doc("products"), { data: products });
+        batch.set(db.collection("cafetec").doc("materials"), { data: rawMaterials });
+        batch.set(db.collection("cafetec").doc("purchases"), { data: supplierPurchases });
+        batch.set(db.collection("cafetec").doc("orders"), { data: orders });
+        batch.set(db.collection("cafetec").doc("users"), { data: users });
+        batch.set(db.collection("cafetec").doc("metadata"), { orderIdCounter: orderIdCounter });
+
+        // Ejecutamos el guardado
+        batch.commit()
+            .then(() => console.log("✅ Datos guardados permanentemente en Firebase"))
+            .catch(error => {
+                console.error("🔥 ERROR DE ESCRITURA:", error);
+                alert("⚠️ DENEGADO: Firebase no te dejó guardar. Tus cambios se perderán al recargar. Ve a la consola de Firebase y cambia tus Reglas (Rules) a 'allow read, write: if true;'");
+            });
+
+        // Mantenemos la sesión activa en el navegador
+        if (currentUser) {
+            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+        } else {
+            localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+        }
+    }
+
     function checkAuthAndRoute() {
         if (currentUser) {
             if (currentUser.userType === 'admin') {
@@ -1668,23 +1739,24 @@
             } else {
                 const cu = users.find(u => u.id === currentUser.id);
                 const now = new Date();
+                
                 if (!cu) {
                     currentUser = null;
-                    saveState();
+                    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER); // Borramos solo la sesión local
                     showLogin();
-                    setLoginMessage('🚫 Tu usuario ya no existe en la BD. Contacta al administrador.', 'error');
+                    setLoginMessage('🚫 Tu usuario ya no existe. Contacta al administrador.', 'error');
                     return;
                 }
                 if (cu.isActive === false) {
                     currentUser = null;
-                    saveState();
+                    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
                     showLogin();
                     setLoginMessage('🚫 Cuenta desactivada. Contacta al administrador.', 'error');
                     return;
                 }
                 if (cu.accountActiveUntil && now.getTime() > new Date(cu.accountActiveUntil).getTime()) {
                     currentUser = null;
-                    saveState();
+                    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
                     showLogin();
                     setLoginMessage('🚫 Acceso bloqueado: tu cuenta ha expirado. Contacta al administrador.', 'error');
                     return;
@@ -1698,6 +1770,7 @@
         }
     }
 
+    
     // ====================================================================================
     // E S T A D O S  I N I C I A L E S 
     // ====================================================================================
