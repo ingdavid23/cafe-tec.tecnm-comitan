@@ -345,6 +345,10 @@
             </div>
         </div>
         <div class="p-4 flex-grow overflow-y-auto">
+            <div id="customerActiveOrdersContainer" class="mb-6 hidden">
+                <h3 class="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Tus Pedidos Activos</h3>
+                <div id="customerActiveOrdersList" class="space-y-2"></div>
+            </div>
             <div class="flex space-x-2 mb-6 overflow-x-auto">
                 <button onclick="filterCategory('all')"
                     class="category-btn bg-amber-600 text-white px-4 py-2 rounded-full whitespace-nowrap font-medium">
@@ -2149,10 +2153,102 @@
         document.getElementById('cartScreen').classList.add('hidden');
         document.getElementById('adminPanel').classList.add('hidden');
         document.getElementById('productPreviewModal').classList.add('hidden');
+        
         renderProducts();
         updateCartCount();
+        renderCustomerActiveOrders(); // <-- Agregado para que muestre el estatus
     }
 
+    // NUEVA FUNCIÓN: Muestra el estado del pedido en la pantalla del cliente
+    function renderCustomerActiveOrders() {
+        const container = document.getElementById('customerActiveOrdersContainer');
+        const list = document.getElementById('customerActiveOrdersList');
+        if (!container || !list || !currentUser) return;
+
+        // Buscamos pedidos de ESTE usuario que no hayan sido entregados
+        const activeOrders = orders.filter(o => o.user && o.user.id === currentUser.id && o.status !== 'entregado').sort((a,b) => b.id - a.id);
+
+        if (activeOrders.length === 0) {
+            container.classList.add('hidden');
+            return;
+        }
+
+        container.classList.remove('hidden');
+        list.innerHTML = activeOrders.map(o => `
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex justify-between items-center shadow-sm border-l-4 ${o.status === 'listo' ? 'border-l-green-500' : 'border-l-yellow-500'}">
+                <div>
+                    <p class="font-bold text-sm text-blue-900">Pedido #${o.id}</p>
+                    <p class="text-xs text-blue-700">Ref: ${o.referenceNumber}</p>
+                </div>
+                <div class="text-right">
+                    <span class="px-2 py-1 rounded-full text-xs font-bold shadow-sm ${o.status === 'listo' ? 'bg-green-500 text-white animate-pulse' : 'bg-yellow-400 text-yellow-900'}">
+                        ${o.status === 'listo' ? '✅ ¡LISTO PARA RECOGER!' : '⏳ Preparando...'}
+                    </span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Actualizamos el "Escuchador" en tiempo real para que refresque la pantalla del cliente automáticamente
+    async function loadState() {
+        try {
+            console.log("🔄 Iniciando conexión en Tiempo Real...");
+
+            // Escuchar PEDIDOS (¡Refleja los cambios de estado instantáneamente!)
+            db.collection("cafetec").doc("orders").onSnapshot((doc) => {
+                orders = doc.exists ? (doc.data().data || []) : [];
+                
+                // Actualizar Admin si lo está viendo
+                if (!document.getElementById('adminOrdersSection').classList.contains('hidden')) renderAdminOrders();
+                if (!document.getElementById('adminInvoicingSection').classList.contains('hidden')) renderAdminInvoicing();
+                
+                // Actualizar Cliente si está viendo el menú
+                if (!document.getElementById('customerMenu').classList.contains('hidden')) renderCustomerActiveOrders();
+            });
+
+            const getDocData = async (docName) => {
+                const docRef = await db.collection("cafetec").doc(docName).get();
+                return docRef.exists ? docRef.data().data : null;
+            };
+
+            const fbProducts = await getDocData("products");
+            const fbMaterials = await getDocData("materials");
+            const fbPurchases = await getDocData("purchases");
+            const fbUsers = await getDocData("users");
+
+            const metaDoc = await db.collection("cafetec").doc("metadata").get();
+            if (metaDoc.exists) orderIdCounter = metaDoc.data().orderIdCounter || 1;
+
+            if (fbProducts && fbProducts.length > 0) products = fbProducts;
+            if (fbMaterials && fbMaterials.length > 0) rawMaterials = fbMaterials;
+            if (fbPurchases) supplierPurchases = fbPurchases;
+
+            if (fbUsers) {
+                users = fbUsers.map(u => {
+                    let regDate = new Date();
+                    if (u.registrationDate) regDate = u.registrationDate.toDate ? u.registrationDate.toDate() : new Date(u.registrationDate);
+                    let accountActiveUntil = null;
+                    if (u.accountActiveUntil) accountActiveUntil = u.accountActiveUntil.toDate ? u.accountActiveUntil.toDate() : new Date(u.accountActiveUntil);
+                    const isActive = (typeof u.isActive === 'boolean') ? u.isActive : true;
+                    return { ...u, isActive, registrationDate: regDate, accountActiveUntil };
+                });
+            }
+
+            console.log("✅ [Firebase] Datos listos.");
+            isDataLoaded = true;
+
+            if (!fbProducts || fbProducts.length === 0) saveState();
+
+        } catch (error) {
+            console.error("🔥 [Firebase] ERROR AL CARGAR:", error);
+            isDataLoaded = true; 
+        }
+
+        const storedCurrentUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+        if (storedCurrentUser) currentUser = JSON.parse(storedCurrentUser);
+
+        checkAuthAndRoute();
+    }
     function showCart() {
         document.getElementById('cartScreen').classList.remove('hidden');
         document.getElementById('customerMenu').classList.add('hidden');
@@ -3182,18 +3278,20 @@
     function renderAdminOrders() {
         const adminOrdersList = document.getElementById('adminOrdersList');
 
-        if (orders.length === 0) {
-            adminOrdersList.innerHTML = '<p class="text-center text-gray-500 py-8">No hay pedidos pendientes</p>';
+        // Ocultamos los entregados para mantener la pantalla limpia
+        const activeOrders = orders.filter(o => o.status !== 'entregado').sort((a, b) => b.id - a.id);
+
+        if (activeOrders.length === 0) {
+            adminOrdersList.innerHTML = '<p class="text-center text-gray-500 py-8">No hay pedidos activos (Pendientes o Listos)</p>';
             return;
         }
 
-        adminOrdersList.innerHTML = orders.map(order => `
-            <div class="bg-white border rounded-lg p-4 shadow-sm">
+        adminOrdersList.innerHTML = activeOrders.map(order => `
+            <div class="bg-white border rounded-lg p-4 shadow-sm mb-3 border-l-4 ${order.status === 'listo' ? 'border-green-500' : 'border-yellow-500'}">
                 <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center space-x-2">
                         <h4 class="font-bold text-lg">Pedido #${order.id}</h4>
-                        <span class="px-2 py-1 rounded-full text-xs font-medium ${order.status === 'pendiente' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
-            }">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium ${order.status === 'pendiente' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}">
                             ${order.status === 'pendiente' ? '⏳ Pendiente' : '✅ Listo'}
                         </span>
                     </div>
@@ -3205,55 +3303,25 @@
         
                 <div class="mb-3 p-3 bg-gray-50 rounded-lg">
                     <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <span class="font-medium">👤 Cliente:</span>
-                            <p>${order.user.fullName}</p>
-                        </div>
-                        <div>
-                            <span class="font-medium">📋 Tipo:</span>
-                            <p class="capitalize">${order.user.userType}</p>
-                        </div>
+                        <div><span class="font-medium">👤 Cliente:</span><p>${order.user.fullName}</p></div>
+                        <div><span class="font-medium">📋 Tipo:</span><p class="capitalize">${order.user.userType}</p></div>
                         ${order.user.userType === 'estudiante' ? `
-                            <div>
-                                <span class="font-medium">🎓 Carrera:</span>
-                                <p class="text-xs">${order.user.career || ''}</p>
-                            </div>
-                            <div>
-                                <span class="font-medium">📚 Sem/Grupo:</span>
-                                <p>${order.user.semester || ''}°${order.user.group || ''}</p>
-                            </div>
-                            <div>
-                                <span class="font-medium">🔢 No. Control:</span>
-                                <p class="font-mono text-xs">${order.user.controlNumber || ''}</p>
-                            </div>
+                            <div><span class="font-medium">🎓 Carrera:</span><p class="text-xs">${order.user.career || ''}</p></div>
+                            <div><span class="font-medium">📚 Sem/Grupo:</span><p>${order.user.semester || ''}°${order.user.group || ''}</p></div>
                         ` : `
-                            <div>
-                                <span class="font-medium">📞 Teléfono:</span>
-                                <p>${order.user.phoneNumber || ''}</p>
-                            </div>
+                            <div><span class="font-medium">📞 Teléfono:</span><p>${order.user.phoneNumber || ''}</p></div>
                         `}
-                        <div>
-                            <span class="font-medium">🔢 Referencia:</span>
-                            <p class="font-mono text-xs">${order.referenceNumber}</p>
-                        </div>
-                        <div>
-                            <span class="font-medium">🕐 Recogida:</span>
-                            <p>${order.pickupTimeFormatted}</p>
-                        </div>
+                        <div><span class="font-medium">🔢 Ref:</span><p class="font-mono text-xs">${order.referenceNumber}</p></div>
+                        <div><span class="font-medium">🕐 Recogida:</span><p>${order.pickupTimeFormatted}</p></div>
                     </div>
-                    ${order.notes ? `
-                        <div class="mt-2">
-                            <span class="font-medium text-sm">📝 Notas:</span>
-                            <p class="text-sm text-gray-600 italic">"${order.notes}"</p>
-                        </div>
-                    ` : ''}
+                    ${order.notes ? `<div class="mt-2"><span class="font-medium text-sm">📝 Notas:</span><p class="text-sm text-gray-600 italic">"${order.notes}"</p></div>` : ''}
                 </div>
                 
                 <div class="mb-3">
-                    <h5 class="font-medium mb-2">Productos:</h5>
+                    <h5 class="font-medium mb-2 text-sm">Productos:</h5>
                     <div class="space-y-1">
                         ${order.items.map(item => `
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-xs">
                                 <span>${item.emoji} ${item.name} x${item.quantity}</span>
                                 <span>$${(item.price * item.quantity).toFixed(2)}</span>
                             </div>
@@ -3261,34 +3329,38 @@
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-1 gap-2 mb-3 text-sm">
-                    <div class="flex justify-between">
-                        <span class="font-medium">💳 Método de pago:</span>
-                        <span class="capitalize">${order.paymentMethod}</span>
-                    </div>
-                </div>
-                
                 <div class="flex items-center justify-between pt-3 border-t">
                     <div class="flex items-center space-x-2">
-                        <span class="text-sm font-medium">Estado del pago:</span>
-                        <span class="px-2 py-1 rounded-full text-xs font-medium ${order.isPaid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-            }">
-                            ${order.isPaid ? '✅ Pagado' : '❌ Pendiente'}
+                        <span class="px-2 py-1 rounded-full text-xs font-medium ${order.isPaid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                            ${order.isPaid ? '✅ Pagado' : '❌ Pago Pendiente'}
                         </span>
                     </div>
-                    <div class="flex space-x-2">
-                        <button onclick="toggleOrderStatus(${order.id})" class="px-3 py-1 rounded-lg text-sm font-medium ${order.status === 'pendiente' ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-yellow-600 text-white hover:bg-yellow-700'
-            }">
+                    <div class="flex flex-wrap gap-2 justify-end">
+                        <button onclick="togglePaymentStatus(${order.id})" class="px-2 py-1 rounded text-xs border bg-gray-100 hover:bg-gray-200">
+                            ${order.isPaid ? 'Anular Pago' : 'Marcar Pagado'}
+                        </button>
+                        <button onclick="toggleOrderStatus(${order.id})" class="px-2 py-1 rounded text-xs font-medium ${order.status === 'pendiente' ? 'bg-green-600 text-white' : 'bg-yellow-600 text-white'}">
                             ${order.status === 'pendiente' ? 'Marcar Listo' : 'Marcar Pendiente'}
                         </button>
-                        <button onclick="togglePaymentStatus(${order.id})" class="px-3 py-1 rounded-lg text-sm font-medium ${order.isPaid ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-blue-600 text-white hover:bg-blue-700'
-            }">
-                            ${order.isPaid ? 'Marcar No Pagado' : 'Marcar Pagado'}
+                        <button onclick="markOrderDelivered(${order.id})" class="px-2 py-1 rounded text-xs font-medium bg-gray-800 text-white hover:bg-black">
+                            📦 Entregado
                         </button>
                     </div>
                 </div>
             </div>
         `).join('');
+    }
+
+    // NUEVA FUNCIÓN: Para marcar como entregado y desaparecerlo de la vista principal
+    function markOrderDelivered(orderId) {
+        if (confirm("¿Confirmas que entregaste este pedido? Desaparecerá de tu lista principal y de la pantalla del cliente.")) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = 'entregado';
+                saveState();
+                renderAdminOrders();
+            }
+        }
     }
 
     // =================== FACTURACIÓN CFDI (SIMULADA SAT) ===================
