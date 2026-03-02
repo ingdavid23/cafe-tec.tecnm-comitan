@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CAFE-TEC</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
@@ -1565,77 +1567,112 @@
     // G E S T I Ó N  D E  M E M O R I A  L O C A L
     // ====================================================================================
 
-    const STORAGE_KEYS = {
-        PRODUCTS: 'cafetec_products',
-        MATERIALS: 'cafetec_materials',
-        SUPPLIER_PURCHASES: 'cafetec_supplier_purchases',
-        ORDERS: 'cafetec_orders',
-        USERS: 'cafetec_users',
-        CURRENT_USER: 'cafetec_current_user',
-        ORDER_ID_COUNTER: 'cafetec_order_id_counter'
+   // ====================================================================================
+    // G E S T I Ó N  D E  B A S E  D E  D A T O S  ( F I R E B A S E )
+    // ====================================================================================
+
+    // 1. Inicializar Firebase (Versión Compat para no romper los onclick del HTML)
+    const firebaseConfig = {
+        apiKey: "AIzaSyAirIFLZbN4E6_fAMaziojHkAHlnILlYKI",
+        authDomain: "webw-41418.firebaseapp.com",
+        projectId: "webw-41418",
+        storageBucket: "webw-41418.firebasestorage.app",
+        messagingSenderId: "873247663956",
+        appId: "1:873247663956:web:379e6517da2eafcbe28ac1",
+        measurementId: "G-WPJRP0038Q"
     };
 
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const STORAGE_KEYS = {
+        CURRENT_USER: 'cafetec_current_user' 
+    };
+
+   
+
+
+    // Función para guardar en Firestore
     function saveState() {
-        localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
-        localStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(rawMaterials));
-        localStorage.setItem(STORAGE_KEYS.SUPPLIER_PURCHASES, JSON.stringify(supplierPurchases));
-        localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
-        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
-        localStorage.setItem(STORAGE_KEYS.ORDER_ID_COUNTER, orderIdCounter);
+       // ====================================================================================
+    // V A R I A B L E S   G L O B A L E S
+    // ====================================================================================
+    let rawMaterials = [];
+    let products = [];
+    let cart = [];
+    let currentCategory = 'all';
+    let orders = [];
+    let supplierPurchases = [];
+    let orderIdCounter = 1;
+    let users = [];
+    let currentUser = null;
+    let previewProduct = null;
+    let currentAdminProductType = 'manufactured';
+        // Mantenemos la sesión activa en el navegador
+        if (currentUser) {
+            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
+        } else {
+            localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+        }
     }
 
-    function loadState() {
-        // ... (Esta función se mantiene igual que la original) ...
-        const storedProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
-        const storedMaterials = localStorage.getItem(STORAGE_KEYS.MATERIALS);
-        const storedPurchases = localStorage.getItem(STORAGE_KEYS.SUPPLIER_PURCHASES);
-        const storedOrders = localStorage.getItem(STORAGE_KEYS.ORDERS);
-        const storedUsers = localStorage.getItem(STORAGE_KEYS.USERS);
-        const storedCurrentUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
-        const storedOrderIdCounter = localStorage.getItem(STORAGE_KEYS.ORDER_ID_COUNTER);
+    // Función Asíncrona para cargar desde Firestore
+    async function loadState() {
+        try {
+            const getDocData = async (docName) => {
+                const docRef = await db.collection("cafetec").doc(docName).get();
+                return docRef.exists ? docRef.data().data : null;
+            };
 
-        if (storedProducts) products = JSON.parse(storedProducts);
-        if (storedMaterials) rawMaterials = JSON.parse(storedMaterials);
-        if (storedPurchases) supplierPurchases = JSON.parse(storedPurchases);
-        if (storedOrders) orders = JSON.parse(storedOrders);
+            const fbProducts = await getDocData("products");
+            const fbMaterials = await getDocData("materials");
+            const fbPurchases = await getDocData("purchases");
+            const fbOrders = await getDocData("orders");
+            const fbUsers = await getDocData("users");
 
-        if (storedUsers) {
-            users = JSON.parse(storedUsers).map(u => {
-                const registrationDate = u.registrationDate ? new Date(u.registrationDate) : new Date(0);
-                let accountActiveUntil = u.accountActiveUntil ? new Date(u.accountActiveUntil) : null;
+            const metaDoc = await db.collection("cafetec").doc("metadata").get();
+            if (metaDoc.exists) orderIdCounter = metaDoc.data().orderIdCounter;
 
-                if (!accountActiveUntil && u.registrationDate) {
-                    accountActiveUntil = new Date(registrationDate.getTime() + 24 * 60 * 60 * 1000);
-                }
+            if (fbProducts) products = fbProducts;
+            if (fbMaterials) rawMaterials = fbMaterials;
+            if (fbPurchases) supplierPurchases = fbPurchases;
+            if (fbOrders) orders = fbOrders;
 
-                // NUEVO: valor por defecto de estado de cuenta (activa)
-                const isActive = (typeof u.isActive === 'boolean') ? u.isActive : true;
+            if (fbUsers) {
+                users = fbUsers.map(u => {
+                    const registrationDate = u.registrationDate ? new Date(u.registrationDate) : new Date(0);
+                    let accountActiveUntil = u.accountActiveUntil ? new Date(u.accountActiveUntil) : null;
+                    const isActive = (typeof u.isActive === 'boolean') ? u.isActive : true;
+                    return { ...u, isActive, registrationDate, accountActiveUntil };
+                });
+            } else {
+                // Si la BD está vacía (primera vez), guardamos los datos quemados (Hardcoded) por defecto
+                saveState(); 
+            }
 
-                return {
-                    ...u,
-                    isActive,
-                    registrationDate,
-                    accountActiveUntil
-                };
-            });
+        } catch (error) {
+            console.error("Error cargando Firebase. Verifica tus reglas de seguridad de Firestore.", error);
         }
-        if (storedCurrentUser) currentUser = JSON.parse(storedCurrentUser);
-        if (storedOrderIdCounter) orderIdCounter = parseInt(storedOrderIdCounter);
 
-        // Si hay sesión previa, validar estado de cuenta/expiración antes de entrar directo
+        // Restaurar sesión
+        const storedCurrentUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+        if (storedCurrentUser) currentUser = JSON.parse(storedCurrentUser);
+
+        checkAuthAndRoute();
+    }
+
+    function checkAuthAndRoute() {
         if (currentUser) {
             if (currentUser.userType === 'admin') {
                 showAdminPanel();
             } else {
-                // buscar al usuario real por id
                 const cu = users.find(u => u.id === currentUser.id);
                 const now = new Date();
                 if (!cu) {
                     currentUser = null;
                     saveState();
                     showLogin();
-                    setLoginMessage('🚫 Tu usuario ya no existe. Contacta al administrador.', 'error');
+                    setLoginMessage('🚫 Tu usuario ya no existe en la BD. Contacta al administrador.', 'error');
                     return;
                 }
                 if (cu.isActive === false) {
@@ -2312,61 +2349,40 @@
     }
 
     function renderLocalMemory() {
-        // ... (Esta función se mantiene igual que la original) ...
         const memoryList = document.getElementById('memoryList');
-        let html = '';
-        let totalSize = 0;
-
-        for (const key in localStorage) {
-            if (localStorage.hasOwnProperty(key) && key.startsWith('cafetec_')) {
-                const value = localStorage.getItem(key);
-                const size = value.length;
-                totalSize += size;
-
-                let displayValue = value;
-                try {
-                    const parsed = JSON.parse(value);
-                    displayValue = JSON.stringify(parsed, null, 2).substring(0, 500) + '...';
-                } catch {
-                    displayValue = value.substring(0, 500) + '...';
-                }
-
-                html += `
-                    <div class="bg-white border rounded-lg p-4 shadow-sm">
-                        <h4 class="font-bold text-lg">${key.replace('cafetec_', '').toUpperCase()}</h4>
-                        <p class="text-xs text-gray-500 mb-2">Tamaño: ${(size / 1024).toFixed(2)} KB</p>
-                        <pre class="bg-gray-100 p-2 text-xs rounded overflow-x-auto whitespace-pre-wrap">${displayValue}</pre>
-                    </div>
-                `;
-            }
-        }
-
-        if (totalSize > 0) {
-            html = `<p class="text-sm font-medium mb-4">Total de datos almacenados: ${(totalSize / 1024).toFixed(2)} KB</p>` + html;
-        } else {
-            html = `<p class="text-center text-gray-500 py-8">No hay datos de CAFE-TEC guardados en la memoria local.</p>`;
-        }
-
-        memoryList.innerHTML = html;
+        memoryList.innerHTML = `
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-5 rounded-lg shadow-sm">
+                <h4 class="font-bold text-lg text-blue-800">☁️ Conectado a Firebase Firestore</h4>
+                <p class="text-sm text-blue-700 mt-2 mb-4">
+                    La memoria local ha sido desactivada. Todos los datos se están sincronizando en tiempo real con tu base de datos en la nube en el proyecto <b>webw-41418</b>.
+                </p>
+                <div class="grid grid-cols-2 gap-2 text-sm font-medium text-gray-700">
+                    <div class="bg-white p-2 rounded shadow-sm">📦 Productos: ${products.length}</div>
+                    <div class="bg-white p-2 rounded shadow-sm">👥 Usuarios: ${users.length}</div>
+                    <div class="bg-white p-2 rounded shadow-sm">🛒 Pedidos: ${orders.length}</div>
+                    <div class="bg-white p-2 rounded shadow-sm">📋 Insumos: ${rawMaterials.length}</div>
+                </div>
+            </div>
+        `;
     }
 
-    function clearLocalMemory() {
-        // ... (Esta función se mantiene igual que la original) ...
-        if (confirm("¡ADVERTENCIA! ¿Estás seguro de que deseas borrar TODOS los datos guardados localmente (productos, usuarios, pedidos, etc.)? Esta acción es irreversible.")) {
-            for (const key in localStorage) {
-                if (localStorage.hasOwnProperty(key) && key.startsWith('cafetec_')) {
-                    localStorage.removeItem(key);
-                }
+    async function clearLocalMemory() {
+        if (confirm("¡ADVERTENCIA CRÍTICA! ¿Estás seguro de que deseas borrar TODOS los datos en Firebase (productos, usuarios, pedidos)? Esta acción es irreversible.")) {
+            try {
+                await db.collection("cafetec").doc("products").delete();
+                await db.collection("cafetec").doc("materials").delete();
+                await db.collection("cafetec").doc("purchases").delete();
+                await db.collection("cafetec").doc("orders").delete();
+                await db.collection("cafetec").doc("users").delete();
+                await db.collection("cafetec").doc("metadata").delete();
+
+                localStorage.removeItem('cafetec_current_user');
+                alert("Base de datos de Firebase borrada exitosamente.");
+                location.reload();
+            } catch (error) {
+                console.error("Error al borrar la base de datos:", error);
+                alert("Hubo un error borrando la base de datos.");
             }
-
-            products = [];
-            rawMaterials = [];
-            orders = [];
-            users = [];
-            currentUser = null;
-            orderIdCounter = 1;
-
-            location.reload();
         }
     }
 
@@ -3807,7 +3823,6 @@
     document.getElementById('personalFilterSelect').addEventListener('change', renderAdminPersonalData);
 
     function openEditUserModal(userId) {
-        // ... (Esta función se mantiene igual que la original) ...
         const user = users.find(u => u.id === userId);
         if (!user) return;
 
@@ -3825,15 +3840,32 @@
         document.getElementById('editNewPassword').value = '';
         document.getElementById('editConfirmPassword').value = '';
 
-        const regDate = user.registrationDate ? new Date(user.registrationDate) : null;
-        const activeUntilDate = user.accountActiveUntil ? new Date(user.accountActiveUntil) : null;
+        // --- SOLUCIÓN DE FECHAS FIREBASE ---
+        // Extraemos la fecha de registro de forma segura
+        let regDate = null;
+        if (user.registrationDate) {
+            regDate = user.registrationDate.toDate ? user.registrationDate.toDate() : (user.registrationDate.seconds ? new Date(user.registrationDate.seconds * 1000) : new Date(user.registrationDate));
+        }
 
-        if (regDate) {
+        // Extraemos la fecha de expiración de la cuenta de forma segura
+        let activeUntilDate = null;
+        if (user.accountActiveUntil) {
+            activeUntilDate = user.accountActiveUntil.toDate ? user.accountActiveUntil.toDate() : (user.accountActiveUntil.seconds ? new Date(user.accountActiveUntil.seconds * 1000) : new Date(user.accountActiveUntil));
+        }
+
+        // Asignamos las fechas a los inputs solo si son válidas
+        if (regDate && !isNaN(regDate.getTime())) {
             document.getElementById('editRegistrationDate').value = new Date(regDate.getTime() - (regDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+        } else {
+            document.getElementById('editRegistrationDate').value = '';
         }
-        if (activeUntilDate) {
+
+        if (activeUntilDate && !isNaN(activeUntilDate.getTime())) {
             document.getElementById('editAccountActiveUntil').value = new Date(activeUntilDate.getTime() - (activeUntilDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+        } else {
+            document.getElementById('editAccountActiveUntil').value = '';
         }
+        // -----------------------------------
 
         const isAdmin = currentUser && currentUser.username === 'ADMIN';
         document.getElementById('editRegistrationDate').disabled = !isAdmin;
