@@ -160,6 +160,11 @@
                         placeholder="Ej: miusuario_cafetec" required>
                 </div>
                 <div>
+                    <label class="block text-sm font-medium mb-2">CURP (18 caracteres)</label>
+                    <input type="text" id="curp" class="w-full px-4 py-3 rounded-lg text-gray-800 uppercase"
+                        maxlength="18" placeholder="Ej: ABCD123456HMNEFG01" required>
+                </div>
+                <div>
                     <label class="block text-sm font-medium mb-2">Contraseña</label>
                     <div class="relative">
                         <input type="password" id="password" class="w-full pl-4 pr-10 py-3 rounded-lg text-gray-800"
@@ -1352,6 +1357,10 @@
                     <label class="block text-sm font-medium mb-1">Nombre de Usuario (Único)</label>
                     <input type="text" id="editUsername" class="w-full border rounded-lg px-3 py-2" required>
                 </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">CURP</label>
+                    <input type="text" id="editCurp" class="w-full border rounded-lg px-3 py-2 uppercase" maxlength="18" required>
+                </div>
 
                 <div>
                     <label class="block text-sm font-medium mb-1">Tecnológico</label>
@@ -1903,39 +1912,92 @@
         document.getElementById('passwordResetForm').reset();
     }
 
-    document.getElementById('passwordResetForm').addEventListener('submit', function (e) {
+    document.getElementById('registerForm').addEventListener('submit', function (e) {
         e.preventDefault();
 
-        const loginIdentifier = document.getElementById('resetUser').value.trim();
-        const phone = document.getElementById('resetPhone').value.trim();
-        const newPassword = document.getElementById('resetNewPassword').value;
-        const confirmPassword = document.getElementById('resetConfirmPassword').value;
+        const userType = document.getElementById('userType').value;
+        const fullName = document.getElementById('fullName').value;
+        const tecnologico = document.getElementById('tecnologico').value.trim();
+        const username = document.getElementById('username').value.trim();
+        const curp = document.getElementById('curp').value.trim().toUpperCase(); // <-- Capturamos CURP
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
 
-        if (newPassword !== confirmPassword) {
-            setLoginMessage('Las nuevas contraseñas no coinciden.', 'error');
+        // 1. Validar Contraseñas
+        if (password !== confirmPassword) {
+            setLoginMessage('Las contraseñas no coinciden.', 'error');
             return;
         }
 
-        let user = users.find(u =>
-            u.username === loginIdentifier ||
-            u.controlNumber === loginIdentifier ||
-            u.phoneNumber === loginIdentifier
-        );
+        // 2. Validar Formato de CURP (Regex oficial de México)
+        const curpRegex = /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$/;
+        if (!curpRegex.test(curp)) {
+            setLoginMessage('El formato de la CURP es inválido. Verifica los 18 caracteres.', 'error');
+            return;
+        }
 
-        if (user) {
-            const isPhoneMatch = (user.phoneNumber && user.phoneNumber === phone) || (user.userType === 'estudiante' && user.controlNumber && user.controlNumber === phone);
+        // 3. Validar que la CURP no esté repetida
+        if (users.some(user => user.curp === curp)) {
+            setLoginMessage('Esta CURP ya se encuentra registrada en el sistema.', 'error');
+            return;
+        }
 
-            if (isPhoneMatch) {
-                user.password = newPassword;
-                setLoginMessage(`Contraseña restablecida para ${user.fullName}. Por favor inicia sesión.`, 'success');
-                saveState();
-                closePasswordResetModal();
-                showLogin();
+        // 4. Validar que el Usuario no esté repetido
+        if (users.some(user => user.username && user.username.toLowerCase() === username.toLowerCase())) {
+            setLoginMessage('Este nombre de usuario ya está registrado. Por favor, elige otro.', 'error');
+            return;
+        }
+
+        const now = new Date();
+        const newUser = {
+            id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
+            userType: userType,
+            fullName: fullName,
+            tecnologico: tecnologico,
+            username: username,
+            curp: curp, // <-- Guardamos la CURP
+            password: password,
+            registrationDate: now,
+            isActive: true 
+        };
+
+        if (userType === 'estudiante') {
+            const controlNumber = document.getElementById('controlNumber').value.trim();
+
+            if (users.some(user => user.controlNumber === controlNumber && user.controlNumber)) {
+                setLoginMessage('Este número de control ya está registrado.', 'error');
                 return;
             }
+
+            newUser.controlNumber = controlNumber;
+            newUser.career = document.getElementById('career').value;
+            newUser.semester = document.getElementById('semester').value;
+            newUser.group = document.getElementById('group').value;
+
+        } else {
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+
+            if (users.some(user => user.phoneNumber === phoneNumber && user.phoneNumber)) {
+                setLoginMessage('Este número de teléfono ya está registrado.', 'error');
+                return;
+            }
+
+            newUser.phoneNumber = phoneNumber;
         }
-        setLoginMessage('Error: Los datos de verificación no coinciden. Inténtalo de nuevo.', 'error');
-        closePasswordResetModal();
+
+        const credentialFile = document.getElementById('credentialFile').files[0];
+        if (credentialFile) {
+            newUser.hasCredential = true;
+            newUser.credentialName = credentialFile.name;
+        }
+
+        users.push(newUser);
+        setLoginMessage(`¡Registro exitoso! Ya puedes iniciar sesión.`, 'success');
+        document.getElementById('registerForm').reset();
+        document.getElementById('credentialPreview').classList.add('hidden');
+        toggleUserFields();
+        saveState();
+        showLogin();
     });
 
     function showLogin() {
@@ -3740,23 +3802,32 @@
 
     function openEditUserModal(userId) {
         const user = users.find(u => u.id === userId);
-        if (!user) return;
+        if (!user) {
+            alert("No se encontró la información del usuario.");
+            return;
+        }
 
-        document.getElementById('editUserId').value = user.id;
-        document.getElementById('editUserType').value = user.userType;
-        document.getElementById('editFullName').value = user.fullName || '';
-        document.getElementById('editUsername').value = user.username || '';
-        document.getElementById('editTecnologico').value = user.tecnologico || '';
+        // Asignación segura: Verifica si el elemento existe en el HTML antes de llenarlo
+        const setValue = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.value = value;
+        };
 
-        document.getElementById('editControlNumber').value = user.controlNumber || '';
-        document.getElementById('editCareer').value = user.career || '';
-        document.getElementById('editSemester').value = user.semester || '';
-        document.getElementById('editGroup').value = user.group || '';
-        document.getElementById('editPhoneNumber').value = user.phoneNumber || '';
-        document.getElementById('editNewPassword').value = '';
-        document.getElementById('editConfirmPassword').value = '';
+        setValue('editUserId', user.id);
+        setValue('editUserType', user.userType);
+        setValue('editFullName', user.fullName || '');
+        setValue('editUsername', user.username || '');
+        setValue('editCurp', user.curp || ''); // Si no lo pusiste en el HTML, no crasheará
+        setValue('editTecnologico', user.tecnologico || '');
+        setValue('editControlNumber', user.controlNumber || '');
+        setValue('editCareer', user.career || '');
+        setValue('editSemester', user.semester || '');
+        setValue('editGroup', user.group || '');
+        setValue('editPhoneNumber', user.phoneNumber || '');
+        setValue('editNewPassword', '');
+        setValue('editConfirmPassword', '');
 
-        // Manejo Seguro de Fechas Firebase
+        // --- SOLUCIÓN DE FECHAS FIREBASE ---
         let regDate = null;
         if (user.registrationDate) {
             regDate = user.registrationDate.toDate ? user.registrationDate.toDate() : new Date(user.registrationDate);
@@ -3767,21 +3838,27 @@
             activeUntilDate = user.accountActiveUntil.toDate ? user.accountActiveUntil.toDate() : new Date(user.accountActiveUntil);
         }
 
-        if (regDate && !isNaN(regDate.getTime())) {
-            document.getElementById('editRegistrationDate').value = new Date(regDate.getTime() - (regDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
-        } else {
-            document.getElementById('editRegistrationDate').value = '';
+        const editRegDateEl = document.getElementById('editRegistrationDate');
+        if (editRegDateEl) {
+            if (regDate && !isNaN(regDate.getTime())) {
+                editRegDateEl.value = new Date(regDate.getTime() - (regDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+            } else {
+                editRegDateEl.value = '';
+            }
         }
 
-        if (activeUntilDate && !isNaN(activeUntilDate.getTime())) {
-            document.getElementById('editAccountActiveUntil').value = new Date(activeUntilDate.getTime() - (activeUntilDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
-        } else {
-            document.getElementById('editAccountActiveUntil').value = '';
+        const editActiveUntilEl = document.getElementById('editAccountActiveUntil');
+        if (editActiveUntilEl) {
+            if (activeUntilDate && !isNaN(activeUntilDate.getTime())) {
+                editActiveUntilEl.value = new Date(activeUntilDate.getTime() - (activeUntilDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+            } else {
+                editActiveUntilEl.value = '';
+            }
         }
 
         const isAdmin = currentUser && currentUser.username === 'ADMIN';
-        document.getElementById('editRegistrationDate').disabled = !isAdmin;
-        document.getElementById('editAccountActiveUntil').disabled = !isAdmin;
+        if (editRegDateEl) editRegDateEl.disabled = !isAdmin;
+        if (editActiveUntilEl) editActiveUntilEl.disabled = !isAdmin;
 
         toggleEditUserFields();
         document.getElementById('editUserModal').classList.remove('hidden');
@@ -3827,29 +3904,46 @@
     document.getElementById('editUserForm').addEventListener('submit', function (e) {
         e.preventDefault();
 
-        const id = parseInt(document.getElementById('editUserId').value);
-        const type = document.getElementById('editUserType').value;
-        const fullName = document.getElementById('editFullName').value.trim();
-        const username = document.getElementById('editUsername').value.trim();
-        const tecnologico = document.getElementById('editTecnologico').value.trim();
+        // Función auxiliar para obtener valores de forma segura sin crashear
+        const getValue = (id) => document.getElementById(id) ? document.getElementById(id).value.trim() : '';
 
-        const newPass = document.getElementById('editNewPassword').value;
-        const confirmPass = document.getElementById('editConfirmPassword').value;
-
-        const regDateValue = document.getElementById('editRegistrationDate').value;
-        const activeUntilValue = document.getElementById('editAccountActiveUntil').value;
+        const id = parseInt(getValue('editUserId'));
+        const type = getValue('editUserType');
+        const fullName = getValue('editFullName');
+        const username = getValue('editUsername');
+        const curp = getValue('editCurp').toUpperCase();
+        const tecnologico = getValue('editTecnologico');
+        const newPass = getValue('editNewPassword');
+        const confirmPass = getValue('editConfirmPassword');
+        const regDateValue = getValue('editRegistrationDate');
+        const activeUntilValue = getValue('editAccountActiveUntil');
 
         const user = users.find(u => u.id === id);
         if (!user) return;
 
         if (!fullName || !username) {
-            alert('El nombre y el nombre de usuario no pueden estar vacíos.');
+            alert('El nombre y el usuario no pueden estar vacíos.');
             return;
+        }
+
+        // Si se agregó la CURP en el HTML, la validamos
+        if (document.getElementById('editCurp')) {
+            const curpRegex = /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$/;
+            if (curp && !curpRegex.test(curp)) {
+                alert('El formato de la CURP es inválido.');
+                return;
+            }
+            const dupCurp = users.some(u => u.id !== id && u.curp === curp);
+            if (dupCurp) {
+                alert('Esta CURP ya está registrada en otro usuario.');
+                return;
+            }
+            user.curp = curp;
         }
 
         const dupUsername = users.some(u => u.id !== id && u.username.toLowerCase() === username.toLowerCase());
         if (dupUsername) {
-            alert('Este nombre de usuario ya está registrado en otro usuario.');
+            alert('Este nombre de usuario ya está registrado.');
             return;
         }
 
@@ -3859,34 +3953,25 @@
         user.tecnologico = tecnologico;
 
         if (type === 'estudiante') {
-            const controlNumber = (document.getElementById('editControlNumber').value || '').trim();
-            const career = document.getElementById('editCareer').value || '';
-            const semester = document.getElementById('editSemester').value || '';
-            const group = document.getElementById('editGroup').value || '';
-
-            if (!controlNumber) {
-                alert('Ingresa el número de control.'); return;
-            }
+            const controlNumber = getValue('editControlNumber');
+            if (!controlNumber) { alert('Ingresa el número de control.'); return; }
+            
             const dup = users.some(u => u.id !== id && u.controlNumber === controlNumber && u.userType === 'estudiante');
-            if (dup) {
-                alert('Este número de control ya está registrado en otro estudiante.'); return;
-            }
+            if (dup) { alert('Este número de control ya está registrado.'); return; }
 
             user.controlNumber = controlNumber;
-            user.career = career;
-            user.semester = semester;
-            user.group = group;
+            user.career = getValue('editCareer');
+            user.semester = getValue('editSemester');
+            user.group = getValue('editGroup');
             delete user.phoneNumber;
 
         } else {
-            const phoneNumber = (document.getElementById('editPhoneNumber').value || '').trim();
-            if (!phoneNumber) {
-                alert('Ingresa el número de teléfono.'); return;
-            }
+            const phoneNumber = getValue('editPhoneNumber');
+            if (!phoneNumber) { alert('Ingresa el número de teléfono.'); return; }
+            
             const dup = users.some(u => u.id !== id && u.phoneNumber === phoneNumber);
-            if (dup) {
-                alert('Este número de teléfono ya está registrado en otro usuario.'); return;
-            }
+            if (dup) { alert('Este número de teléfono ya está registrado.'); return; }
+            
             user.phoneNumber = phoneNumber;
             delete user.controlNumber;
             delete user.career;
@@ -3895,9 +3980,7 @@
         }
 
         if (newPass || confirmPass) {
-            if (newPass !== confirmPass) {
-                alert('Las contraseñas no coinciden.'); return;
-            }
+            if (newPass !== confirmPass) { alert('Las contraseñas no coinciden.'); return; }
             user.password = newPass;
         }
 
@@ -3911,7 +3994,9 @@
         closeEditUserModal();
         renderAdminPersonalData();
         renderAdminUsers();
-        if (!document.getElementById('adminOrdersSection').classList.contains('hidden')) {
+        
+        const ordersSec = document.getElementById('adminOrdersSection');
+        if (ordersSec && !ordersSec.classList.contains('hidden')) {
             renderAdminOrders();
         }
     });
