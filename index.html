@@ -1430,6 +1430,7 @@
                         <option value="estudiante">👨‍🎓 Estudiante</option>
                         <option value="docente">👩‍🏫 Docente</option>
                         <option value="administrativo">👨‍💼 Administrativo</option>
+                        <option value="empleado">👨‍🔧 Empleado</option>
                     </select>
                 </div>
                 
@@ -4091,17 +4092,21 @@
                 if (!isNaN(rd.getTime())) regDateText = rd.toLocaleDateString();
             }
 
+            // 👇 Regla inteligente para mostrar "Empleado" en Datos Personales 👇
+            const displayType = (u.isEmployee || u.userType === 'admin') ? 'empleado' : u.userType;
+            const displayEmoji = u.userType === 'estudiante' ? '👨‍🎓' : (u.userType === 'docente' || u.userType === 'profesor' ? '👩‍🏫' : ((u.isEmployee || u.userType === 'admin') ? '👨‍🔧' : '👨‍💼'));
+
             return `
             <div class="bg-white border rounded-lg p-4 shadow-sm">
                 <div class="flex items-start justify-between">
                     <div class="flex-1">
                         <div class="flex items-center space-x-2 mb-1">
-                            <span class="text-xl">${u.userType === 'estudiante' ? '👨‍🎓' : (u.userType === 'docente' ? '👩‍🏫' : '👨‍💼')}</span>
+                            <span class="text-xl">${displayEmoji}</span>
                             <h4 class="font-bold">${u.fullName}</h4>
                         </div>
                         <div class="grid grid-cols-2 gap-2 text-sm">
                             <div><span class="font-medium">Usuario:</span> <span class="font-mono">${u.username || ''}</span></div>
-                            <div class="capitalize"><span class="font-medium">Tipo:</span> ${u.userType}</div>
+                            <div class="capitalize"><span class="font-medium">Tipo:</span> ${displayType}</div>
                             <div><span class="font-medium">CURP:</span> <span class="font-mono">${u.curp || 'N/D'}</span></div>
                             <div><span class="font-medium">RFC:</span> <span class="font-mono">${u.rfc || 'N/D'}</span></div>
                             ${u.userType === 'estudiante' ? `
@@ -4189,10 +4194,15 @@
             if (el) el.value = value;
         };
 
+        
         // AHORA GUARDAMOS EL USERNAME EN EL CAMPO OCULTO
         setValue('editUserId', user.username);
-        setValue('editUserType', user.userType);
-        setValue('editCurp', user.curp || ''); 
+        
+        // 👇 REGLA INTELIGENTE: Si tiene permisos de admin, selecciona "empleado" en el menú
+        const displayType = (user.isEmployee || user.userType === 'admin') ? 'empleado' : user.userType;
+        setValue('editUserType', displayType);
+        
+        setValue('editCurp', user.curp || '');
         setValue('editRfc', user.rfc || ''); 
         setValue('editFullName', user.fullName || '');
         setValue('editUsername', user.username || '');
@@ -4409,8 +4419,16 @@
 
         user.fullName = fullName;
         user.username = username;
-        user.userType = type;
         user.tecnologico = tecnologico;
+
+        // 👇 PROTECCIÓN DE PERMISOS: Mantiene su acceso al panel si es empleado
+        if (type === 'empleado') {
+            user.userType = 'admin';
+            user.isEmployee = true;
+        } else {
+            user.userType = type;
+            user.isEmployee = false;
+        }
 
         if (type === 'estudiante') {
             const controlNumber = getValue('editControlNumber');
