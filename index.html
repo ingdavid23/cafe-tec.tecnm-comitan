@@ -2143,26 +2143,62 @@
         e.preventDefault();
 
         const userType = document.getElementById('userType').value;
-        const fullName = document.getElementById('fullName').value;
+        const curp = document.getElementById('curp').value.trim().toUpperCase();
+        const rfc = document.getElementById('rfc').value.trim().toUpperCase();
+        const fullName = document.getElementById('fullName').value.trim();
         const tecnologico = document.getElementById('tecnologico').value.trim();
         const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
 
+        // 1. Validar Contraseñas
         if (password !== confirmPassword) {
             setLoginMessage('Las contraseñas no coinciden.', 'error');
             return;
         }
 
-        if (users.some(user => user.username && user.username.toLowerCase() === username.toLowerCase())) {
-            setLoginMessage('Este nombre de usuario ya está registrado. Por favor, elige otro.', 'error');
+        // 2. Validar Formato de CURP y RFC
+        const curpRegex = /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$/;
+        if (!curpRegex.test(curp)) {
+            setLoginMessage('El formato de la CURP es inválido. Verifica los 18 caracteres.', 'error');
+            return;
+        }
+        if (rfc.length < 12 || rfc.length > 13) {
+            setLoginMessage('El RFC debe tener 12 o 13 caracteres.', 'error');
             return;
         }
 
+        
+        // 3. 🛡️ VALIDACIÓN ESTRICTA DE DUPLICADOS (CURP, RFC y USUARIO)
+        const curpExistente = users.find(u => u.curp && u.curp.toUpperCase() === curp);
+        if (curpExistente) {
+            // 👇 Aquí está el mensaje emergente que pediste 👇
+            alert('⚠️ La CURP ingresada ya está siendo utilizada por otro usuario.');
+            setLoginMessage(`La CURP ya está utilizada.`, 'error'); 
+            return;
+        }
+
+        const rfcExistente = users.find(u => u.rfc && u.rfc.toUpperCase() === rfc);
+        if (rfcExistente) {
+            setLoginMessage(`Este RFC ya está registrado.`, 'error'); 
+            return;
+        }
+
+        const usuarioExistente = users.find(u => u.username && u.username.toLowerCase() === username.toLowerCase());
+        if (usuarioExistente) {
+            setLoginMessage('Este nombre de usuario ya está ocupado. Elige otro.', 'error'); 
+            return;
+        }
+
+        // 4. Generar ID Seguro
+        const newId = users.reduce((max, u) => Math.max(max, Number(u.id) || 0), 0) + 1;
         const now = new Date();
+        
         const newUser = {
-            id: users.length + 1,
+            id: newId,
             userType: userType,
+            curp: curp,
+            rfc: rfc,
             fullName: fullName,
             tecnologico: tecnologico,
             username: username,
@@ -2171,45 +2207,50 @@
             isActive: true 
         };
 
+        // 5. Validaciones Específicas por Tipo de Usuario
         if (userType === 'estudiante') {
             const controlNumber = document.getElementById('controlNumber').value.trim();
-
             if (users.some(user => user.controlNumber === controlNumber && user.controlNumber)) {
-                setLoginMessage('Este número de control ya está registrado.', 'error');
+                setLoginMessage('Este número de control ya está registrado.', 'error'); 
                 return;
             }
-
             newUser.controlNumber = controlNumber;
             newUser.career = document.getElementById('career').value;
             newUser.semester = document.getElementById('semester').value;
             newUser.group = document.getElementById('group').value;
-
+            
         } else {
             const phoneNumber = document.getElementById('phoneNumber').value.trim();
-
             if (users.some(user => user.phoneNumber === phoneNumber && user.phoneNumber)) {
-                setLoginMessage('Este número de teléfono ya está registrado.', 'error');
+                setLoginMessage('Este número de teléfono ya está registrado.', 'error'); 
                 return;
             }
-
             newUser.phoneNumber = phoneNumber;
         }
 
+        // 6. Guardar Credencial si existe
         const credentialFile = document.getElementById('credentialFile').files[0];
         if (credentialFile) {
             newUser.hasCredential = true;
             newUser.credentialName = credentialFile.name;
+        } else {
+            newUser.hasCredential = false;
         }
 
+        // 7. Guardar Usuario Final
         users.push(newUser);
+        saveState();
+        
         setLoginMessage(`¡Registro exitoso! Ya puedes iniciar sesión con tu usuario: ${username}.`, 'success');
         document.getElementById('registerForm').reset();
         document.getElementById('credentialPreview').classList.add('hidden');
         toggleUserFields();
-        saveState();
-        showLogin();
+        
+        // Opcional: Redirigir automáticamente al login después de 2 segundos
+        setTimeout(() => {
+            showLogin();
+        }, 2000);
     });
-
     function login() {
         clearLoginMessage();
         const loginIdentifier = document.getElementById('loginUser').value.trim();
