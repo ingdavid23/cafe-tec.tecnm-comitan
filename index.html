@@ -560,6 +560,8 @@
         </div>
     </div>
 
+    
+
     <div id="adminPanel" class="hidden min-h-screen bg-white">
         <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 shadow-lg">
             <div class="flex items-center justify-between">
@@ -631,6 +633,10 @@
                     class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     🧾 Facturación
                 </button>
+                <button onclick="showAdminEmployeeReg()" id="employeeRegTab"
+    class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
+    👨‍🔧 Registro Empleados
+</button>
                 <button onclick="adminLogout()"
                     class="admin-tab bg-red-200 text-red-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     🚪 Cerrar Sesión
@@ -725,6 +731,62 @@
                 </div>
             </div>
 
+
+
+            <div id="adminEmployeeRegSection" class="hidden mb-6 fade-in">
+                <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 mb-6 rounded-r-lg">
+                    <h3 class="text-lg font-bold text-indigo-900">👨‍🔧 Registro de Nuevo Personal (Acceso Admin)</h3>
+                    <p class="text-xs text-indigo-700">Nota: Los empleados registrados aquí podrán acceder a este panel de administración.</p>
+                </div>
+            
+                <form id="employeeRegForm" class="bg-white border rounded-xl p-6 shadow-sm space-y-4 max-w-2xl mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">CURP</label>
+                            <input type="text" id="empCurp" class="w-full border rounded-lg px-3 py-2 uppercase" maxlength="18" placeholder="ABCD123456HMNEFG01">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">RFC</label>
+                            <input type="text" id="empRfc" class="w-full border rounded-lg px-3 py-2 uppercase" maxlength="13" placeholder="ABCD123456XYZ">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Nombre de Usuario (Único para Login)*</label>
+                            <input type="text" id="empUsername" class="w-full border rounded-lg px-3 py-2" required placeholder="ej: emp_juan">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Número de Teléfono*</label>
+                            <input type="tel" id="empPhone" class="w-full border rounded-lg px-3 py-2" required placeholder="5551234567">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Contraseña*</label>
+                            <input type="password" id="empPassword" class="w-full border rounded-lg px-3 py-2" required minlength="4">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Confirmar Contraseña*</label>
+                            <input type="password" id="empConfirmPassword" class="w-full border rounded-lg px-3 py-2" required>
+                        </div>
+                    </div>
+            
+                    <div class="border-t pt-4">
+                        <h4 class="text-sm font-bold mb-3 text-gray-700">Periodo de Actividad de la Cuenta</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium mb-1">Activa Desde*</label>
+                                <input type="datetime-local" id="empActiveFrom" class="w-full border rounded-lg px-3 py-2 text-sm" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium mb-1">Activa Hasta (Expiración)</label>
+                                <input type="datetime-local" id="empActiveUntil" class="w-full border rounded-lg px-3 py-2 text-sm">
+                            </div>
+                        </div>
+                    </div>
+            
+                    <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700 transition-colors shadow-md">
+                        ✅ Registrar Empleado con Acceso Admin
+                    </button>
+                </form>
+            </div>
+
            
             
 
@@ -797,6 +859,8 @@
             </div>
         </div>
     </div>
+
+    
 
     <div id="productModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up max-h-[90vh] overflow-y-auto">
@@ -2293,11 +2357,13 @@
                 setLoginMessage(`🚫 Cuenta Caducada: Tu cuenta ha expirado. Contacta al administrador.`, 'error');
                 return;
             }
+            if (user.userType === 'admin') {
+                showAdminPanel(); // Si es empleado registrado, va al panel
+            } else {
+                document.getElementById('welcomeUserName').textContent = user.fullName;
+                showWelcome(); // Si es cliente/docente, va al menú
+            }
 
-            currentUser = user;
-            document.getElementById('welcomeUserName').textContent = user.fullName;
-            saveState();
-            showWelcome();
         } else {
             setLoginMessage('Usuario, número de control o contraseña incorrectos', 'error');
             document.getElementById('loginUser').value = '';
@@ -2533,14 +2599,15 @@
             'adminRawMaterialsSection',
             'adminSupplierPurchasesSection',
             'adminOrdersSection',
-            'adminKitchenSection', // <-- NUEVO: Pestaña de Cocina
+            'adminKitchenSection', 
             'adminStatsSection',
             'adminUsersSection',
             'adminMemorySection',
             'adminPersonalDataSection',
             'adminReportsSection',
             'adminSupplierStockSection',
-            'adminInvoicingSection'
+            'adminInvoicingSection',
+            'adminEmployeeRegSection' // <--- PESTAÑA DE EMPLEADOS AÑADIDA
         ];
         
         // Protección: Solo oculta si el elemento existe en el HTML
@@ -2730,6 +2797,82 @@
         document.getElementById('adminReportsSection').classList.remove('hidden');
         renderReportPreview();
     }
+
+
+    // 👇 AQUÍ EMPIEZA LO QUE VAS A PEGAR 👇
+    // Función para mostrar la pestaña de registro de empleados
+    function showAdminEmployeeReg() {
+        activateTab('employeeRegTab');
+        document.getElementById('adminEmployeeRegSection').classList.remove('hidden');
+        
+        // Poner fecha de hoy por defecto en "Activa Desde"
+        const now = new Date();
+        document.getElementById('empActiveFrom').value = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+    }
+
+    // Lógica de registro con validaciones
+    document.getElementById('employeeRegForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const username = document.getElementById('empUsername').value.trim();
+        const phone = document.getElementById('empPhone').value.trim();
+        const password = document.getElementById('empPassword').value;
+        const confirmPassword = document.getElementById('empConfirmPassword').value;
+        const activeFrom = document.getElementById('empActiveFrom').value;
+        const activeUntil = document.getElementById('empActiveUntil').value;
+        const curp = document.getElementById('empCurp').value.trim().toUpperCase();
+        const rfc = document.getElementById('empRfc').value.trim().toUpperCase();
+
+        // 1. Validar Contraseñas
+        if (password !== confirmPassword) {
+            alert("❌ Las contraseñas no coinciden.");
+            return;
+        }
+
+        // 2. Validar que el nombre de usuario sea único (OBLIGATORIO)
+        if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+            alert("❌ Este nombre de usuario ya está registrado. Elige otro.");
+            return;
+        }
+
+        // 3. Validar Teléfono único
+        if (users.some(u => u.phoneNumber === phone)) {
+            alert("❌ Este número de teléfono ya está vinculado a otra cuenta.");
+            return;
+        }
+
+        // 4. Validar Fechas
+        if (activeUntil && new Date(activeUntil) <= new Date(activeFrom)) {
+            alert("❌ La fecha de expiración (Hasta) debe ser posterior a la fecha de inicio (Desde).");
+            return;
+        }
+
+        // 5. Crear objeto de empleado (userType: 'admin' para que pueda entrar al panel)
+        const newEmployee = {
+            id: users.reduce((max, u) => Math.max(max, Number(u.id) || 0), 0) + 1,
+            userType: 'admin', // <--- Importante para el acceso
+            fullName: "Empleado: " + username, // Nombre genérico basado en usuario
+            username: username,
+            password: password,
+            phoneNumber: phone,
+            curp: curp, // Se guarda aunque esté repetido en un cliente
+            rfc: rfc,   // Se guarda aunque esté repetido en un cliente
+            registrationDate: new Date(activeFrom),
+            accountActiveUntil: activeUntil ? new Date(activeUntil) : null,
+            isActive: true,
+            isEmployee: true // Marca extra para reportes
+        };
+
+        // 6. Guardar en la base de datos
+        users.push(newEmployee);
+        saveState();
+
+        alert(`✅ Empleado "${username}" registrado exitosamente. Ahora puede entrar al panel con sus credenciales.`);
+        this.reset();
+        showAdminUsers(); // Redirigir a la lista de usuarios para verlo
+    });
+
+
 
     function renderLocalMemory() {
         const memoryList = document.getElementById('memoryList');
