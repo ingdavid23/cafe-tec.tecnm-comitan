@@ -1684,9 +1684,10 @@
             const sMaterials = sanitizeData(rawMaterials.filter(m => m !== null));
             const sPurchases = sanitizeData(supplierPurchases.filter(p => p !== null));
             const sOrders = sanitizeData(orders.filter(o => o !== null));
+            // 🧹 ELIMINADOR DE FANTASMAS: Exige nombre, ID válido y que no esté vacío
+            const sUsers = sanitizeData(users.filter(u => u && u.id && u.fullName && String(u.fullName).trim() !== ''));
             // El filtro exige que el usuario exista y tenga username, destruyendo los cuadros en blanco
-            const sUsers = sanitizeData(users.filter(u => u && u.username));
-
+           
             batch.set(db.collection("cafetec").doc("products"), { data: sProducts });
             batch.set(db.collection("cafetec").doc("materials"), { data: sMaterials });
             batch.set(db.collection("cafetec").doc("purchases"), { data: sPurchases });
@@ -1748,7 +1749,8 @@
 
             if (fbUsers) {
                 // FILTRAMOS LOS FANTASMAS AL CARGAR POR PRIMERA VEZ
-                users = fbUsers.filter(u => u && u.username).map(u => {
+                // FILTRAMOS LOS FANTASMAS AL CARGAR POR PRIMERA VEZ
+                users = fbUsers.filter(u => u && u.id && u.fullName && String(u.fullName).trim() !== '').map(u => {
                     let regDate = new Date();
                     if (u.registrationDate) regDate = u.registrationDate.toDate ? u.registrationDate.toDate() : new Date(u.registrationDate);
                     let accountActiveUntil = null;
@@ -1768,7 +1770,8 @@
                 if (doc.exists) {
                     const fbUsersLive = doc.data().data || [];
                     // FILTRAMOS LOS FANTASMAS EN TIEMPO REAL
-                    users = fbUsersLive.filter(u => u && u.username).map(u => {
+                    // FILTRAMOS LOS FANTASMAS EN TIEMPO REAL
+                    users = fbUsersLive.filter(u => u && u.id && u.fullName && String(u.fullName).trim() !== '').map(u => {
                         let regDate = new Date();
                         if (u.registrationDate) regDate = u.registrationDate.toDate ? u.registrationDate.toDate() : new Date(u.registrationDate);
                         let accountActiveUntil = null;
@@ -2032,8 +2035,10 @@
         }
 
         const now = new Date();
+        // 🛡️ ID Seguro: Evita que se generen IDs "NaN" o nulos si hay errores en la BD
+        const newId = users.reduce((max, u) => Math.max(max, Number(u.id) || 0), 0) + 1;
         const newUser = {
-            id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
+            id: newId,
             userType: userType,
             curp: curp,
             rfc: rfc,
@@ -3938,8 +3943,8 @@
                             </label>
                         </div>
                         <div class="flex justify-end space-x-2 mt-2">
-                            <button onclick="openEditUserModal(${u.id})" class="px-3 py-1 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-700 transition-colors">Editar</button>
-                            <button onclick="deleteUser(${u.id})" class="px-3 py-1 rounded-lg bg-red-600 text-white text-sm hover:bg-red-700 transition-colors">Eliminar</button>
+                            <button onclick="openEditUserModal('${u.username}')" class="px-3 py-1 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-700 transition-colors">Editar</button>
+                            <button onclick="deleteUser('${u.username}')" class="px-3 py-1 rounded-lg bg-red-600 text-white text-sm hover:bg-red-700 transition-colors">Eliminar</button>
                         </div>
                     </div>
                 </div>
@@ -3962,41 +3967,37 @@
         }
     }
     // NUEVA FUNCIÓN: Eliminar Usuario Permanentemente
-    function deleteUser(userId) {
-        // Buscamos el usuario para mostrar su nombre en la alerta
-        const userToDelete = users.find(u => u.id === userId);
+   // NUEVA FUNCIÓN: Eliminar Usuario Permanentemente
+   // NUEVA FUNCIÓN: Eliminar Usuario Permanentemente por USERNAME (Evita borrar múltiples)
+   function deleteUser(username) {
+        if (!username) return;
+
+        const userToDelete = users.find(u => u.username === username);
         if (!userToDelete) return;
 
-        // Protección de seguridad: Evita que te borres a ti mismo
-        if (currentUser && currentUser.id === userId) {
-            alert('🛡️ Seguridad: No puedes eliminar tu propia cuenta mientras la sesión está iniciada.');
+        if (currentUser && currentUser.username === username) {
+            alert('🛡️ Seguridad: No puedes eliminar tu propia cuenta.');
             return;
         }
 
-        // Confirmación de doble chequeo
-        if (confirm(`⚠️ ¿ESTÁS SEGURO? Estás a punto de eliminar permanentemente a "${userToDelete.fullName}". Esta acción borrará sus datos de la nube y no se puede deshacer.`)) {
+        if (confirm(`⚠️ ¿ESTÁS SEGURO? Estás a punto de eliminar permanentemente a "${userToDelete.fullName}".`)) {
+            // Filtramos usando el nombre de usuario que es 100% único
+            users = users.filter(u => u.username !== username);
             
-            // Filtramos la lista para dejar fuera al usuario eliminado
-            users = users.filter(u => u.id !== userId);
-            
-            // Guardamos en Firebase
             saveState(); 
-
-            // Refrescamos las vistas del administrador al instante
             renderAdminPersonalData();
             if (!document.getElementById('adminUsersSection').classList.contains('hidden')) {
                 renderAdminUsers();
             }
-
-            alert('✅ Usuario eliminado correctamente de la base de datos.');
+            alert('✅ Usuario eliminado correctamente.');
         }
     }
 
     document.getElementById('personalSearchInput').addEventListener('input', renderAdminPersonalData);
     document.getElementById('personalFilterSelect').addEventListener('change', renderAdminPersonalData);
 
-    function openEditUserModal(userId) {
-        const user = users.find(u => u.id === userId);
+    function openEditUserModal(username) {
+        const user = users.find(u => u.username === username);
         if (!user) { alert("No se encontró la información del usuario."); return; }
 
         const setValue = (id, value) => {
@@ -4004,7 +4005,8 @@
             if (el) el.value = value;
         };
 
-        setValue('editUserId', user.id);
+        // AHORA GUARDAMOS EL USERNAME EN EL CAMPO OCULTO
+        setValue('editUserId', user.username);
         setValue('editUserType', user.userType);
         setValue('editCurp', user.curp || ''); 
         setValue('editRfc', user.rfc || ''); 
@@ -4038,11 +4040,48 @@
         document.getElementById('editUserModal').classList.remove('hidden');
     }
 
+    // Abre el modal vacío para CREAR un usuario
+    function openAdminAddUserModal() {
+        const setValue = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.value = value;
+        };
+
+        setValue('editUserId', ''); // Vacío indica que es NUEVO
+        setValue('editUserType', 'estudiante');
+        setValue('editCurp', ''); 
+        setValue('editRfc', ''); 
+        setValue('editFullName', '');
+        setValue('editUsername', '');
+        setValue('editTecnologico', 'TecNM campus Comitán');
+        setValue('editControlNumber', '');
+        setValue('editCareer', '');
+        setValue('editSemester', '');
+        setValue('editGroup', '');
+        setValue('editPhoneNumber', '');
+        setValue('editNewPassword', '');
+        setValue('editConfirmPassword', '');
+
+        const editRegDateEl = document.getElementById('editRegistrationDate');
+        if (editRegDateEl) {
+            editRegDateEl.value = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+            editRegDateEl.disabled = false;
+        }
+        
+        const editActiveUntilEl = document.getElementById('editAccountActiveUntil');
+        if (editActiveUntilEl) {
+            editActiveUntilEl.value = '';
+            editActiveUntilEl.disabled = false;
+        }
+
+        toggleEditUserFields();
+        document.getElementById('editUserModal').classList.remove('hidden');
+    }
+
     function closeEditUserModal() {
         document.getElementById('editUserModal').classList.add('hidden');
     }
 
-    // 👇 AQUÍ EMPIEZA LO QUE PEGASTE 👇
     function toggleEditUserFields() {
         const typeEl = document.getElementById('editUserType');
         const stu = document.getElementById('editStudentFields');
@@ -4053,16 +4092,18 @@
         if (typeEl.value === 'estudiante') {
             if (stu) stu.classList.remove('hidden');
             if (staff) staff.classList.add('hidden');
+        } else if (typeEl.value === 'empleado') {
+            if (stu) stu.classList.add('hidden');
+            if (staff) staff.classList.add('hidden');
         } else {
             if (stu) stu.classList.add('hidden');
             if (staff) staff.classList.remove('hidden');
         }
     }
-    // 👆 AQUÍ TERMINA LO QUE PEGASTE 👆
 
     function propagateUserChanges(updatedUser) {
         orders.forEach(o => {
-            if (o.user && o.user.id === updatedUser.id) {
+            if (o.user && o.user.username === updatedUser.username) {
                 o.user = {
                     ...o.user,
                     userType: updatedUser.userType,
@@ -4086,7 +4127,8 @@
 
         const getValue = (id) => document.getElementById(id) ? document.getElementById(id).value.trim() : '';
 
-        const id = parseInt(getValue('editUserId'));
+        // AHORA ESTE CAMPO CONTIENE EL USERNAME ORIGINAL (O ESTÁ VACÍO SI ES NUEVO)
+        const originalUsername = getValue('editUserId'); 
         const type = getValue('editUserType');
         const curp = getValue('editCurp').toUpperCase();
         const rfc = getValue('editRfc').toUpperCase();
@@ -4098,25 +4140,86 @@
         const regDateValue = getValue('editRegistrationDate');
         const activeUntilValue = getValue('editAccountActiveUntil');
 
-        const user = users.find(u => u.id === id);
-        if (!user) return;
-
         if (!fullName || !username) { alert('El nombre y el usuario no pueden estar vacíos.'); return; }
 
-        if (document.getElementById('editCurp')) {
+        if (document.getElementById('editCurp') && curp) {
             const curpRegex = /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$/;
-            if (curp && !curpRegex.test(curp)) { alert('El formato de la CURP es inválido.'); return; }
-            if (users.some(u => u.id !== id && u.curp === curp)) { alert('Esta CURP ya está registrada en otro usuario.'); return; }
+            if (!curpRegex.test(curp)) { alert('El formato de la CURP es inválido.'); return; }
+        }
+        if (document.getElementById('editRfc') && rfc) {
+            if (rfc.length < 12 || rfc.length > 13) { alert('El RFC debe tener 12 o 13 caracteres.'); return; }
+        }
+        if (newPass || confirmPass) {
+            if (newPass !== confirmPass) { alert('Las contraseñas no coinciden.'); return; }
+        }
+
+        // ================= CREAR NUEVO USUARIO =================
+        if (!originalUsername || originalUsername === '') {
+            if (!newPass) { alert('Debes asignar una contraseña para el nuevo usuario.'); return; }
+            if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) { alert('Este nombre de usuario ya está registrado.'); return; }
+            
+            if (type !== 'empleado') {
+                if (curp && users.some(u => u.curp === curp && u.userType !== 'empleado')) { alert('Esta CURP ya está registrada.'); return; }
+                if (rfc && users.some(u => u.rfc === rfc && u.userType !== 'empleado')) { alert('Este RFC ya está registrado.'); return; }
+            }
+
+            // ID Seguro para evitar "NaN"
+            const newId = users.reduce((max, u) => Math.max(max, Number(u.id) || 0), 0) + 1;
+
+            const newUser = {
+                id: newId,
+                userType: type,
+                curp: curp,
+                rfc: rfc,
+                fullName: fullName,
+                username: username,
+                tecnologico: tecnologico,
+                password: newPass,
+                registrationDate: regDateValue ? new Date(regDateValue) : new Date(),
+                accountActiveUntil: activeUntilValue ? new Date(activeUntilValue) : null,
+                isActive: true,
+                hasCredential: false 
+            };
+
+            if (type === 'estudiante') {
+                const controlNumber = getValue('editControlNumber');
+                if (!controlNumber) { alert('Ingresa el número de control.'); return; }
+                if (users.some(u => u.controlNumber === controlNumber && u.userType === 'estudiante')) { alert('Este número de control ya está registrado.'); return; }
+                
+                newUser.controlNumber = controlNumber;
+                newUser.career = getValue('editCareer');
+                newUser.semester = getValue('editSemester');
+                newUser.group = getValue('editGroup');
+            } else if (type !== 'empleado') {
+                const phoneNumber = getValue('editPhoneNumber');
+                if (!phoneNumber) { alert('Ingresa el número de teléfono.'); return; }
+                if (users.some(u => u.phoneNumber === phoneNumber && u.userType !== 'empleado')) { alert('Este número de teléfono ya está registrado.'); return; }
+                
+                newUser.phoneNumber = phoneNumber;
+            }
+
+            users.push(newUser);
+            saveState();
+            alert('✅ Usuario registrado exitosamente desde el panel.');
+            closeEditUserModal();
+            renderAdminPersonalData();
+            if (document.getElementById('adminUsersSection') && !document.getElementById('adminUsersSection').classList.contains('hidden')) renderAdminUsers();
+            return;
+        }
+
+        // ================= EDITAR USUARIO EXISTENTE =================
+        const user = users.find(u => u.username === originalUsername);
+        if (!user) return;
+
+        if (document.getElementById('editCurp') && curp) {
+            if (type !== 'empleado' && users.some(u => u.username !== originalUsername && u.curp === curp && u.userType !== 'empleado')) { alert('Esta CURP ya está registrada en otro usuario.'); return; }
             user.curp = curp;
         }
-
-        if (document.getElementById('editRfc')) {
-            if (rfc && (rfc.length < 12 || rfc.length > 13)) { alert('El RFC debe tener 12 o 13 caracteres.'); return; }
-            if (users.some(u => u.id !== id && u.rfc === rfc)) { alert('Este RFC ya está registrado en otro usuario.'); return; }
+        if (document.getElementById('editRfc') && rfc) {
+            if (type !== 'empleado' && users.some(u => u.username !== originalUsername && u.rfc === rfc && u.userType !== 'empleado')) { alert('Este RFC ya está registrado en otro usuario.'); return; }
             user.rfc = rfc;
         }
-
-        if (users.some(u => u.id !== id && u.username.toLowerCase() === username.toLowerCase())) {
+        if (users.some(u => u.username !== originalUsername && u.username.toLowerCase() === username.toLowerCase())) {
             alert('Este nombre de usuario ya está registrado.'); return;
         }
 
@@ -4128,20 +4231,24 @@
         if (type === 'estudiante') {
             const controlNumber = getValue('editControlNumber');
             if (!controlNumber) { alert('Ingresa el número de control.'); return; }
-            if (users.some(u => u.id !== id && u.controlNumber === controlNumber && u.userType === 'estudiante')) {
-                alert('Este número de control ya está registrado.'); return;
-            }
+            if (users.some(u => u.username !== originalUsername && u.controlNumber === controlNumber && u.userType === 'estudiante')) { alert('Este número de control ya está registrado.'); return; }
+            
             user.controlNumber = controlNumber;
             user.career = getValue('editCareer');
             user.semester = getValue('editSemester');
             user.group = getValue('editGroup');
             delete user.phoneNumber;
+        } else if (type === 'empleado') {
+            delete user.controlNumber;
+            delete user.career;
+            delete user.semester;
+            delete user.group;
+            delete user.phoneNumber;
         } else {
             const phoneNumber = getValue('editPhoneNumber');
             if (!phoneNumber) { alert('Ingresa el número de teléfono.'); return; }
-            if (users.some(u => u.id !== id && u.phoneNumber === phoneNumber)) {
-                alert('Este número de teléfono ya está registrado.'); return;
-            }
+            if (users.some(u => u.username !== originalUsername && u.phoneNumber === phoneNumber && u.userType !== 'empleado')) { alert('Este número de teléfono ya está registrado.'); return; }
+            
             user.phoneNumber = phoneNumber;
             delete user.controlNumber;
             delete user.career;
@@ -4149,18 +4256,14 @@
             delete user.group;
         }
 
-        if (newPass || confirmPass) {
-            if (newPass !== confirmPass) { alert('Las contraseñas no coinciden.'); return; }
-            user.password = newPass;
-        }
-
+        if (newPass) user.password = newPass;
         user.registrationDate = regDateValue ? new Date(regDateValue) : user.registrationDate;
         user.accountActiveUntil = activeUntilValue ? new Date(activeUntilValue) : user.accountActiveUntil;
 
         propagateUserChanges(user);
         saveState();
 
-        alert('Datos actualizados correctamente.');
+        alert('✅ Datos actualizados correctamente.');
         closeEditUserModal();
         renderAdminPersonalData();
         if (document.getElementById('adminUsersSection') && !document.getElementById('adminUsersSection').classList.contains('hidden')) renderAdminUsers();
