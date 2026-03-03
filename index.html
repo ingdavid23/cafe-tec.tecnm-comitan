@@ -3973,7 +3973,10 @@
                                 <span class="ml-2 ${u.isActive === false ? 'text-red-700' : 'text-green-700'}">${u.isActive === false ? 'Desactivada' : 'Activa'}</span>
                             </label>
                         </div>
-                        <button onclick="openEditUserModal(${u.id})" class="px-3 py-1 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-700">Editar</button>
+                        <div class="flex justify-end space-x-2 mt-2">
+                            <button onclick="openEditUserModal(${u.id})" class="px-3 py-1 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-700 transition-colors">Editar</button>
+                            <button onclick="deleteUser(${u.id})" class="px-3 py-1 rounded-lg bg-red-600 text-white text-sm hover:bg-red-700 transition-colors">Eliminar</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -3992,6 +3995,36 @@
         if (currentUser && currentUser.id === user.id && user.isActive === false) {
             alert('Esta cuenta ha sido desactivada y se cerrará la sesión.');
             logout();
+        }
+    }
+    // NUEVA FUNCIÓN: Eliminar Usuario Permanentemente
+    function deleteUser(userId) {
+        // Buscamos el usuario para mostrar su nombre en la alerta
+        const userToDelete = users.find(u => u.id === userId);
+        if (!userToDelete) return;
+
+        // Protección de seguridad: Evita que te borres a ti mismo
+        if (currentUser && currentUser.id === userId) {
+            alert('🛡️ Seguridad: No puedes eliminar tu propia cuenta mientras la sesión está iniciada.');
+            return;
+        }
+
+        // Confirmación de doble chequeo
+        if (confirm(`⚠️ ¿ESTÁS SEGURO? Estás a punto de eliminar permanentemente a "${userToDelete.fullName}". Esta acción borrará sus datos de la nube y no se puede deshacer.`)) {
+            
+            // Filtramos la lista para dejar fuera al usuario eliminado
+            users = users.filter(u => u.id !== userId);
+            
+            // Guardamos en Firebase
+            saveState(); 
+
+            // Refrescamos las vistas del administrador al instante
+            renderAdminPersonalData();
+            if (!document.getElementById('adminUsersSection').classList.contains('hidden')) {
+                renderAdminUsers();
+            }
+
+            alert('✅ Usuario eliminado correctamente de la base de datos.');
         }
     }
 
