@@ -4700,8 +4700,8 @@ function renderCustomerActiveOrders() {
         validateCurpInline(); 
     }
 
-    // 👇 NUEVA FUNCIÓN: VALIDACIÓN DE CURP EN TIEMPO REAL 👇
-    function validateCurpInline() {
+   // 👇 NUEVA FUNCIÓN: VALIDACIÓN Y AUTO-LLENADO DESDE LA CURP 👇
+   function validateCurpInline() {
         const curpInput = document.getElementById('editCurp');
         const curp = curpInput.value.trim().toUpperCase();
         const type = document.getElementById('editUserType').value;
@@ -4711,38 +4711,96 @@ function renderCustomerActiveOrders() {
 
         if (!curpInput || !msgEl || !btnAlta) return;
 
-        // Limpiar estado por defecto (ocultar errores)
+        // Limpiar estado por defecto
         msgEl.classList.add('hidden');
         curpInput.classList.remove('border-red-500', 'bg-red-100', 'text-red-900');
         btnAlta.disabled = false;
         btnAlta.classList.remove('opacity-50', 'cursor-not-allowed');
 
-        // Solo activar la validación si escribió los 18 caracteres exactos
-        if (curp.length === 18 && type) {
+        if (curp.length === 18) {
+            // 1. Validar si ya existe en la base de datos
             const conflictCurp = users.find(u => u.curp === curp && u.username !== originalUsername);
-            
             if (conflictCurp) {
                 const confType = (conflictCurp.isEmployee || conflictCurp.userType === 'admin') ? 'empleado' : conflictCurp.userType;
-                
                 if (confType === type) {
-                    // ERROR: Bloqueamos el formulario
                     msgEl.textContent = `❌ CURP ya registrada como ${confType}.`;
-                    msgEl.className = 'text-[0.7rem] font-bold mt-1 text-red-300';
+                    msgEl.className = 'text-[0.7rem] font-bold mt-1 text-red-500';
                     curpInput.classList.add('border-red-500', 'bg-red-100', 'text-red-900');
-                    btnAlta.disabled = true; // Apagamos el botón Guardar
+                    btnAlta.disabled = true;
                     btnAlta.classList.add('opacity-50', 'cursor-not-allowed');
                 } else {
-                    // ADVERTENCIA LEVE: Existe, pero en otro rol. Sí dejamos guardar.
                     msgEl.textContent = `ℹ️ CURP existe en otro rol (${confType}). Permitido.`;
-                    msgEl.className = 'text-[0.7rem] font-bold mt-1 text-yellow-300';
+                    msgEl.className = 'text-[0.7rem] font-bold mt-1 text-yellow-600';
                 }
             } else {
-                // ÉXITO: CURP libre
                 msgEl.textContent = `✅ CURP disponible.`;
-                msgEl.className = 'text-[0.7rem] font-bold mt-1 text-green-400';
+                msgEl.className = 'text-[0.7rem] font-bold mt-1 text-green-600';
             }
+            msgEl.classList.remove('hidden');
+
+            // 2. EXTRAER FECHA Y CALCULAR EDAD (Auto-llenado)
+            const yy = curp.substring(4, 6);
+            const mm = curp.substring(6, 8);
+            const dd = curp.substring(8, 10);
+            const char17 = curp.charAt(16); // Carácter 17 indica el siglo
+            
+            // Regla Renapo: Letra = 2000+, Número = 1999-
+            const year = /[A-Z]/.test(char17) ? "20" + yy : "19" + yy;
+            const dateStr = `${year}-${mm}-${dd}`;
+            
+            // Llenamos la fecha y disparamos la función de la edad
+            document.getElementById('editFechaNac').value = dateStr;
+            calculateAgeFromDate(dateStr);
         }
     }
+
+    // Función auxiliar para calcular la edad exacta
+    function calculateAgeFromDate(dateString) {
+        if (!dateString) return;
+        const dob = new Date(dateString + 'T00:00:00'); // Evita desfase horario
+        const today = new Date();
+        let age = today.getFullYear() - dob.getFullYear();
+        const m = today.getMonth() - dob.getMonth();
+        // Restar un año si el mes actual es menor, o si es el mismo mes pero el día no ha llegado
+        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+            age--;
+        }
+        document.getElementById('editEdad').value = age;
+    }
+
+    // Escuchar la caja de la CURP
+    document.getElementById('editCurp').addEventListener('input', validateCurpInline);
+
+    // 👇 NUEVO EVENTO INVERSO: Si cambian la fecha, se actualiza CURP y RFC 👇
+    document.getElementById('editFechaNac').addEventListener('change', function(e) {
+        const dateStr = e.target.value; // YYYY-MM-DD
+        if (!dateStr) return;
+        
+        // 1. Actualizar la edad instantáneamente
+        calculateAgeFromDate(dateStr);
+
+        // 2. Romper la fecha para armar el código YYMMDD
+        const parts = dateStr.split('-');
+        if (parts.length !== 3) return;
+        
+        const yy = parts[0].substring(2, 4);
+        const mm = parts[1];
+        const dd = parts[2];
+        const dateCode = `${yy}${mm}${dd}`;
+
+        const curpInput = document.getElementById('editCurp');
+        const rfcInput = document.getElementById('editRfc');
+
+        // Solo sobreescribir si ya tienen al menos los primeros 10 caracteres capturados
+        if (curpInput && curpInput.value.length >= 10) {
+            curpInput.value = curpInput.value.substring(0, 4) + dateCode + curpInput.value.substring(10);
+            validateCurpInline(); // Forzamos una validación para colorear si quedó libre o no
+        }
+        
+        if (rfcInput && rfcInput.value.length >= 10) {
+            rfcInput.value = rfcInput.value.substring(0, 4) + dateCode + rfcInput.value.substring(10);
+        }
+    });
 
     // Disparar validación al escribir en la caja de CURP
     document.getElementById('editCurp').addEventListener('input', validateCurpInline);
