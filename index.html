@@ -378,10 +378,21 @@
                     class="category-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     🍬 Golosinas
                 </button>
+                <button onclick="filterCategory('historial')"
+                    class="category-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium border border-blue-300">
+                    📜 Mis Pedidos
+                </button>
             </div>
             <div id="productList" class="space-y-4">
             </div>
+            
+            <div id="customerHistoryContainer" class="hidden space-y-4 pb-6 w-full">
+            </div>
+
         </div>
+    </div>
+                
+                
     </div>
     <div id="cartScreen" class="hidden h-screen bg-white flex flex-col">
         <div class="bg-gradient-to-r from-amber-600 to-orange-600 text-white p-4 shadow-lg">
@@ -2495,6 +2506,10 @@
                 setLoginMessage(`🚫 Cuenta Caducada: Tu cuenta ha expirado. Contacta al administrador.`, 'error');
                 return;
             }
+           // 👇 ESTAS DOS LÍNEAS ERAN LAS QUE FALTABAN PARA RECORDAR LA SESIÓN 👇
+           currentUser = user;
+            saveState();
+
             if (user.userType === 'admin') {
                 showAdminPanel(); // Si es empleado registrado, va al panel
             } else {
@@ -2548,90 +2563,116 @@
         renderCustomerActiveOrders(); // <-- Agregado para que muestre el estatus
     }
 // NUEVA FUNCIÓN DEFINITIVA: Muestra el estado del pedido en el menú de forma estricta
-// NUEVA FUNCIÓN ULTRA-BLINDADA: Muestra el estado del pedido a la fuerza
+// 1. ELIMINAMOS LA CAJA DE ARRIBA: Vaciamos la función para que solo limpie y no dibuje cajas extra
 function renderCustomerActiveOrders() {
-        if (!currentUser) return; // Si no hay usuario, nos detenemos
-
-        // 1. Buscamos la pantalla blanca del menú
-        const menuContainer = document.querySelector('#customerMenu .p-4');
-        if (!menuContainer) return;
-
-        // 2. Apagamos la caja vieja del HTML para que no estorbe
-        const oldStatic = document.getElementById('customerActiveOrdersContainer');
-        if (oldStatic) oldStatic.style.display = 'none';
-
-        // 3. SÚPER FILTRO: Buscamos si el cliente tiene pedidos (ignorando los entregados)
-        const myActiveOrders = orders.filter(o => {
-            if (!o || !o.user) return false; // Filtramos errores
-            if (o.status === 'entregado') return false; // Filtramos los que ya se entregaron
-            
-            // Comparamos forzando todo a texto minúscula (Evita cualquier fallo del navegador)
-            const orderUser = String(o.user.username || '').toLowerCase().trim();
-            const currUser = String(currentUser.username || '').toLowerCase().trim();
-            const orderName = String(o.user.fullName || '').toLowerCase().trim();
-            const currName = String(currentUser.fullName || '').toLowerCase().trim();
-            
-            // Es de este cliente si coincide su usuario O su nombre completo
-            return (orderUser !== '' && orderUser === currUser) || (orderName !== '' && orderName === currName);
-        }).sort((a, b) => Number(b.id) - Number(a.id)); // Ordenar del más reciente al más antiguo
-
-        // 4. Buscamos nuestra propia caja dinámica (o la creamos si no existe)
-        let activeDiv = document.getElementById('forceActiveOrdersBox');
+        const activeDiv = document.getElementById('forceActiveOrdersBox');
+        if (activeDiv) activeDiv.remove(); // Destruye la caja naranja si existe
         
-        // Si NO hay pedidos, destruimos la caja
-        if (myActiveOrders.length === 0) {
-            if (activeDiv) activeDiv.remove();
+        const oldStatic = document.getElementById('customerActiveOrdersContainer');
+        if (oldStatic) {
+            oldStatic.style.display = 'none';
+            oldStatic.classList.add('hidden');
+        }
+    }
+
+    // 2. HISTORIAL EN LA PESTAÑA (CON FECHA REPARADA PARA MAC/SAFARI)
+    function renderCustomerHistory() {
+        const container = document.getElementById('customerHistoryContainer');
+        if (!container) return; 
+
+        if (!currentUser) {
+            container.innerHTML = '<p class="text-center text-gray-500 py-8 font-bold">Inicia sesión para ver tu historial.</p>';
             return;
         }
 
-        // Si SÍ hay pedidos y la caja no existe, la inyectamos a la fuerza hasta arriba
-        if (!activeDiv) {
-            activeDiv = document.createElement('div');
-            activeDiv.id = 'forceActiveOrdersBox';
-            activeDiv.className = 'mb-6';
-            menuContainer.insertBefore(activeDiv, menuContainer.firstChild); 
+        // 🛡️ Súper Filtro
+        const myOrders = orders.filter(o => {
+            if (!o || !o.user) return false;
+            let isMine = false;
+            if (o.user.id && currentUser.id && String(o.user.id) === String(currentUser.id)) isMine = true;
+            if (o.user.username && currentUser.username && String(o.user.username).toLowerCase() === String(currentUser.username).toLowerCase()) isMine = true;
+            if (o.user.fullName && currentUser.fullName && String(o.user.fullName).toLowerCase() === String(currentUser.fullName).toLowerCase()) isMine = true;
+            return isMine;
+        }).sort((a, b) => Number(b.id) - Number(a.id)); 
+
+        if (myOrders.length === 0) {
+            container.innerHTML = `
+                <div class="text-center text-gray-500 py-12 bg-white rounded-xl border border-dashed border-gray-300 mt-4 shadow-sm">
+                    <span class="text-4xl block mb-3">🛒</span>
+                    <p class="font-bold text-lg text-gray-700">Aún no tienes pedidos.</p>
+                    <p class="text-sm mt-1">¡Anímate a pedir algo delicioso!</p>
+                </div>`;
+            return;
         }
 
-        // 5. Dibujamos los tickets con el diseño bonito
-        activeDiv.innerHTML = `
-            <h3 class="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">🔔 Tus Pedidos Activos</h3>
-            <div class="space-y-3">
-                ${myActiveOrders.map(o => `
-                    <div class="bg-white border-2 ${o.status === 'listo' ? 'border-green-500 shadow-green-100' : 'border-yellow-400 shadow-yellow-100'} rounded-xl p-4 shadow-lg relative overflow-hidden transition-all">
-                        
-                        <div class="absolute top-0 left-0 w-full h-2 ${o.status === 'listo' ? 'bg-green-500' : 'bg-yellow-400'}"></div>
-                        
-                        <div class="flex justify-between items-center mb-2 mt-1">
-                            <span class="font-black text-lg text-gray-800">Orden #${o.id}</span>
-                            <span class="font-mono text-xs bg-gray-100 px-2 py-1 rounded border font-bold">Ref: ${o.referenceNumber}</span>
+        container.innerHTML = myOrders.map(o => {
+            let statusColor = 'bg-gray-100 text-gray-500 border-gray-300 opacity-75'; 
+            let statusText = 'Entregado'; 
+            let icon = '✔️'; 
+            let pulseClass = '';
+
+            if (o.status === 'pendiente') { 
+                statusColor = 'bg-yellow-50 text-yellow-800 border-yellow-300'; 
+                statusText = 'En Proceso'; 
+                icon = '👨‍🍳'; 
+                pulseClass = 'animate-pulse';
+            } else if (o.status === 'listo') { 
+                statusColor = 'bg-green-100 text-green-800 border-green-500 shadow-sm'; 
+                statusText = '¡Listo para recoger!'; 
+                icon = '🏃'; 
+                pulseClass = 'animate-bounce';
+            }
+
+            const itemsHtml = (o.items && Array.isArray(o.items)) ? o.items.map(i => `
+                <div class="flex justify-between text-xs text-gray-700">
+                    <span><span class="font-bold text-gray-900">${i.quantity}x</span> ${i.emoji || ''} ${i.name}</span>
+                    <span class="text-gray-500">$${(Number(i.price) * Number(i.quantity)).toFixed(2)}</span>
+                </div>
+            `).join('') : '<p class="text-xs text-red-500">Error leyendo productos</p>';
+
+            // 👇 REPARACIÓN DE FECHA PARA MAC/IOS 👇
+            // Usamos directamente el timestamp guardado en texto para evitar que Safari colapse
+            const displayDate = o.timestamp ? o.timestamp : (o.date || 'Fecha desconocida');
+
+            return `
+                <div class="bg-white border rounded-xl p-4 shadow-sm relative overflow-hidden transition-all duration-300 mt-4">
+                    <div class="flex justify-between items-start mb-3 border-b pb-3">
+                        <div>
+                            <span class="font-black text-gray-800 text-lg">Orden #${o.id}</span>
+                            <p class="text-xs text-gray-500 font-mono mt-0.5">Ref: ${o.referenceNumber}</p>
+                            <p class="text-[0.65rem] text-gray-400 mt-1 uppercase font-semibold">${displayDate}</p>
                         </div>
-                        
-                        <div class="flex items-center gap-3 p-3 rounded-lg ${o.status === 'listo' ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}">
-                            <div class="text-3xl ${o.status === 'listo' ? 'animate-bounce' : 'animate-pulse'}">
-                                ${o.status === 'listo' ? '✅' : '👨‍🍳'}
-                            </div>
-                            <div>
-                                <p class="text-[0.65rem] text-gray-500 uppercase font-black">Estatus de Cocina</p>
-                                <p class="font-black text-base ${o.status === 'listo' ? 'text-green-700' : 'text-yellow-700'}">
-                                    ${o.status === 'listo' ? '¡LISTO PARA RECOGER!' : 'PREPARANDO...'}
-                                </p>
-                            </div>
+                        <div class="text-right flex flex-col items-end gap-1">
+                            <span class="px-2 py-1 rounded-lg text-xs font-bold border flex items-center gap-1 ${statusColor}">
+                                <span class="${pulseClass}">${icon}</span> ${statusText}
+                            </span>
+                            <span class="text-[0.65rem] font-bold ${o.isPaid ? 'text-green-600' : 'text-red-500'} bg-gray-50 px-2 py-0.5 rounded border mt-1">
+                                ${o.isPaid ? 'Pagado' : 'Pago Pendiente'}
+                            </span>
                         </div>
-                        
-                        ${o.status === 'listo' 
-                            ? '<p class="text-xs text-center mt-3 font-bold text-green-800 bg-green-100 py-2 rounded-lg">👉 Acércate a la barra a recogerlo.</p>' 
-                            : '<p class="text-xs text-center mt-3 text-gray-500 font-medium">Te avisaremos aquí cuando esté listo.</p>'}
                     </div>
-                `).join('')}
-            </div>
-        `;
+                    
+                    <div class="space-y-1 mb-4 pl-1">
+                        ${itemsHtml}
+                    </div>
+                    
+                    <div class="flex justify-between items-center bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                        <span class="text-xs font-bold text-gray-500 uppercase">Total:</span>
+                        <span class="font-black text-lg text-blue-700">$${Number(o.total || 0).toFixed(2)}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
-    // AUTO-ACTUALIZADOR GARANTIZADO (Se dispara cada 2 segundos sin fallar)
+    // 3. AUTO-ACTUALIZADOR DEDICADO A LA PESTAÑA (Cada 2 segundos)
     setInterval(() => {
         const menuElement = document.getElementById('customerMenu');
         if (menuElement && !menuElement.classList.contains('hidden')) {
-            renderCustomerActiveOrders();
+            const histContainer = document.getElementById('customerHistoryContainer');
+            if (histContainer && !histContainer.classList.contains('hidden')) {
+                renderCustomerHistory();
+            }
         }
     }, 2000);
        
@@ -3245,22 +3286,138 @@ function renderCustomerActiveOrders() {
         alert(`${quantity}x ${previewProduct.name} agregado al carrito.`);
     }
 
+    // NUEVA FUNCIÓN DE FILTRO INMORTAL (Crea el HTML automáticamente si falta)
     function filterCategory(category) {
         currentCategory = category;
 
+        // Limpiar colores de los botones
         document.querySelectorAll('.category-btn').forEach(btn => {
             btn.classList.remove('bg-amber-600', 'text-white');
             btn.classList.add('bg-gray-200', 'text-gray-700');
         });
 
-        const targetButton = Array.from(document.querySelectorAll('.category-btn')).find(btn => btn.textContent.toLowerCase().includes(category.toLowerCase()) || (category === 'all' && btn.textContent.toLowerCase().includes('todos')));
+        // Pintar el botón activo
+        const targetButton = Array.from(document.querySelectorAll('.category-btn')).find(btn => 
+            (category === 'all' && btn.textContent.toLowerCase().includes('todos')) ||
+            (category === 'historial' && btn.textContent.toLowerCase().includes('mis pedidos')) ||
+            (category !== 'all' && category !== 'historial' && btn.textContent.toLowerCase().includes(category.toLowerCase()))
+        );
 
         if (targetButton) {
             targetButton.classList.remove('bg-gray-200', 'text-gray-700');
             targetButton.classList.add('bg-amber-600', 'text-white');
         }
 
-        renderProducts();
+        // Obtener los contenedores físicos
+        const productList = document.getElementById('productList');
+        const historyContainer = document.getElementById('customerHistoryContainer');
+
+        if (category === 'historial') {
+            if (productList) productList.classList.add('hidden');
+            if (historyContainer) {
+                historyContainer.classList.remove('hidden');
+                renderCustomerHistory(); // Dibuja las tarjetas
+            }
+        } else {
+            if (historyContainer) historyContainer.classList.add('hidden');
+            if (productList) {
+                productList.classList.remove('hidden');
+                renderProducts(); // Dibuja el menú normal
+            }
+        }
+    }
+
+    function renderCustomerHistory() {
+        const container = document.getElementById('customerHistoryContainer');
+        if (!container) return; // Si no encuentra el contenedor, se detiene
+
+        if (!currentUser) {
+            container.innerHTML = '<p class="text-center text-gray-500 py-8 font-bold">Inicia sesión para ver tu historial.</p>';
+            return;
+        }
+
+        // 🛡️ Súper Filtro: Busca el pedido comparando ID, Nombre o Usuario
+        const myOrders = orders.filter(o => {
+            if (!o || !o.user) return false;
+            
+            let isMine = false;
+            if (o.user.id && currentUser.id && String(o.user.id) === String(currentUser.id)) isMine = true;
+            if (o.user.username && currentUser.username && String(o.user.username).toLowerCase() === String(currentUser.username).toLowerCase()) isMine = true;
+            if (o.user.fullName && currentUser.fullName && String(o.user.fullName).toLowerCase() === String(currentUser.fullName).toLowerCase()) isMine = true;
+            
+            return isMine;
+        }).sort((a, b) => Number(b.id) - Number(a.id)); // Ordenar del más reciente al más antiguo
+
+        // Si no hay pedidos
+        if (myOrders.length === 0) {
+            container.innerHTML = `
+                <div class="text-center text-gray-500 py-12 bg-white rounded-xl border border-dashed border-gray-300 mt-4 shadow-sm">
+                    <span class="text-4xl block mb-3">🛒</span>
+                    <p class="font-bold text-lg text-gray-700">Aún no tienes pedidos.</p>
+                    <p class="text-sm mt-1">¡Anímate a pedir algo delicioso!</p>
+                </div>`;
+            return;
+        }
+
+        // Si hay pedidos, generar el HTML de cada tarjeta
+        container.innerHTML = myOrders.map(o => {
+            let statusColor = 'bg-gray-100 text-gray-500 border-gray-300 opacity-75'; 
+            let statusText = 'Entregado'; 
+            let icon = '✔️'; 
+            let pulseClass = '';
+
+            if (o.status === 'pendiente') { 
+                statusColor = 'bg-yellow-50 text-yellow-800 border-yellow-300'; 
+                statusText = 'En Proceso'; 
+                icon = '👨‍🍳'; 
+                pulseClass = 'animate-pulse';
+            } else if (o.status === 'listo') { 
+                statusColor = 'bg-green-100 text-green-800 border-green-500 shadow-sm'; 
+                statusText = '¡Listo para recoger!'; 
+                icon = '🏃'; 
+                pulseClass = 'animate-bounce';
+            }
+
+            // Proteger la lista de items por si alguno está dañado
+            const itemsHtml = (o.items && Array.isArray(o.items)) ? o.items.map(i => `
+                <div class="flex justify-between text-xs text-gray-700">
+                    <span><span class="font-bold text-gray-900">${i.quantity}x</span> ${i.emoji || ''} ${i.name}</span>
+                    <span class="text-gray-500">$${(Number(i.price) * Number(i.quantity)).toFixed(2)}</span>
+                </div>
+            `).join('') : '<p class="text-xs text-red-500">Error leyendo productos</p>';
+
+            // Validar que exista la fecha de timestamp, si no poner "Fecha desconocida"
+            const dateText = o.timestamp ? new Date(o.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+
+            return `
+                <div class="bg-white border rounded-xl p-4 shadow-sm relative overflow-hidden transition-all duration-300 mt-4">
+                    <div class="flex justify-between items-start mb-3 border-b pb-3">
+                        <div>
+                            <span class="font-black text-gray-800 text-lg">Orden #${o.id}</span>
+                            <p class="text-xs text-gray-500 font-mono mt-0.5">Ref: ${o.referenceNumber}</p>
+                            <p class="text-[0.65rem] text-gray-400 mt-1">${o.date || ''} ${dateText}</p>
+                        </div>
+                        <div class="text-right flex flex-col items-end gap-1">
+                            <span class="px-2 py-1 rounded-lg text-xs font-bold border flex items-center gap-1 ${statusColor}">
+                                <span class="${pulseClass}">${icon}</span> ${statusText}
+                            </span>
+                            <span class="text-[0.65rem] font-bold ${o.isPaid ? 'text-green-600' : 'text-red-500'} bg-gray-50 px-2 py-0.5 rounded border mt-1">
+                                ${o.isPaid ? 'Pagado' : 'Pago Pendiente'}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-1 mb-4 pl-1">
+                        ${itemsHtml}
+                    </div>
+                    
+                    <div class="flex justify-between items-center bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                        <span class="text-xs font-bold text-gray-500 uppercase">Total:</span>
+                        <span class="font-black text-lg text-blue-700">$${Number(o.total || 0).toFixed(2)}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
     function addToCart(productId) {
