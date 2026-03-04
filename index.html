@@ -637,6 +637,10 @@
     class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
     👨‍🔧 Registro Empleados
 </button>
+<button onclick="showAdminPasswords()" id="passwordsTab"
+                    class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium border-2 border-red-200">
+                    🔑 Contraseñas
+                </button>
                 <button onclick="adminLogout()"
                     class="admin-tab bg-red-200 text-red-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     🚪 Cerrar Sesión
@@ -787,6 +791,37 @@
                 </form>
             </div>
 
+
+            <div id="adminPasswordsSection" class="hidden mb-6 fade-in">
+                <h3 class="text-lg font-bold mb-3 text-red-700">🔑 Mantenimiento de Contraseñas</h3>
+                <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-r-lg">
+                    <p class="text-xs text-red-800">Desde aquí puedes forzar el cambio o restablecimiento de las contraseñas de cualquier usuario, alumno o empleado.</p>
+                </div>
+                <div class="grid grid-cols-1 gap-2 mb-3">
+                    <input id="passwordSearchInput" type="text" class="border rounded-lg px-3 py-2" placeholder="🔎 Buscar usuario para cambiar contraseña...">
+                </div>
+                <div id="adminPasswordsList" class="space-y-2"></div>
+            </div>
+
+            <div id="changePasswordModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div class="bg-white rounded-xl p-6 m-4 w-full max-w-sm slide-up">
+                    <h3 class="text-lg font-bold mb-1 text-gray-800">Cambiar Contraseña</h3>
+                    <p id="changePasswordUserName" class="text-sm font-semibold text-blue-600 mb-4"></p>
+                    
+                    <form id="changePasswordForm" class="space-y-4">
+                        <input type="hidden" id="cpTargetUsername">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Nueva Contraseña</label>
+                            <input type="text" id="cpNewPassword" class="w-full border rounded-lg px-3 py-2" required minlength="4">
+                        </div>
+                        <div class="flex space-x-3 pt-2">
+                            <button type="button" onclick="document.getElementById('changePasswordModal').classList.add('hidden')" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-300">Cancelar</button>
+                            <button type="submit" class="flex-1 bg-red-600 text-white py-2 rounded-lg font-bold hover:bg-red-700 shadow-md">Guardar Nueva Clave</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
            
             
 
@@ -805,19 +840,29 @@
             </div>
 
             <div id="adminPersonalDataSection" class="hidden mb-6">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-lg font-semibold">🧾 Datos Personales y EdoCta</h3>
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-3">
+                    <h3 class="text-xl font-bold text-slate-800">🧾 Consulta y Gestión de Personal</h3>
+                    
+                    <button onclick="openAdminAddUserModal()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-lg shadow-md flex items-center transition-colors w-full md:w-auto justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        + Nuevo Registro
+                    </button>
                 </div>
-                <div class="grid grid-cols-1 gap-2 mb-3">
-                    <input id="personalSearchInput" type="text" class="border rounded-lg px-3 py-2"
-                        placeholder="🔎 Buscar por nombre, usuario, teléfono, No. control o Tec">
-                    <select id="personalFilterSelect" class="border rounded-lg px-3 py-2">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <input id="personalSearchInput" type="text" class="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                        placeholder="🔎 Buscar por nombre, usuario, CURP o RFC...">
+                    <select id="personalFilterSelect" class="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-400 focus:outline-none">
                         <option value="all">Todos los tipos</option>
                         <option value="estudiante">Estudiantes</option>
                         <option value="docente">Docentes</option>
                         <option value="administrativo">Administrativos</option>
+                        <option value="empleado">Empleados</option>
                     </select>
                 </div>
+                
                 <div id="adminPersonalDataList" class="space-y-3"></div>
             </div>
             <div id="adminUsersSection" class="hidden mb-6">
@@ -1418,130 +1463,214 @@
         </div>
     </div>
 
-    <div id="editUserModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 m-4 w-full max-w-sm slide-up max-h-[90vh] overflow-y-auto">
-            <h3 class="text-lg font-bold mb-4">Editar Datos Personales</h3>
-            <form id="editUserForm" class="space-y-4">
-                <input type="hidden" id="editUserId">
-                
-                <div>
-                    <label class="block text-sm font-medium mb-1">Tipo de Usuario</label>
-                    <select id="editUserType" class="w-full border rounded-lg px-3 py-2" onchange="toggleEditUserFields()" required>
-                        <option value="estudiante">👨‍🎓 Estudiante</option>
-                        <option value="docente">👩‍🏫 Docente</option>
-                        <option value="administrativo">👨‍💼 Administrativo</option>
-                        <option value="empleado">👨‍🔧 Empleado</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium mb-1">CURP</label>
-                    <input type="text" id="editCurp" class="w-full border rounded-lg px-3 py-2 uppercase" maxlength="18">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium mb-1">RFC</label>
-                    <input type="text" id="editRfc" class="w-full border rounded-lg px-3 py-2 uppercase" maxlength="13">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium mb-1">Nombre Completo</label>
-                    <input type="text" id="editFullName" class="w-full border rounded-lg px-3 py-2" required>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium mb-1">Nombre de Usuario (Único)</label>
-                    <input type="text" id="editUsername" class="w-full border rounded-lg px-3 py-2" required>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium mb-1">Tecnológico</label>
-                    <input type="text" id="editTecnologico" class="w-full border rounded-lg px-3 py-2" required>
-                </div>
+    <div id="editUserModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-75 flex items-center justify-center z-50 p-2 md:p-4">
+        <div class="bg-gray-100 rounded-xl w-full max-w-5xl slide-up max-h-[95vh] overflow-y-auto flex flex-col">
+            
+            <div class="bg-slate-800 text-white p-4 rounded-t-xl sticky top-0 z-10 flex justify-between items-center shadow-md">
+                <h3 id="editUserModalTitle" class="text-lg font-bold">Ficha de Registro / Edición</h3>
+                <button type="button" onclick="closeEditUserModal()" class="text-gray-300 hover:text-white bg-slate-700 hover:bg-slate-600 rounded-lg px-3 py-1 text-sm font-bold transition-colors">
+                    Volver / Cerrar
+                </button>
+            </div>
 
-                <div id="editStudentFields" class="hidden space-y-3">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Número de Control</label>
-                        <input type="text" id="editControlNumber" class="w-full border rounded-lg px-3 py-2" placeholder="Ej: 20230001">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Carrera</label>
-                        <select id="editCareer" class="w-full border rounded-lg px-3 py-2">
-                            <option value="">Seleccionar carrera</option>
-                            <option value="Ingeniería en Sistemas Computacionales">Ingeniería en Sistemas Computacionales</option>
-                            <option value="Ingeniería Industrial">Ingeniería Industrial</option>
-                            <option value="Ingeniería Electrónica">Ingeniería Electrónica</option>
-                            <option value="Ingeniería Mecánica">Ingeniería Mecánica</option>
-                            <option value="Ingeniería Civil">Ingeniería Civil</option>
-                            <option value="Licenciatura en Administración">Licenciatura en Administración</option>
-                            <option value="Contador Público">Contador Público</option>
+            <form id="editUserForm" class="p-4 space-y-4">
+                <input type="hidden" id="editUserId"> <div class="bg-slate-800 text-white p-3 rounded-lg flex flex-col md:flex-row gap-4 items-center shadow-sm">
+                    <div class="flex items-center gap-2 w-full md:w-auto">
+                        <label class="text-sm font-bold whitespace-nowrap">Tipo de Persona:</label>
+                        <select id="editUserType" class="text-slate-900 border rounded px-2 py-1 text-sm w-full md:w-48" onchange="toggleEditUserFields()" required>
+                            <option value="">Seleccione...</option>
+                            <option value="estudiante">Estudiante</option>
+                            <option value="docente">Docente</option>
+                            <option value="administrativo">Administrativo</option>
+                            <option value="empleado">Empleado (Sistema)</option>
                         </select>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Semestre</label>
-                            <select id="editSemester" class="w-full border rounded-lg px-3 py-2">
-                                <option value="">Seleccionar</option>
-                                <option value="1">1°</option><option value="2">2°</option><option value="3">3°</option>
-                                <option value="4">4°</option><option value="5">5°</option><option value="6">6°</option>
-                                <option value="7">7°</option><option value="8">8°</option><option value="9">9°</option>
-                            </select>
+                    <div class="flex items-center gap-2 w-full md:w-auto">
+                        <label class="text-sm font-bold">CURP:</label>
+                        <input type="text" id="editCurp" class="text-slate-900 border rounded px-2 py-1 text-sm uppercase w-full md:w-56" maxlength="18" required>
+                    </div>
+                    <div class="flex items-center gap-2 w-full md:w-auto">
+                        <label class="text-sm font-bold">RFC:</label>
+                        <input type="text" id="editRfc" class="text-slate-900 border rounded px-2 py-1 text-sm uppercase w-full md:w-40">
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 border border-blue-200 p-3 rounded-lg flex flex-col md:flex-row gap-4 shadow-sm">
+                    <div class="flex-1">
+                        <label class="block text-xs font-bold text-blue-900 mb-1">Nombre de Usuario (Para Iniciar Sesión)*</label>
+                        <input type="text" id="editUsername" class="w-full border rounded px-2 py-1 text-sm" required>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs font-bold text-blue-900 mb-1">Tecnológico / Plantel</label>
+                        <input type="text" id="editTecnologico" class="w-full border rounded px-2 py-1 text-sm" value="TecNM campus Comitán" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    
+                    <div class="bg-white border rounded-lg shadow-sm overflow-hidden">
+                        <div class="bg-blue-900 text-white text-sm font-bold px-3 py-1.5">| Datos Personales</div>
+                        <div class="p-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div class="md:col-span-3">
+                                <label class="block text-[0.65rem] font-bold text-gray-500">Nombre(s)*</label>
+                                <input type="text" id="editFullName" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500" required>
+                            </div>
+                            <div>
+                                <label class="block text-[0.65rem] font-bold text-gray-500">Apellido Paterno</label>
+                                <input type="text" id="editApPaterno" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[0.65rem] font-bold text-gray-500">Apellido Materno</label>
+                                <input type="text" id="editApMaterno" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[0.65rem] font-bold text-gray-500">Género</label>
+                                <select id="editGenero" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
+                                    <option value="">Seleccione...</option><option value="M">Masculino</option><option value="F">Femenino</option><option value="O">Otro</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[0.65rem] font-bold text-gray-500">Fecha Nacimiento</label>
+                                <input type="date" id="editFechaNac" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[0.65rem] font-bold text-gray-500">Edad</label>
+                                <input type="number" id="editEdad" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[0.65rem] font-bold text-gray-500">Nacionalidad</label>
+                                <input type="text" id="editNacionalidad" value="Mexicana" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[0.65rem] font-bold text-gray-500">Teléfono Móvil</label>
+                                <input type="tel" id="editPhoneNumber" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-[0.65rem] font-bold text-gray-500">E-Mail</label>
+                                <input type="email" id="editEmail" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[0.65rem] font-bold text-gray-500">Grado Académico</label>
+                                <select id="editGrado" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
+                                    <option value="">Seleccione...</option><option value="Licenciatura">Licenciatura</option><option value="Maestria">Maestría</option><option value="Preparatoria">Preparatoria</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-[0.65rem] font-bold text-gray-500">Puesto / Nombre de la Empresa (Opcional)</label>
+                                <input type="text" id="editPuesto" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Grupo</label>
-                            <select id="editGroup" class="w-full border rounded-lg px-3 py-2">
-                                <option value="">Seleccionar</option>
-                                <option value="A">A</option><option value="B">B</option><option value="C">C</option>
-                                <option value="D">D</option><option value="E">E</option>
-                            </select>
+                    </div>
+
+                    <div class="space-y-4">
+                        
+                        <div class="bg-white border rounded-lg shadow-sm overflow-hidden">
+                            <div class="bg-blue-900 text-white text-sm font-bold px-3 py-1.5">| Datos de Localización</div>
+                            <div class="p-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[0.65rem] font-bold text-gray-500">Calle y Número</label>
+                                    <input type="text" id="editCalle" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[0.65rem] font-bold text-gray-500">Colonia</label>
+                                    <input type="text" id="editColonia" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[0.65rem] font-bold text-gray-500">Municipio</label>
+                                    <input type="text" id="editMunicipio" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[0.65rem] font-bold text-gray-500">Estado</label>
+                                        <input type="text" id="editEstado" value="Chiapas" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[0.65rem] font-bold text-gray-500">C.P.</label>
+                                        <input type="text" id="editCP" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
+                                    </div>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-[0.65rem] font-bold text-gray-500">Referencia</label>
+                                    <textarea id="editReferencia" class="w-full border border-gray-300 rounded px-2 py-1 text-sm resize-none h-10"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="editStudentFields" class="bg-amber-50 border border-amber-200 rounded-lg shadow-sm overflow-hidden hidden">
+                            <div class="bg-amber-600 text-white text-sm font-bold px-3 py-1.5">| Datos Escolares</div>
+                            <div class="p-3 grid grid-cols-1 md:grid-cols-4 gap-3">
+                                <div>
+                                    <label class="block text-[0.65rem] font-bold text-gray-500">No. Control</label>
+                                    <input type="text" id="editControlNumber" class="w-full border-b border-amber-300 bg-transparent px-1 py-1 text-sm focus:outline-none">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-[0.65rem] font-bold text-gray-500">Carrera</label>
+                                    <select id="editCareer" class="w-full border-b border-amber-300 bg-transparent px-1 py-1 text-sm focus:outline-none">
+                                        <option value="">Seleccione...</option>
+                                        <option value="Ingeniería en Sistemas Computacionales">Ing. Sistemas Computacionales</option>
+                                        <option value="Ingeniería Industrial">Ing. Industrial</option>
+                                        <option value="Licenciatura en Administración">Lic. Administración</option>
+                                    </select>
+                                </div>
+                                <div class="flex gap-2">
+                                    <div class="w-1/2">
+                                        <label class="block text-[0.65rem] font-bold text-gray-500">Sem.</label>
+                                        <input type="text" id="editSemester" class="w-full border-b border-amber-300 bg-transparent px-1 py-1 text-sm text-center">
+                                    </div>
+                                    <div class="w-1/2">
+                                        <label class="block text-[0.65rem] font-bold text-gray-500">Grp.</label>
+                                        <input type="text" id="editGroup" class="w-full border-b border-amber-300 bg-transparent px-1 py-1 text-sm text-center">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white border rounded-lg shadow-sm overflow-hidden">
+                        <div class="bg-blue-900 text-white text-sm font-bold px-3 py-1.5">| Datos de Trabajo / Redes</div>
+                        <div class="p-3 grid grid-cols-2 gap-3">
+                            <div><label class="block text-[0.65rem] font-bold text-gray-500">Facebook</label><input type="text" id="editFb" class="w-full border-b border-gray-300 px-1 py-1 text-xs"></div>
+                            <div><label class="block text-[0.65rem] font-bold text-gray-500">Instagram</label><input type="text" id="editIg" class="w-full border-b border-gray-300 px-1 py-1 text-xs"></div>
+                            <div><label class="block text-[0.65rem] font-bold text-gray-500">LinkedIn</label><input type="text" id="editIn" class="w-full border-b border-gray-300 px-1 py-1 text-xs"></div>
+                            <div><label class="block text-[0.65rem] font-bold text-gray-500">X / Twitter</label><input type="text" id="editTw" class="w-full border-b border-gray-300 px-1 py-1 text-xs"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border rounded-lg shadow-sm overflow-hidden flex flex-col justify-between">
+                        <div class="bg-blue-900 text-white text-sm font-bold px-3 py-1.5 flex justify-between items-center">
+                            <span>| Actividad de Cuenta</span>
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="editIsActive" class="sr-only peer" checked>
+                                <div class="w-9 h-5 bg-slate-600 rounded-full peer peer-checked:bg-green-400 relative after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-4 after:w-4 after:rounded-full after:transition-all peer-checked:after:translate-x-full"></div>
+                                <span class="ml-2 text-xs font-bold" id="editActiveLabel">ACTIVA</span>
+                            </label>
+                        </div>
+                        <div class="p-3 grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Activa Desde</label>
+                                <input type="datetime-local" id="editRegistrationDate" class="w-full border rounded px-2 py-1 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Activa Hasta (Corte)</label>
+                                <input type="datetime-local" id="editAccountActiveUntil" class="w-full border rounded px-2 py-1 text-xs">
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div id="editStaffFields" class="hidden space-y-3">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Número de Teléfono</label>
-                        <input type="tel" id="editPhoneNumber" class="w-full border rounded-lg px-3 py-2" placeholder="Ej: 5551234567">
-                    </div>
-                </div>
-
-                <div class="border-t pt-3">
-                    <label class="block text-sm font-semibold mb-1">Periodo de Actividad de la Cuenta</label>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-medium mb-1">Activa Desde</label>
-                            <input type="datetime-local" id="editRegistrationDate" class="w-full border rounded-lg px-3 py-2 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium mb-1">Activa Hasta</label>
-                            <input type="datetime-local" id="editAccountActiveUntil" class="w-full border rounded-lg px-3 py-2 text-sm">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="border-t pt-3">
-                    <label class="block text-sm font-semibold mb-1">Cambiar Contraseña (opcional)</label>
-                    <div class="grid grid-cols-1 gap-3">
-                        <div class="relative">
-                            <input type="password" id="editNewPassword" class="w-full border rounded-lg pl-3 pr-10 py-2" placeholder="Nueva contraseña">
-                            <button type="button" onclick="togglePasswordVisibility('editNewPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
-                                <svg class="h-5 w-5 hidden" id="eye-icon-editNewPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
-                                <svg class="h-5 w-5" id="eye-slash-icon-editNewPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20" /></svg>
-                            </button>
-                        </div>
-                        <div class="relative">
-                            <input type="password" id="editConfirmPassword" class="w-full border rounded-lg pl-3 pr-10 py-2" placeholder="Confirmar contraseña">
-                            <button type="button" onclick="togglePasswordVisibility('editConfirmPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
-                                <svg class="h-5 w-5 hidden" id="eye-icon-editConfirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.022 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" /></svg>
-                                <svg class="h-5 w-5" id="eye-slash-icon-editConfirmPassword" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 20c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 015.353-6.467M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 2l20 20" /></svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex space-x-3 mt-4">
-                    <button type="button" onclick="closeEditUserModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-medium">Cancelar</button>
-                    <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium">Guardar</button>
+                <div class="flex flex-col md:flex-row gap-2 mt-4 pt-4 border-t">
+                    <button type="submit" id="btnAlta" class="flex-1 bg-green-600 text-white py-2 rounded font-bold shadow hover:bg-green-700 transition-colors uppercase">
+                        + Guardar (Alta / Modificar)
+                    </button>
+                    <button type="button" id="btnBaja" onclick="confirmDeleteFromModal()" class="flex-1 bg-red-600 text-white py-2 rounded font-bold shadow hover:bg-red-700 transition-colors uppercase hidden">
+                        🗑 Bajas (Eliminar)
+                    </button>
+                    <button type="button" onclick="closeEditUserModal()" class="flex-1 bg-slate-600 text-white py-2 rounded font-bold shadow hover:bg-slate-700 transition-colors uppercase">
+                        Salir / Regresar
+                    </button>
                 </div>
             </form>
         </div>
@@ -1780,19 +1909,24 @@
         try {
             console.log("🔄 Iniciando conexión en Tiempo Real...");
 
-            // 1. Escuchar PEDIDOS en tiempo real
-            db.collection("cafetec").doc("orders").onSnapshot((doc) => {
-                orders = doc.exists ? (doc.data().data || []).filter(o => o !== null) : [];
-                
-                // Actualizar Admin si lo está viendo
-                if (document.getElementById('adminOrdersSection') && !document.getElementById('adminOrdersSection').classList.contains('hidden')) renderAdminOrders();
-                if (document.getElementById('adminInvoicingSection') && !document.getElementById('adminInvoicingSection').classList.contains('hidden')) renderAdminInvoicing();
-                
-                // Actualizar Cliente si está viendo el menú
-                if (document.getElementById('customerMenu') && !document.getElementById('customerMenu').classList.contains('hidden')) {
-                    if(typeof renderCustomerActiveOrders === 'function') renderCustomerActiveOrders();
-                }
-            });
+            // 1. Escuchar PEDIDOS (¡Esto hace que aparezcan al instante!)
+        db.collection("cafetec").doc("orders").onSnapshot((doc) => {
+            orders = doc.exists ? (doc.data().data || []) : [];
+            loadedFlags.orders = true;
+            checkIfFullyLoaded();
+            
+            // Actualizar TODAS las pantallas que dependen de los pedidos en vivo
+            if (document.getElementById('adminOrdersSection') && !document.getElementById('adminOrdersSection').classList.contains('hidden')) renderAdminOrders();
+            if (document.getElementById('adminInvoicingSection') && !document.getElementById('adminInvoicingSection').classList.contains('hidden')) renderAdminInvoicing();
+            
+            // 👇 ACTUALIZAR COCINA Y MENÚ DEL CLIENTE EN TIEMPO REAL 👇
+            if (document.getElementById('adminKitchenSection') && !document.getElementById('adminKitchenSection').classList.contains('hidden')) {
+                if (typeof renderKitchenView === 'function') renderKitchenView();
+            }
+            if (document.getElementById('customerMenu') && !document.getElementById('customerMenu').classList.contains('hidden')) {
+                if (typeof renderCustomerActiveOrders === 'function') renderCustomerActiveOrders();
+            }
+        });
 
             // 2. Carga inicial OBLIGATORIA
             const getDocData = async (docName) => {
@@ -2410,37 +2544,94 @@
         updateCartCount();
         renderCustomerActiveOrders(); // <-- Agregado para que muestre el estatus
     }
+// NUEVA FUNCIÓN DEFINITIVA: Muestra el estado del pedido en el menú de forma estricta
+// NUEVA FUNCIÓN ULTRA-BLINDADA: Muestra el estado del pedido a la fuerza
+function renderCustomerActiveOrders() {
+        if (!currentUser) return; // Si no hay usuario, nos detenemos
 
-    // NUEVA FUNCIÓN: Muestra el estado del pedido en la pantalla del cliente
-    function renderCustomerActiveOrders() {
-        const container = document.getElementById('customerActiveOrdersContainer');
-        const list = document.getElementById('customerActiveOrdersList');
-        if (!container || !list || !currentUser) return;
+        // 1. Buscamos la pantalla blanca del menú
+        const menuContainer = document.querySelector('#customerMenu .p-4');
+        if (!menuContainer) return;
 
-        // Buscamos pedidos de ESTE usuario que no hayan sido entregados
-        const activeOrders = orders.filter(o => o.user && o.user.id === currentUser.id && o.status !== 'entregado').sort((a,b) => b.id - a.id);
+        // 2. Apagamos la caja vieja del HTML para que no estorbe
+        const oldStatic = document.getElementById('customerActiveOrdersContainer');
+        if (oldStatic) oldStatic.style.display = 'none';
 
-        if (activeOrders.length === 0) {
-            container.classList.add('hidden');
+        // 3. SÚPER FILTRO: Buscamos si el cliente tiene pedidos (ignorando los entregados)
+        const myActiveOrders = orders.filter(o => {
+            if (!o || !o.user) return false; // Filtramos errores
+            if (o.status === 'entregado') return false; // Filtramos los que ya se entregaron
+            
+            // Comparamos forzando todo a texto minúscula (Evita cualquier fallo del navegador)
+            const orderUser = String(o.user.username || '').toLowerCase().trim();
+            const currUser = String(currentUser.username || '').toLowerCase().trim();
+            const orderName = String(o.user.fullName || '').toLowerCase().trim();
+            const currName = String(currentUser.fullName || '').toLowerCase().trim();
+            
+            // Es de este cliente si coincide su usuario O su nombre completo
+            return (orderUser !== '' && orderUser === currUser) || (orderName !== '' && orderName === currName);
+        }).sort((a, b) => Number(b.id) - Number(a.id)); // Ordenar del más reciente al más antiguo
+
+        // 4. Buscamos nuestra propia caja dinámica (o la creamos si no existe)
+        let activeDiv = document.getElementById('forceActiveOrdersBox');
+        
+        // Si NO hay pedidos, destruimos la caja
+        if (myActiveOrders.length === 0) {
+            if (activeDiv) activeDiv.remove();
             return;
         }
 
-        container.classList.remove('hidden');
-        list.innerHTML = activeOrders.map(o => `
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex justify-between items-center shadow-sm border-l-4 ${o.status === 'listo' ? 'border-l-green-500' : 'border-l-yellow-500'}">
-                <div>
-                    <p class="font-bold text-sm text-blue-900">Pedido #${o.id}</p>
-                    <p class="text-xs text-blue-700">Ref: ${o.referenceNumber}</p>
-                </div>
-                <div class="text-right">
-                    <span class="px-2 py-1 rounded-full text-xs font-bold shadow-sm ${o.status === 'listo' ? 'bg-green-500 text-white animate-pulse' : 'bg-yellow-400 text-yellow-900'}">
-                        ${o.status === 'listo' ? '✅ ¡LISTO PARA RECOGER!' : '⏳ Preparando...'}
-                    </span>
-                </div>
+        // Si SÍ hay pedidos y la caja no existe, la inyectamos a la fuerza hasta arriba
+        if (!activeDiv) {
+            activeDiv = document.createElement('div');
+            activeDiv.id = 'forceActiveOrdersBox';
+            activeDiv.className = 'mb-6';
+            menuContainer.insertBefore(activeDiv, menuContainer.firstChild); 
+        }
+
+        // 5. Dibujamos los tickets con el diseño bonito
+        activeDiv.innerHTML = `
+            <h3 class="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">🔔 Tus Pedidos Activos</h3>
+            <div class="space-y-3">
+                ${myActiveOrders.map(o => `
+                    <div class="bg-white border-2 ${o.status === 'listo' ? 'border-green-500 shadow-green-100' : 'border-yellow-400 shadow-yellow-100'} rounded-xl p-4 shadow-lg relative overflow-hidden transition-all">
+                        
+                        <div class="absolute top-0 left-0 w-full h-2 ${o.status === 'listo' ? 'bg-green-500' : 'bg-yellow-400'}"></div>
+                        
+                        <div class="flex justify-between items-center mb-2 mt-1">
+                            <span class="font-black text-lg text-gray-800">Orden #${o.id}</span>
+                            <span class="font-mono text-xs bg-gray-100 px-2 py-1 rounded border font-bold">Ref: ${o.referenceNumber}</span>
+                        </div>
+                        
+                        <div class="flex items-center gap-3 p-3 rounded-lg ${o.status === 'listo' ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}">
+                            <div class="text-3xl ${o.status === 'listo' ? 'animate-bounce' : 'animate-pulse'}">
+                                ${o.status === 'listo' ? '✅' : '👨‍🍳'}
+                            </div>
+                            <div>
+                                <p class="text-[0.65rem] text-gray-500 uppercase font-black">Estatus de Cocina</p>
+                                <p class="font-black text-base ${o.status === 'listo' ? 'text-green-700' : 'text-yellow-700'}">
+                                    ${o.status === 'listo' ? '¡LISTO PARA RECOGER!' : 'PREPARANDO...'}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        ${o.status === 'listo' 
+                            ? '<p class="text-xs text-center mt-3 font-bold text-green-800 bg-green-100 py-2 rounded-lg">👉 Acércate a la barra a recogerlo.</p>' 
+                            : '<p class="text-xs text-center mt-3 text-gray-500 font-medium">Te avisaremos aquí cuando esté listo.</p>'}
+                    </div>
+                `).join('')}
             </div>
-        `).join('');
+        `;
     }
 
+    // AUTO-ACTUALIZADOR GARANTIZADO (Se dispara cada 2 segundos sin fallar)
+    setInterval(() => {
+        const menuElement = document.getElementById('customerMenu');
+        if (menuElement && !menuElement.classList.contains('hidden')) {
+            renderCustomerActiveOrders();
+        }
+    }, 2000);
+       
     // Actualizamos el "Escuchador" en tiempo real para que refresque la pantalla del cliente automáticamente
     // 📥 Función Asíncrona para CARGAR y ESCUCHAR desde Firestore en TIEMPO REAL
     async function loadState() {
@@ -2608,7 +2799,8 @@
             'adminReportsSection',
             'adminSupplierStockSection',
             'adminInvoicingSection',
-            'adminEmployeeRegSection' // <--- PESTAÑA DE EMPLEADOS AÑADIDA
+            'adminEmployeeRegSection',
+            'adminPasswordsSection', // <--- PESTAÑA DE EMPLEADOS AÑADIDA
         ];
         
         // Protección: Solo oculta si el elemento existe en el HTML
@@ -3192,98 +3384,134 @@
     }
 
     function confirmOrder() {
-        if (cart.length === 0) {
-            alert('Tu carrito está vacío');
-            return;
-        }
-
-        const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
-
-        if (!validatePaymentInfo(paymentMethod)) {
-            return;
-        }
-
-        for (const item of cart) {
-            const product = products.find(p => p.id === item.id);
-            if (!product) continue;
-
-            if (item.quantity > product.stock) {
-                alert(`ERROR: Stock de producto final insuficiente para ${item.name} x${item.quantity}.`);
+        try {
+            if (cart.length === 0) {
+                alert('Tu carrito está vacío');
                 return;
             }
 
-            if (!product.isSupplierProduct && !checkRawMaterialStock(product, item.quantity)) {
-                alert(`ERROR: Materia prima insuficiente para preparar ${item.name} x${item.quantity}. Por favor reduce la cantidad.`);
+            // Validación segura del método de pago
+            const paymentMethodEl = document.querySelector('input[name="payment"]:checked');
+            const paymentMethod = paymentMethodEl ? paymentMethodEl.value : 'efectivo';
+
+            if (!validatePaymentInfo(paymentMethod)) {
                 return;
             }
-        }
 
-        const pickupTime = document.querySelector('input[name="pickup-time"]:checked').value;
-        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const orderNotes = document.getElementById('orderNotes').value.trim();
-        const referenceNumber = generateReferenceNumber();
+            // Validar stock antes de procesar
+            for (const item of cart) {
+                const product = products.find(p => p.id === item.id);
+                if (!product) continue;
 
-        const timeFormatted = formatTime(pickupTime);
+                if (item.quantity > product.stock) {
+                    alert(`ERROR: Stock de producto final insuficiente para ${item.name} x${item.quantity}.`);
+                    return;
+                }
 
-        const newOrder = {
-            id: orderIdCounter++,
-            referenceNumber: referenceNumber,
-            items: [...cart], 
-            total: total,
-            paymentMethod: paymentMethod,
-            pickupTime: pickupTime,
-            pickupTimeFormatted: timeFormatted,
-            user: currentUser,
-            notes: orderNotes,
-            status: 'pendiente',
-            isPaid: paymentMethod === 'tarjeta' || paymentMethod === 'transferencia',
-            timestamp: new Date().toLocaleString(),
-            date: new Date().toISOString().slice(0, 10),
-        };
-
-        orders.push(newOrder);
-
-        cart.forEach(cartItem => {
-            const product = products.find(p => p.id === cartItem.id);
-            if (product) {
-                product.stock -= cartItem.quantity;
+                if (!product.isSupplierProduct && !checkRawMaterialStock(product, item.quantity)) {
+                    alert(`ERROR: Materia prima insuficiente para preparar ${item.name} x${item.quantity}. Por favor reduce la cantidad.`);
+                    return;
+                }
             }
-        });
 
-        depleteRawMaterialStock(cart);
-        populateTicket(newOrder);
-        document.getElementById('orderConfirmationModal').classList.remove('hidden');
+            // Validación segura del horario
+            const pickupTimeEl = document.querySelector('input[name="pickup-time"]:checked');
+            const pickupTime = pickupTimeEl ? pickupTimeEl.value : '07:00';
+            
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            // Validación segura de notas
+            const notesEl = document.getElementById('orderNotes');
+            const orderNotes = notesEl ? notesEl.value.trim() : '';
+            
+            const referenceNumber = generateReferenceNumber();
+            const timeFormatted = formatTime(pickupTime);
+
+            // 🛡️ Generador de ID Seguro (Igual que el que hicimos para los usuarios)
+            const newOrderId = orders.reduce((max, o) => Math.max(max, Number(o.id) || 0), 0) + 1;
+
+            // 🛡️ Protección por si se pierde la sesión del usuario en medio del pedido
+            const safeUser = currentUser ? JSON.parse(JSON.stringify(currentUser)) : { fullName: 'Cliente Generico', userType: 'estudiante' };
+
+            const newOrder = {
+                id: newOrderId,
+                referenceNumber: referenceNumber,
+                items: JSON.parse(JSON.stringify(cart)), // Copia exacta del carrito
+                total: total,
+                paymentMethod: paymentMethod,
+                pickupTime: pickupTime,
+                pickupTimeFormatted: timeFormatted,
+                user: safeUser,
+                notes: orderNotes,
+                status: 'pendiente',
+                isPaid: paymentMethod === 'tarjeta' || paymentMethod === 'transferencia',
+                timestamp: new Date().toLocaleString(),
+                date: new Date().toISOString().slice(0, 10),
+            };
+
+            orders.push(newOrder);
+
+            // Descontar stock de los productos finales
+            cart.forEach(cartItem => {
+                const product = products.find(p => p.id === cartItem.id);
+                if (product) {
+                    product.stock -= cartItem.quantity;
+                }
+            });
+
+            // Descontar materia prima
+            depleteRawMaterialStock(cart);
+            
+            // 💾 ¡CRÍTICO! Guardar Inmediatamente en Firebase para que aparezca en Cocina al instante
+            saveState();
+
+            // Dibujar y mostrar el ticket
+            populateTicket(newOrder);
+            document.getElementById('orderConfirmationModal').classList.remove('hidden');
+            
+        } catch (error) {
+            console.error("❌ Error en confirmOrder:", error);
+            alert("Hubo un pequeño error técnico procesando tu pedido. Revisa que todo esté correcto y vuelve a intentarlo.");
+        }
     }
 
     function populateTicket(order) {
-        document.getElementById('ticket-ref').textContent = order.referenceNumber;
-        document.getElementById('ticket-user').textContent = order.user.fullName;
-        document.getElementById('ticket-time').textContent = order.pickupTimeFormatted;
-        document.getElementById('ticket-payment').textContent = order.paymentMethod;
-        document.getElementById('ticket-total').textContent = `$${order.total.toFixed(2)}`;
+        // Protecciones 'if' para evitar que la app choque si no encuentra un texto en el HTML
+        if(document.getElementById('ticket-ref')) document.getElementById('ticket-ref').textContent = order.referenceNumber;
+        if(document.getElementById('ticket-user')) document.getElementById('ticket-user').textContent = order.user.fullName;
+        if(document.getElementById('ticket-time')) document.getElementById('ticket-time').textContent = order.pickupTimeFormatted;
+        if(document.getElementById('ticket-payment')) document.getElementById('ticket-payment').textContent = order.paymentMethod;
+        if(document.getElementById('ticket-total')) document.getElementById('ticket-total').textContent = `$${order.total.toFixed(2)}`;
 
         const itemsContainer = document.getElementById('ticket-items');
-        itemsContainer.innerHTML = order.items.map(item => `
-            <tr class="align-top">
-                <td class="pr-2">${item.quantity}x</td>
-                <td>${item.name}</td>
-                <td class="text-right whitespace-nowrap">$${(item.price * item.quantity).toFixed(2)}</td>
-            </tr>
-        `).join('');
+        if (itemsContainer) {
+            itemsContainer.innerHTML = order.items.map(item => `
+                <tr class="align-top">
+                    <td class="pr-2">${item.quantity}x</td>
+                    <td>${item.name}</td>
+                    <td class="text-right whitespace-nowrap">$${(item.price * item.quantity).toFixed(2)}</td>
+                </tr>
+            `).join('');
+        }
     }
 
     function closeConfirmationModal() {
+        // Limpiamos el carrito
         cart = [];
-        document.getElementById('orderNotes').value = '';
-        document.getElementById('cardNumber').value = '';
-        document.getElementById('cardExpiry').value = '';
-        document.getElementById('cardCvv').value = '';
-        document.getElementById('cardHolder').value = '';
+        
+        // Limpiamos los campos de forma segura
+        const safeClear = (id) => { if(document.getElementById(id)) document.getElementById(id).value = ''; };
+        safeClear('orderNotes');
+        safeClear('cardNumber');
+        safeClear('cardExpiry');
+        safeClear('cardCvv');
+        safeClear('cardHolder');
 
         updateCartCount();
-        saveState(); 
 
-        document.getElementById('orderConfirmationModal').classList.add('hidden');
+        // Cerramos la ventana y volvemos al menú
+        const modal = document.getElementById('orderConfirmationModal');
+        if (modal) modal.classList.add('hidden');
         showCustomerMenu();
     }
 
@@ -4054,92 +4282,114 @@
         }).join('');
     }
 
+    function showAdminPasswords() {
+        activateTab('passwordsTab');
+        document.getElementById('adminPasswordsSection').classList.remove('hidden');
+        renderAdminPasswords();
+    }
+
+    function renderAdminPasswords() {
+        const list = document.getElementById('adminPasswordsList');
+        const q = (document.getElementById('passwordSearchInput').value || '').toLowerCase().trim();
+        
+        let filtered = users.filter(u => u.id !== 0); // Excluir SUPER ADMIN
+        if (q) {
+            filtered = filtered.filter(u => u.fullName.toLowerCase().includes(q) || u.username.toLowerCase().includes(q));
+        }
+
+        list.innerHTML = filtered.map(u => `
+            <div class="bg-white border rounded-lg p-3 flex justify-between items-center shadow-sm">
+                <div>
+                    <h4 class="font-bold text-sm text-gray-800">${u.fullName} <span class="text-xs font-normal text-gray-500">(${u.userType})</span></h4>
+                    <p class="text-xs text-blue-600 font-mono">Usuario: ${u.username}</p>
+                </div>
+                <button onclick="openChangePasswordModal('${u.username}')" class="bg-red-100 text-red-700 px-3 py-1 rounded text-xs font-bold hover:bg-red-200 transition-colors">
+                    Cambiar Contraseña
+                </button>
+            </div>
+        `).join('');
+    }
+
+    document.getElementById('passwordSearchInput').addEventListener('input', renderAdminPasswords);
+
+    function openChangePasswordModal(username) {
+        const user = users.find(u => u.username === username);
+        if (!user) return;
+        document.getElementById('cpTargetUsername').value = user.username;
+        document.getElementById('changePasswordUserName').textContent = `Usuario: ${user.fullName}`;
+        document.getElementById('cpNewPassword').value = '';
+        document.getElementById('changePasswordModal').classList.remove('hidden');
+    }
+
+    document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const username = document.getElementById('cpTargetUsername').value;
+        const newPass = document.getElementById('cpNewPassword').value;
+        const user = users.find(u => u.username === username);
+        if (user) {
+            user.password = newPass;
+            saveState();
+            alert(`✅ Contraseña de ${user.fullName} actualizada.`);
+            document.getElementById('changePasswordModal').classList.add('hidden');
+        }
+    });
+
+    // =========================================================================================
+    // LISTA PRINCIPAL (Consulta)
+    // =========================================================================================
     function renderAdminPersonalData() {
         const list = document.getElementById('adminPersonalDataList');
         const q = (document.getElementById('personalSearchInput').value || '').toLowerCase().trim();
         const type = document.getElementById('personalFilterSelect').value;
 
-        if (!users || users.length === 0) {
-            list.innerHTML = '<p class="text-center text-gray-500 py-8">No hay usuarios registrados.</p>';
-            return;
-        }
+        if (!users || users.length === 0) return list.innerHTML = '<p class="text-center text-gray-500 py-8">No hay usuarios registrados.</p>';
 
         let filtered = users.filter(u => u.id !== 0);
+        if (type !== 'all') filtered = filtered.filter(u => u.userType === type);
+        if (q) filtered = filtered.filter(u => `${u.fullName} ${u.username} ${u.curp} ${u.rfc}`.toLowerCase().includes(q));
 
-        if (type !== 'all') {
-            filtered = filtered.filter(u => u.userType === type);
-        }
+        // TABLA TIPO CONSULTA
+        let tableHTML = `
+        <div class="overflow-x-auto bg-white rounded-lg shadow border border-gray-200">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-900 text-white font-bold uppercase tracking-wider">
+                    <tr>
+                        <th class="px-3 py-2 text-center">Cons.</th>
+                        <th class="px-3 py-2">Nombre Completo</th>
+                        <th class="px-3 py-2">CURP</th>
+                        <th class="px-3 py-2">Fecha Nac.</th>
+                        <th class="px-3 py-2">Email</th>
+                        <th class="px-3 py-2">Dirección</th>
+                        <th class="px-3 py-2 text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+        `;
 
-        if (q) {
-            filtered = filtered.filter(u => {
-                const haystack = [
-                    u.fullName, u.username, u.phoneNumber, u.controlNumber, u.career, u.group
-                ].filter(Boolean).join(' ').toLowerCase();
-                return haystack.includes(q);
-            });
-        }
+        filtered.forEach((u, index) => {
+            const rowClass = u.isActive === false ? 'bg-red-50 text-gray-500' : 'hover:bg-blue-50';
+            const dob = u.fechaNac || 'N/D';
+            const email = u.email || 'N/D';
+            const address = u.calle ? `${u.calle}, ${u.colonia || ''}, ${u.municipio || ''}` : 'N/D';
 
-        if (filtered.length === 0) {
-            list.innerHTML = '<p class="text-center text-gray-500 py-8">Sin resultados para el filtro/búsqueda.</p>';
-            return;
-        }
-
-        list.innerHTML = filtered.map(u => {
-            // Protección de Fechas
-            let regDateText = "N/D";
-            if (u.registrationDate) {
-                const rd = u.registrationDate instanceof Date ? u.registrationDate : (u.registrationDate.toDate ? u.registrationDate.toDate() : new Date(u.registrationDate));
-                if (!isNaN(rd.getTime())) regDateText = rd.toLocaleDateString();
-            }
-
-            // 👇 Regla inteligente para mostrar "Empleado" en Datos Personales 👇
-            const displayType = (u.isEmployee || u.userType === 'admin') ? 'empleado' : u.userType;
-            const displayEmoji = u.userType === 'estudiante' ? '👨‍🎓' : (u.userType === 'docente' || u.userType === 'profesor' ? '👩‍🏫' : ((u.isEmployee || u.userType === 'admin') ? '👨‍🔧' : '👨‍💼'));
-
-            return `
-            <div class="bg-white border rounded-lg p-4 shadow-sm">
-                <div class="flex items-start justify-between">
-                    <div class="flex-1">
-                        <div class="flex items-center space-x-2 mb-1">
-                            <span class="text-xl">${displayEmoji}</span>
-                            <h4 class="font-bold">${u.fullName}</h4>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 text-sm">
-                            <div><span class="font-medium">Usuario:</span> <span class="font-mono">${u.username || ''}</span></div>
-                            <div class="capitalize"><span class="font-medium">Tipo:</span> ${displayType}</div>
-                            <div><span class="font-medium">CURP:</span> <span class="font-mono">${u.curp || 'N/D'}</span></div>
-                            <div><span class="font-medium">RFC:</span> <span class="font-mono">${u.rfc || 'N/D'}</span></div>
-                            ${u.userType === 'estudiante' ? `
-                                <div><span class="font-medium">No. Control:</span> <span class="font-mono">${u.controlNumber || ''}</span></div>
-                                <div><span class="font-medium">Carrera:</span> ${u.career || ''}</div>
-                                <div><span class="font-medium">Semestre:</span> ${u.semester || ''}</div>
-                                <div><span class="font-medium">Grupo:</span> ${u.group || ''}</div>
-                            ` : `
-                                <div><span class="font-medium">Teléfono:</span> ${u.phoneNumber || ''}</div>
-                            `}
-                            <div><span class="font-medium">Credencial:</span> ${u.hasCredential ? '✅' : '❌'}</div>
-                            <div><span class="font-medium">Registro:</span> ${regDateText}</div>
-                        </div>
-                    </div>
-                    <div class="ml-4 space-y-2 text-right">
-                        <div class="text-sm">
-                            <span class="block mb-1 font-medium">Estado de cuenta</span>
-                            <label class="inline-flex items-center cursor-pointer">
-                                <input type="checkbox" class="sr-only peer" ${u.isActive === false ? '' : 'checked'}
-                                    onchange="toggleUserActive(${u.id}, this.checked)">
-                                <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-green-500 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:h-5 after:w-5 after:rounded-full after:transition-all peer-checked:after:translate-x-5"></div>
-                                <span class="ml-2 ${u.isActive === false ? 'text-red-700' : 'text-green-700'}">${u.isActive === false ? 'Desactivada' : 'Activa'}</span>
-                            </label>
-                        </div>
-                        <div class="flex justify-end space-x-2 mt-2">
-                            <button onclick="openEditUserModal('${u.username}')" class="px-3 py-1 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-700 transition-colors">Editar</button>
-                            <button onclick="deleteUser('${u.username}')" class="px-3 py-1 rounded-lg bg-red-600 text-white text-sm hover:bg-red-700 transition-colors">Eliminar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            tableHTML += `
+                <tr class="${rowClass}">
+                    <td class="px-3 py-2 text-center font-mono">${index + 1}</td>
+                    <td class="px-3 py-2 font-bold">${u.fullName} <span class="text-[0.6rem] bg-gray-200 text-gray-700 px-1 rounded block w-max mt-0.5">${(u.isEmployee || u.userType==='admin')?'Empleado':u.userType}</span></td>
+                    <td class="px-3 py-2 font-mono uppercase">${u.curp || '—'}</td>
+                    <td class="px-3 py-2">${dob}</td>
+                    <td class="px-3 py-2">${email}</td>
+                    <td class="px-3 py-2 truncate max-w-[150px]">${address}</td>
+                    <td class="px-3 py-2 text-center">
+                        <button onclick="openEditUserModal('${u.username}')" class="text-blue-600 hover:text-blue-800 text-lg mx-1" title="Modificar">✏️</button>
+                        <button onclick="deleteUser('${u.username}')" class="text-red-600 hover:text-red-800 text-lg mx-1" title="Baja">🗑</button>
+                    </td>
+                </tr>
             `;
-        }).join('');
+        });
+
+        tableHTML += `</tbody></table></div>`;
+        list.innerHTML = tableHTML;
     }
 
     function toggleUserActive(userId, isActive) {
@@ -4148,172 +4398,138 @@
         user.isActive = !!isActive;
         saveState();
         renderAdminPersonalData();
-        renderAdminUsers();
-
-        if (currentUser && currentUser.id === user.id && user.isActive === false) {
-            alert('Esta cuenta ha sido desactivada y se cerrará la sesión.');
-            logout();
-        }
+        if (currentUser && currentUser.id === user.id && user.isActive === false) logout();
     }
-    // NUEVA FUNCIÓN: Eliminar Usuario Permanentemente
-   // NUEVA FUNCIÓN: Eliminar Usuario Permanentemente
-   // NUEVA FUNCIÓN: Eliminar Usuario Permanentemente por USERNAME (Evita borrar múltiples)
-   function deleteUser(username) {
-        if (!username) return;
 
+    function deleteUser(username) {
+        if (!username) return;
         const userToDelete = users.find(u => u.username === username);
         if (!userToDelete) return;
+        if (currentUser && currentUser.username === username) { alert('🛡️ Seguridad: No puedes eliminar tu propia cuenta.'); return; }
 
-        if (currentUser && currentUser.username === username) {
-            alert('🛡️ Seguridad: No puedes eliminar tu propia cuenta.');
-            return;
-        }
-
-        if (confirm(`⚠️ ¿ESTÁS SEGURO? Estás a punto de eliminar permanentemente a "${userToDelete.fullName}".`)) {
-            // Filtramos usando el nombre de usuario que es 100% único
+        if (confirm(`⚠️ ¿ESTÁS SEGURO DE DAR DE BAJA A "${userToDelete.fullName}"?`)) {
             users = users.filter(u => u.username !== username);
-            
             saveState(); 
             renderAdminPersonalData();
-            if (!document.getElementById('adminUsersSection').classList.contains('hidden')) {
-                renderAdminUsers();
-            }
-            alert('✅ Usuario eliminado correctamente.');
+            closeEditUserModal();
         }
+    }
+
+    function confirmDeleteFromModal() {
+        const username = document.getElementById('editUserId').value;
+        if(username) deleteUser(username);
     }
 
     document.getElementById('personalSearchInput').addEventListener('input', renderAdminPersonalData);
     document.getElementById('personalFilterSelect').addEventListener('change', renderAdminPersonalData);
 
+    // =========================================================================================
+    // MEGA FORMULARIO LOGIC
+    // =========================================================================================
+    
     function openEditUserModal(username) {
-        const user = users.find(u => u.username === username);
-        if (!user) { alert("No se encontró la información del usuario."); return; }
+        const setValue = (id, value) => { const el = document.getElementById(id); if (el) el.value = value || ''; };
+        const form = document.getElementById('editUserForm');
+        form.reset();
 
-        const setValue = (id, value) => {
-            const el = document.getElementById(id);
-            if (el) el.value = value;
-        };
+        document.getElementById('btnBaja').classList.remove('hidden');
 
-        
-        // AHORA GUARDAMOS EL USERNAME EN EL CAMPO OCULTO
-        setValue('editUserId', user.username);
-        
-        // 👇 REGLA INTELIGENTE: Si tiene permisos de admin, selecciona "empleado" en el menú
-        const displayType = (user.isEmployee || user.userType === 'admin') ? 'empleado' : user.userType;
-        setValue('editUserType', displayType);
-        
-        setValue('editCurp', user.curp || '');
-        setValue('editRfc', user.rfc || ''); 
-        setValue('editFullName', user.fullName || '');
-        setValue('editUsername', user.username || '');
-        setValue('editTecnologico', user.tecnologico || '');
-        setValue('editControlNumber', user.controlNumber || '');
-        setValue('editCareer', user.career || '');
-        setValue('editSemester', user.semester || '');
-        setValue('editGroup', user.group || '');
-        setValue('editPhoneNumber', user.phoneNumber || '');
-        setValue('editNewPassword', '');
-        setValue('editConfirmPassword', '');
+        if(username) {
+            const user = users.find(u => u.username === username);
+            if (!user) return;
+            document.getElementById('editUserModalTitle').textContent = `Modificar: ${user.fullName}`;
+            
+            // Core
+            setValue('editUserId', user.username);
+            setValue('editUsername', user.username);
+            setValue('editTecnologico', user.tecnologico);
+            const displayType = (user.isEmployee || user.userType === 'admin') ? 'empleado' : user.userType;
+            setValue('editUserType', displayType);
+            
+            // Header
+            setValue('editCurp', user.curp); 
+            setValue('editRfc', user.rfc); 
+            
+            // Personales
+            setValue('editFullName', user.fullName);
+            setValue('editApPaterno', user.apPaterno);
+            setValue('editApMaterno', user.apMaterno);
+            setValue('editGenero', user.genero);
+            setValue('editFechaNac', user.fechaNac);
+            setValue('editEdad', user.edad);
+            setValue('editNacionalidad', user.nacionalidad || 'Mexicana');
+            setValue('editPhoneNumber', user.phoneNumber);
+            setValue('editEmail', user.email);
+            setValue('editGrado', user.gradoAcademico);
+            setValue('editPuesto', user.puestoEmpresa);
 
-        let regDate = null;
-        if (user.registrationDate) regDate = user.registrationDate.toDate ? user.registrationDate.toDate() : new Date(user.registrationDate);
-        let activeUntilDate = null;
-        if (user.accountActiveUntil) activeUntilDate = user.accountActiveUntil.toDate ? user.accountActiveUntil.toDate() : new Date(user.accountActiveUntil);
+            // Localizacion
+            setValue('editCalle', user.calle);
+            setValue('editColonia', user.colonia);
+            setValue('editMunicipio', user.municipio);
+            setValue('editEstado', user.estado || 'Chiapas');
+            setValue('editCP', user.cp);
+            setValue('editReferencia', user.referencia);
 
-        const editRegDateEl = document.getElementById('editRegistrationDate');
-        if (editRegDateEl) editRegDateEl.value = (regDate && !isNaN(regDate.getTime())) ? new Date(regDate.getTime() - (regDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16) : '';
-        
-        const editActiveUntilEl = document.getElementById('editAccountActiveUntil');
-        if (editActiveUntilEl) editActiveUntilEl.value = (activeUntilDate && !isNaN(activeUntilDate.getTime())) ? new Date(activeUntilDate.getTime() - (activeUntilDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16) : '';
+            // Escolares
+            setValue('editControlNumber', user.controlNumber);
+            setValue('editCareer', user.career);
+            setValue('editSemester', user.semester);
+            setValue('editGroup', user.group);
 
-        const isAdmin = currentUser && currentUser.username === 'ADMIN';
-        if (editRegDateEl) editRegDateEl.disabled = !isAdmin;
-        if (editActiveUntilEl) editActiveUntilEl.disabled = !isAdmin;
+            // Redes
+            setValue('editFb', user.facebook);
+            setValue('editIg', user.instagram);
+            setValue('editIn', user.linkedin);
+            setValue('editTw', user.twitter);
+
+            // Fechas y Status
+            let regDate = null;
+            if (user.registrationDate) regDate = user.registrationDate.toDate ? user.registrationDate.toDate() : new Date(user.registrationDate);
+            let activeUntilDate = null;
+            if (user.accountActiveUntil) activeUntilDate = user.accountActiveUntil.toDate ? user.accountActiveUntil.toDate() : new Date(user.accountActiveUntil);
+
+            setValue('editRegistrationDate', (regDate && !isNaN(regDate.getTime())) ? new Date(regDate.getTime() - (regDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16) : '');
+            setValue('editAccountActiveUntil', (activeUntilDate && !isNaN(activeUntilDate.getTime())) ? new Date(activeUntilDate.getTime() - (activeUntilDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 16) : '');
+            
+            const activeCheckbox = document.getElementById('editIsActive');
+            activeCheckbox.checked = user.isActive !== false;
+            document.getElementById('editActiveLabel').textContent = activeCheckbox.checked ? 'ACTIVA' : 'BAJA';
+
+        } else {
+            // ES ALTA NUEVA
+            document.getElementById('editUserModalTitle').textContent = `Alta de Nuevo Registro`;
+            document.getElementById('btnBaja').classList.add('hidden'); // Ocultar botón borrar
+            setValue('editUserId', '');
+            setValue('editNacionalidad', 'Mexicana');
+            setValue('editEstado', 'Chiapas');
+            setValue('editTecnologico', 'TecNM campus Comitán');
+            
+            const now = new Date();
+            setValue('editRegistrationDate', new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16));
+            document.getElementById('editIsActive').checked = true;
+            document.getElementById('editActiveLabel').textContent = 'ACTIVA';
+        }
 
         toggleEditUserFields();
         document.getElementById('editUserModal').classList.remove('hidden');
     }
 
-    // Abre el modal vacío para CREAR un usuario
-    function openAdminAddUserModal() {
-        const setValue = (id, value) => {
-            const el = document.getElementById(id);
-            if (el) el.value = value;
-        };
+    function openAdminAddUserModal() { openEditUserModal(''); }
+    function closeEditUserModal() { document.getElementById('editUserModal').classList.add('hidden'); }
 
-        setValue('editUserId', ''); // Vacío indica que es NUEVO
-        setValue('editUserType', 'estudiante');
-        setValue('editCurp', ''); 
-        setValue('editRfc', ''); 
-        setValue('editFullName', '');
-        setValue('editUsername', '');
-        setValue('editTecnologico', 'TecNM campus Comitán');
-        setValue('editControlNumber', '');
-        setValue('editCareer', '');
-        setValue('editSemester', '');
-        setValue('editGroup', '');
-        setValue('editPhoneNumber', '');
-        setValue('editNewPassword', '');
-        setValue('editConfirmPassword', '');
-
-        const editRegDateEl = document.getElementById('editRegistrationDate');
-        if (editRegDateEl) {
-            editRegDateEl.value = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
-            editRegDateEl.disabled = false;
-        }
-        
-        const editActiveUntilEl = document.getElementById('editAccountActiveUntil');
-        if (editActiveUntilEl) {
-            editActiveUntilEl.value = '';
-            editActiveUntilEl.disabled = false;
-        }
-
-        toggleEditUserFields();
-        document.getElementById('editUserModal').classList.remove('hidden');
-    }
-
-    function closeEditUserModal() {
-        document.getElementById('editUserModal').classList.add('hidden');
-    }
+    // Cambiar texto de ACTIVO a BAJA en tiempo real
+    document.getElementById('editIsActive').addEventListener('change', function(e) {
+        document.getElementById('editActiveLabel').textContent = e.target.checked ? 'ACTIVA' : 'BAJA';
+        document.getElementById('editActiveLabel').className = `ml-2 text-xs font-bold ${e.target.checked ? 'text-green-800' : 'text-gray-400'}`;
+    });
 
     function toggleEditUserFields() {
         const typeEl = document.getElementById('editUserType');
         const stu = document.getElementById('editStudentFields');
-        const staff = document.getElementById('editStaffFields');
-
-        if (!typeEl) return;
-
-        if (typeEl.value === 'estudiante') {
-            if (stu) stu.classList.remove('hidden');
-            if (staff) staff.classList.add('hidden');
-        } else if (typeEl.value === 'empleado') {
-            if (stu) stu.classList.add('hidden');
-            if (staff) staff.classList.add('hidden');
-        } else {
-            if (stu) stu.classList.add('hidden');
-            if (staff) staff.classList.remove('hidden');
-        }
-    }
-
-    function propagateUserChanges(updatedUser) {
-        orders.forEach(o => {
-            if (o.user && o.user.username === updatedUser.username) {
-                o.user = {
-                    ...o.user,
-                    userType: updatedUser.userType,
-                    fullName: updatedUser.fullName,
-                    username: updatedUser.username,
-                    curp: updatedUser.curp,
-                    rfc: updatedUser.rfc,
-                    phoneNumber: updatedUser.phoneNumber,
-                    controlNumber: updatedUser.controlNumber,
-                    career: updatedUser.career,
-                    semester: updatedUser.semester,
-                    group: updatedUser.group,
-                    registrationDate: updatedUser.registrationDate
-                };
-            }
-        });
+        if (!typeEl || !stu) return;
+        if (typeEl.value === 'estudiante') stu.classList.remove('hidden');
+        else stu.classList.add('hidden');
     }
 
     document.getElementById('editUserForm').addEventListener('submit', function (e) {
@@ -4321,155 +4537,108 @@
 
         const getValue = (id) => document.getElementById(id) ? document.getElementById(id).value.trim() : '';
 
-        // AHORA ESTE CAMPO CONTIENE EL USERNAME ORIGINAL (O ESTÁ VACÍO SI ES NUEVO)
         const originalUsername = getValue('editUserId'); 
         const type = getValue('editUserType');
         const curp = getValue('editCurp').toUpperCase();
         const rfc = getValue('editRfc').toUpperCase();
-        const fullName = getValue('editFullName');
         const username = getValue('editUsername');
-        const tecnologico = getValue('editTecnologico');
-        const newPass = getValue('editNewPassword');
-        const confirmPass = getValue('editConfirmPassword');
-        const regDateValue = getValue('editRegistrationDate');
-        const activeUntilValue = getValue('editAccountActiveUntil');
+        
+        if (!type) { alert("Seleccione un Tipo de Persona"); return; }
 
-        if (!fullName || !username) { alert('El nombre y el usuario no pueden estar vacíos.'); return; }
-
-        if (document.getElementById('editCurp') && curp) {
-            const curpRegex = /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$/;
-            if (!curpRegex.test(curp)) { alert('El formato de la CURP es inválido.'); return; }
-        }
-        if (document.getElementById('editRfc') && rfc) {
-            if (rfc.length < 12 || rfc.length > 13) { alert('El RFC debe tener 12 o 13 caracteres.'); return; }
-        }
-        if (newPass || confirmPass) {
-            if (newPass !== confirmPass) { alert('Las contraseñas no coinciden.'); return; }
-        }
-
-        // ================= CREAR NUEVO USUARIO =================
-        if (!originalUsername || originalUsername === '') {
-            if (!newPass) { alert('Debes asignar una contraseña para el nuevo usuario.'); return; }
-            if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) { alert('Este nombre de usuario ya está registrado.'); return; }
-            
-            if (type !== 'empleado') {
-                if (curp && users.some(u => u.curp === curp && u.userType !== 'empleado')) { alert('Esta CURP ya está registrada.'); return; }
-                if (rfc && users.some(u => u.rfc === rfc && u.userType !== 'empleado')) { alert('Este RFC ya está registrado.'); return; }
+        // 👇 VALIDACIÓN CRÍTICA: CURP Múltiple 👇
+        // "impedir que se vuelva a registrar excepto si es con otro tipo de persona"
+        if (curp) {
+            const conflictCurp = users.find(u => u.curp === curp && u.username !== originalUsername);
+            if (conflictCurp) {
+                // Si la CURP existe Y el tipo de persona que intentamos registrar es EL MISMO, bloqueamos.
+                // Si es DIFERENTE (ej. estudiante y empleado), lo permitimos.
+                const confType = (conflictCurp.isEmployee || conflictCurp.userType === 'admin') ? 'empleado' : conflictCurp.userType;
+                if (confType === type) {
+                    alert(`❌ Esta CURP ya está registrada como ${confType}. Solo puedes re-registrarla bajo un tipo de persona diferente.`);
+                    return;
+                }
             }
-
-            // ID Seguro para evitar "NaN"
-            const newId = users.reduce((max, u) => Math.max(max, Number(u.id) || 0), 0) + 1;
-
-            const newUser = {
-                id: newId,
-                userType: type,
-                curp: curp,
-                rfc: rfc,
-                fullName: fullName,
-                username: username,
-                tecnologico: tecnologico,
-                password: newPass,
-                registrationDate: regDateValue ? new Date(regDateValue) : new Date(),
-                accountActiveUntil: activeUntilValue ? new Date(activeUntilValue) : null,
-                isActive: true,
-                hasCredential: false 
-            };
-
-            if (type === 'estudiante') {
-                const controlNumber = getValue('editControlNumber');
-                if (!controlNumber) { alert('Ingresa el número de control.'); return; }
-                if (users.some(u => u.controlNumber === controlNumber && u.userType === 'estudiante')) { alert('Este número de control ya está registrado.'); return; }
-                
-                newUser.controlNumber = controlNumber;
-                newUser.career = getValue('editCareer');
-                newUser.semester = getValue('editSemester');
-                newUser.group = getValue('editGroup');
-            } else if (type !== 'empleado') {
-                const phoneNumber = getValue('editPhoneNumber');
-                if (!phoneNumber) { alert('Ingresa el número de teléfono.'); return; }
-                if (users.some(u => u.phoneNumber === phoneNumber && u.userType !== 'empleado')) { alert('Este número de teléfono ya está registrado.'); return; }
-                
-                newUser.phoneNumber = phoneNumber;
-            }
-
-            users.push(newUser);
-            saveState();
-            alert('✅ Usuario registrado exitosamente desde el panel.');
-            closeEditUserModal();
-            renderAdminPersonalData();
-            if (document.getElementById('adminUsersSection') && !document.getElementById('adminUsersSection').classList.contains('hidden')) renderAdminUsers();
-            return;
         }
 
-        // ================= EDITAR USUARIO EXISTENTE =================
-        const user = users.find(u => u.username === originalUsername);
-        if (!user) return;
-
-        if (document.getElementById('editCurp') && curp) {
-            if (type !== 'empleado' && users.some(u => u.username !== originalUsername && u.curp === curp && u.userType !== 'empleado')) { alert('Esta CURP ya está registrada en otro usuario.'); return; }
-            user.curp = curp;
-        }
-        if (document.getElementById('editRfc') && rfc) {
-            if (type !== 'empleado' && users.some(u => u.username !== originalUsername && u.rfc === rfc && u.userType !== 'empleado')) { alert('Este RFC ya está registrado en otro usuario.'); return; }
-            user.rfc = rfc;
-        }
+        // Validación de Username
         if (users.some(u => u.username !== originalUsername && u.username.toLowerCase() === username.toLowerCase())) {
-            alert('Este nombre de usuario ya está registrado.'); return;
+            alert('❌ Este Nombre de Usuario (Login) ya está ocupado.'); return;
         }
 
-        user.fullName = fullName;
-        user.username = username;
-        user.tecnologico = tecnologico;
+        // Construir objeto de datos
+        const userData = {
+            username: username,
+            curp: curp,
+            rfc: rfc,
+            fullName: getValue('editFullName'),
+            apPaterno: getValue('editApPaterno'),
+            apMaterno: getValue('editApMaterno'),
+            genero: getValue('editGenero'),
+            fechaNac: getValue('editFechaNac'),
+            edad: getValue('editEdad'),
+            nacionalidad: getValue('editNacionalidad'),
+            phoneNumber: getValue('editPhoneNumber'),
+            email: getValue('editEmail'),
+            gradoAcademico: getValue('editGrado'),
+            puestoEmpresa: getValue('editPuesto'),
+            
+            calle: getValue('editCalle'),
+            colonia: getValue('editColonia'),
+            municipio: getValue('editMunicipio'),
+            estado: getValue('editEstado'),
+            cp: getValue('editCP'),
+            referencia: getValue('editReferencia'),
 
-        // 👇 PROTECCIÓN DE PERMISOS: Mantiene su acceso al panel si es empleado
+            facebook: getValue('editFb'),
+            instagram: getValue('editIg'),
+            linkedin: getValue('editIn'),
+            twitter: getValue('editTw'),
+            
+            tecnologico: getValue('editTecnologico'),
+            isActive: document.getElementById('editIsActive').checked
+        };
+
+        // Fechas
+        const d1 = getValue('editRegistrationDate');
+        const d2 = getValue('editAccountActiveUntil');
+        userData.registrationDate = d1 ? new Date(d1) : new Date();
+        userData.accountActiveUntil = d2 ? new Date(d2) : null;
+
+        // Permisos y Rol
         if (type === 'empleado') {
-            user.userType = 'admin';
-            user.isEmployee = true;
+            userData.userType = 'admin';
+            userData.isEmployee = true;
         } else {
-            user.userType = type;
-            user.isEmployee = false;
+            userData.userType = type;
+            userData.isEmployee = false;
         }
 
+        // Escolares
         if (type === 'estudiante') {
-            const controlNumber = getValue('editControlNumber');
-            if (!controlNumber) { alert('Ingresa el número de control.'); return; }
-            if (users.some(u => u.username !== originalUsername && u.controlNumber === controlNumber && u.userType === 'estudiante')) { alert('Este número de control ya está registrado.'); return; }
-            
-            user.controlNumber = controlNumber;
-            user.career = getValue('editCareer');
-            user.semester = getValue('editSemester');
-            user.group = getValue('editGroup');
-            delete user.phoneNumber;
-        } else if (type === 'empleado') {
-            delete user.controlNumber;
-            delete user.career;
-            delete user.semester;
-            delete user.group;
-            delete user.phoneNumber;
-        } else {
-            const phoneNumber = getValue('editPhoneNumber');
-            if (!phoneNumber) { alert('Ingresa el número de teléfono.'); return; }
-            if (users.some(u => u.username !== originalUsername && u.phoneNumber === phoneNumber && u.userType !== 'empleado')) { alert('Este número de teléfono ya está registrado.'); return; }
-            
-            user.phoneNumber = phoneNumber;
-            delete user.controlNumber;
-            delete user.career;
-            delete user.semester;
-            delete user.group;
+            userData.controlNumber = getValue('editControlNumber');
+            userData.career = getValue('editCareer');
+            userData.semester = getValue('editSemester');
+            userData.group = getValue('editGroup');
         }
 
-        if (newPass) user.password = newPass;
-        user.registrationDate = regDateValue ? new Date(regDateValue) : user.registrationDate;
-        user.accountActiveUntil = activeUntilValue ? new Date(activeUntilValue) : user.accountActiveUntil;
+        if (!originalUsername) {
+            // ES UN ALTA NUEVA DESDE EL PANEL
+            userData.id = users.reduce((max, u) => Math.max(max, Number(u.id) || 0), 0) + 1;
+            userData.password = "123456"; // Contraseña por defecto
+            users.push(userData);
+            alert(`✅ Alta exitosa.\n\nUsuario: ${username}\nContraseña temporal: 123456\n\nPuedes cambiarla en la pestaña "Contraseñas".`);
+        } else {
+            // ES UNA MODIFICACIÓN
+            const existingUser = users.find(u => u.username === originalUsername);
+            if (existingUser) {
+                Object.assign(existingUser, userData);
+                alert('✅ Registro modificado correctamente.');
+            }
+        }
 
-        propagateUserChanges(user);
         saveState();
-
-        alert('✅ Datos actualizados correctamente.');
         closeEditUserModal();
         renderAdminPersonalData();
-        if (document.getElementById('adminUsersSection') && !document.getElementById('adminUsersSection').classList.contains('hidden')) renderAdminUsers();
-        if (document.getElementById('adminOrdersSection') && !document.getElementById('adminOrdersSection').classList.contains('hidden')) renderAdminOrders();
     });
 
     document.getElementById('invoiceForm').addEventListener('submit', function (e) {
