@@ -1588,7 +1588,7 @@
                     </div>
                 </div>
 
-            
+               
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     
@@ -1643,9 +1643,10 @@
                             <div>
                                 <label class="block text-[0.65rem] font-bold text-gray-500">Nacionalidad</label>
                                 <select id="editNacionalidad" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
-                                    <option value="Mexicana">UNO</option>
-                                    <option value="Estadounidense">DOS</option>
-                                    <option value="Canadiense">TRES</option>
+                                    <option value="">Seleccione...</option>
+                                    <option value="UNO">UNO</option>
+                                    <option value="DOS">DOS</option>
+                                    <option value="TRES">TRES</option>
                                 </select>
                             </div>
                             <div>
@@ -1659,7 +1660,10 @@
                             <div>
                                 <label class="block text-[0.65rem] font-bold text-gray-500">Grado Académico</label>
                                 <select id="editGrado" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
-                                    <option value="">Seleccione...</option><option value="Licenciatura">UNO</option><option value="Maestria">DOS</option><option value="Preparatoria">TRES</option>
+                                    <option value="">Seleccione...</option>
+                                    <option value="UNO">UNO</option>
+                                    <option value="DOS">DOS</option>
+                                    <option value="TRES">TRES</option>
                                 </select>
                             </div>
                             <div class="md:col-span-2">
@@ -1712,7 +1716,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-[0.65rem] font-bold text-gray-500">Estado</label>
-                                    <select id="editMunicipio" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
+                                    <select id="editEstado" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
                                         <option value="">Seleccione...</option>
                                         <option value="UNO">UNO</option>
                                         <option value="DOS">DOS</option>
@@ -1721,12 +1725,13 @@
                                 </div>
                                 <div>
                                     <label class="block text-[0.65rem] font-bold text-gray-500">País</label>
-                                    <select id="editMunicipio" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
+                                    <select id="editPais" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
                                         <option value="">Seleccione...</option>
                                         <option value="UNO">UNO</option>
                                         <option value="DOS">DOS</option>
                                         <option value="TRES">TRES</option>
                                     </select>
+                                </div>
                                 <div>
                                     <label class="block text-[0.65rem] font-bold text-gray-500">C.P.</label>
                                     <select id="editCP" class="w-full border-b border-gray-300 px-1 py-1 text-sm focus:outline-none focus:border-blue-500">
@@ -4861,14 +4866,14 @@ function renderCustomerActiveOrders() {
             setValue('editUrl', user.url);
             setValue('editWww', user.www);
 
-        } else {
+        } else {    
             // ES ALTA NUEVA
             document.getElementById('editUserModalTitle').textContent = `Alta de Nuevo Registro`;
             document.getElementById('btnBaja').classList.add('hidden'); // Ocultar botón borrar
             setValue('editUserId', '');
-            setValue('editNacionalidad', 'Mexicana');
-            setValue('editEstado', 'Chiapas');
-            setValue('editPais', 'México');
+            setValue('editNacionalidad', '');
+            setValue('editEstado', '');
+            setValue('editPais', '');
             setValue('editTecnologico', 'TecNM campus Comitán');
         }
 
@@ -5009,16 +5014,22 @@ function renderCustomerActiveOrders() {
         const type = getValue('editUserType');
         const curp = getValue('editCurp').toUpperCase();
         const rfc = getValue('editRfc').toUpperCase();
-        const username = getValue('editUsername');
+        
+        // 👇 AUTO-GENERAMOS EL USUARIO PARA QUE FUNCIONE SIN LA CAJA DE TEXTO 👇
+        let username = originalUsername; 
+        if (!username) {
+            // Si es un ALTA NUEVA, el usuario (Login) será su CURP automáticamente
+            username = curp; 
+        }
         
         if (!type) { alert("Seleccione un Tipo de Persona"); return; }
 
         // Validación de Username
         if (users.some(u => u.username !== originalUsername && u.username.toLowerCase() === username.toLowerCase())) {
-            alert('❌ Este Nombre de Usuario (Login) ya está ocupado.'); return;
+            alert('❌ Este Nombre de Usuario / CURP ya está ocupado.'); return;
         }
 
-        /// Construir objeto de datos
+        // Construir objeto de datos
         const userData = {
             username: username,
             curp: curp,
@@ -5052,7 +5063,8 @@ function renderCustomerActiveOrders() {
             url: getValue('editUrl'),
             www: getValue('editWww'),
             
-            tecnologico: getValue('editTecnologico')
+            // 👇 FIJAMOS EL PLANTEL INTERNAMENTE 👇
+            tecnologico: 'TecNM campus Comitán'
         };
 
         // Permisos y Rol
