@@ -5015,19 +5015,22 @@ function renderCustomerActiveOrders() {
         const curp = getValue('editCurp').toUpperCase();
         const rfc = getValue('editRfc').toUpperCase();
         
-        // 👇 AUTO-GENERAMOS EL USUARIO PARA QUE FUNCIONE SIN LA CAJA DE TEXTO 👇
-        let username = originalUsername; 
-        if (!username) {
-            // Si es un ALTA NUEVA, el usuario (Login) será su CURP automáticamente
-            username = curp; 
-        }
-        
         if (!type) { alert("Seleccione un Tipo de Persona"); return; }
 
-        // Validación de Username
-        if (users.some(u => u.username !== originalUsername && u.username.toLowerCase() === username.toLowerCase())) {
-            alert('❌ Este Nombre de Usuario / CURP ya está ocupado.'); return;
-        }
+// 👇 AUTO-GENERAMOS EL USUARIO (Soporta múltiples roles) 👇
+let username = originalUsername; 
+if (!username) {
+    username = curp; 
+    // Si la CURP ya se usa en otro rol, le agregamos el rol al final para que puedan iniciar sesión
+    if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+        username = curp + '_' + type;
+    }
+}
+
+// Validación de Seguridad Final
+if (users.some(u => u.username !== originalUsername && u.username.toLowerCase() === username.toLowerCase())) {
+    alert('❌ Ocurrió un error: Este identificador ya está ocupado.'); return;
+}
 
         // Construir objeto de datos
         const userData = {
@@ -5998,6 +6001,197 @@ function renderCustomerActiveOrders() {
             list.innerHTML = `<div class="p-4 bg-red-50 text-red-700 rounded-lg border border-red-200 font-bold shadow-sm">⚠️ Hay datos corruptos en tu base de datos, pero la app sigue funcionando. Entra a Datos Personales para revisar.</div>`;
         }
     };
+
+    // =====================================================================
+    // 🛡️ ACTUALIZACIÓN: ALERTA INTELIGENTE DE CURP DUPLICADA
+    // =====================================================================
+    (function() {
+        // 1. Inyectar el Modal HTML dinámicamente (El diseño de la ventana de alerta)
+        if (!document.getElementById('duplicateCurpModal')) {
+            const modalHTML = `
+            <div id="duplicateCurpModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-80 flex items-center justify-center z-[70] p-4 backdrop-blur-sm">
+                <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl p-6 text-center transform transition-all scale-100">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-red-50">
+                        <span class="text-3xl">⚠️</span>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800 mb-2">CURP Ya Registrada</h3>
+                    <p class="text-sm text-gray-600 mb-6" id="duplicateCurpMsg">Esta CURP ya pertenece a un usuario.</p>
+                    
+                    <div class="flex flex-col gap-3">
+                        <button onclick="dupActionCancel()" class="w-full bg-gray-200 text-gray-800 py-3 rounded-xl font-bold shadow-sm hover:bg-gray-300 transition-colors flex justify-center items-center gap-2">
+                            ❌ Cancelar (Limpiar Registro Nuevo)
+                        </button>
+                        <button onclick="dupActionModify()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-blue-700 transition-colors flex justify-center items-center gap-2">
+                            ✏️ Modificar Registro Existente
+                        </button>
+                        <button onclick="dupActionDelete()" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-red-700 transition-colors flex justify-center items-center gap-2">
+                            🗑 Borrar Registro por Completo
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        // Variable temporal para recordar qué usuario causó el conflicto
+        window.conflictUserCache = null;
+
+        // 2. Sobrescribir la función de validación de CURP con la nueva lógica
+        // 2. Sobrescribir validación: AHORA VALIDA CURP + TIPO DE PERSONA
+        window.validateCurpInline = function() {
+            const curpInput = document.getElementById('editCurp');
+            const typeEl = document.getElementById('editUserType');
+            if (!curpInput || !typeEl) return;
+            
+            const curp = curpInput.value.trim().toUpperCase();
+            const selectedType = typeEl.value;
+            const originalUsername = document.getElementById('editUserId') ? document.getElementById('editUserId').value : '';
+            const msgEl = document.getElementById('curpValidationMsg');
+            const btnAlta = document.getElementById('btnAlta');
+
+            if (msgEl) msgEl.classList.add('hidden');
+            curpInput.classList.remove('border-red-500', 'bg-red-100', 'text-red-900');
+            if (btnAlta) {
+                btnAlta.disabled = false;
+                btnAlta.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            if (curp.length === 18) {
+                if (!selectedType) {
+                    if (msgEl) {
+                        msgEl.textContent = '⚠️ Selecciona primero el Tipo de Persona.';
+                        msgEl.className = 'text-[0.7rem] font-bold mt-1 text-yellow-600 block';
+                        msgEl.classList.remove('hidden');
+                    }
+                    return;
+                }
+
+                // 🛡️ LÓGICA PRINCIPAL: Buscar si existe la MISMA CURP con el MISMO ROL
+                const conflictCurp = users.find(u => {
+                    if (u.curp !== curp || u.username === originalUsername) return false;
+                    const uType = (u.isEmployee || u.userType === 'admin') ? 'empleado' : u.userType;
+                    return uType === selectedType;
+                });
+                
+                if (conflictCurp) {
+                    // CONFLICTO EXACTO: Mostrar la alerta emergente
+                    window.conflictUserCache = conflictCurp;
+                    const msg = document.getElementById('duplicateCurpMsg');
+                    if (msg) {
+                        msg.innerHTML = "La CURP <b class='text-slate-800 font-mono'>" + curp + "</b> ya está registrada a nombre de:<br><b class='text-blue-600 text-lg block mt-2'>" + conflictCurp.fullName + "</b><span class='text-xs uppercase bg-gray-200 px-2 py-0.5 rounded mt-1 inline-block'>" + conflictCurp.userType + "</span><br><br>¿Qué deseas hacer?";
+                    }
+                    
+                    document.getElementById('duplicateCurpModal').classList.remove('hidden');
+                    
+                    if (msgEl) {
+                        msgEl.textContent = '❌ CURP ya registrada en este rol.';
+                        msgEl.className = 'text-[0.7rem] font-bold mt-1 text-red-500 block';
+                        msgEl.classList.remove('hidden');
+                    }
+                    curpInput.classList.add('border-red-500', 'bg-red-100', 'text-red-900');
+                    if (btnAlta) {
+                        btnAlta.disabled = true;
+                        btnAlta.classList.add('opacity-50', 'cursor-not-allowed');
+                    }
+                } else {
+                    // Verificar si existe en OTRO rol (Es informativo, PERO DEJA GUARDAR)
+                    const otherRole = users.find(u => u.curp === curp && u.username !== originalUsername);
+                    
+                    if (msgEl) {
+                        msgEl.classList.remove('hidden');
+                        if (otherRole) {
+                            msgEl.textContent = `ℹ️ CURP existente como ${otherRole.userType}, permitida como ${selectedType}.`;
+                            msgEl.className = 'text-[0.7rem] font-bold mt-1 text-blue-600 block';
+                        } else {
+                            msgEl.textContent = '✅ CURP disponible.';
+                            msgEl.className = 'text-[0.7rem] font-bold mt-1 text-green-600 block';
+                        }
+                    }
+
+                    // Autollenado de Fecha de nacimiento normal
+                    const yy = curp.substring(4, 6);
+                    const mm = curp.substring(6, 8);
+                    const dd = curp.substring(8, 10);
+                    const char17 = curp.charAt(16); 
+                    const year = /[A-Z]/.test(char17) ? "20" + yy : "19" + yy;
+                    const dateStr = year + "-" + mm + "-" + dd;
+                    
+                    const fechaNacEl = document.getElementById('editFechaNac');
+                    if (fechaNacEl) {
+                        fechaNacEl.value = dateStr;
+                        if (typeof calculateAgeFromDate === 'function') calculateAgeFromDate(dateStr);
+                    }
+                }
+            }
+        };
+        // 3. Lógica de los 3 Botones
+        window.dupActionCancel = function() {
+            document.getElementById('duplicateCurpModal').classList.add('hidden');
+            const form = document.getElementById('editUserForm');
+            if (form) form.reset();
+            
+            const curpInput = document.getElementById('editCurp');
+            if (curpInput) curpInput.classList.remove('border-red-500', 'bg-red-100', 'text-red-900');
+            
+            const msgEl = document.getElementById('curpValidationMsg');
+            if (msgEl) msgEl.classList.add('hidden');
+            
+            const btnAlta = document.getElementById('btnAlta');
+            if (btnAlta) {
+                btnAlta.disabled = false;
+                btnAlta.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+            
+            const userIdEl = document.getElementById('editUserId');
+            if (userIdEl) userIdEl.value = '';
+            
+            if (typeof toggleEditUserFields === 'function') toggleEditUserFields();
+        };
+
+        window.dupActionModify = function() {
+            document.getElementById('duplicateCurpModal').classList.add('hidden');
+            if (window.conflictUserCache && window.conflictUserCache.username) {
+                if (typeof openEditUserModal === 'function') {
+                    // Mandamos llamar el editor con el usuario encontrado
+                    openEditUserModal(window.conflictUserCache.username);
+                }
+            }
+        };
+
+        window.dupActionDelete = function() {
+            if (window.conflictUserCache && window.conflictUserCache.username) {
+                document.getElementById('duplicateCurpModal').classList.add('hidden');
+                
+                if (confirm("⚠️ ATENCIÓN: ¿Estás seguro de BORRAR POR COMPLETO el registro de " + window.conflictUserCache.fullName + "?\nEsta acción no se puede deshacer.")) {
+                    
+                    // 1. Borramos al usuario del array global
+                    users = users.filter(u => u.username !== window.conflictUserCache.username);
+                    
+                    // 2. Guardamos y refrescamos tablas
+                    if (typeof saveState === 'function') saveState(); 
+                    if (typeof renderAdminPersonalData === 'function') renderAdminPersonalData();
+                    if (typeof renderAdminUsers === 'function') renderAdminUsers();
+                    
+                    alert('✅ Registro borrado exitosamente.');
+                    
+                    // 3. MAGIA: Re-validamos la caja actual para que calcule la edad y nos deje continuar con el nuevo usuario
+                    window.validateCurpInline();
+                } else {
+                    window.dupActionCancel();
+                }
+            }
+        };
+
+        // 4. Reconectar el evento de escritura para asegurarnos de que use este nuevo módulo
+        const curpInput = document.getElementById('editCurp');
+        if (curpInput) {
+            // Clonamos para eliminar comportamientos viejos y conectamos el nuevo
+            const newCurpInput = curpInput.cloneNode(true);
+            curpInput.parentNode.replaceChild(newCurpInput, curpInput);
+            newCurpInput.addEventListener('input', window.validateCurpInline);
+        }
+        
+    })();
 </script>
 </body>
 <html>
