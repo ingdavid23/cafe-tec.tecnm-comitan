@@ -2870,22 +2870,55 @@
             try {
                 console.log("🔄 Iniciando conexión en Tiempo Real...");
 
-            // 1. Escuchar PEDIDOS en tiempo real (Refleja los cambios de estado instantáneamente)
-            db.collection("cafetec").doc("orders").onSnapshot((doc) => {
-                    orders = doc.exists ? (doc.data().data || []) : [];
+           // 1. Escuchar PEDIDOS en tiempo real (Refleja los cambios de estado instantáneamente)
+           db.collection("cafetec").doc("orders").onSnapshot((doc) => {
+                orders = doc.exists ? (doc.data().data || []) : [];
+                
+                // =====================================================================
+                // 📢 COMPONENTE IOT: BOCINA INTELIGENTE (TEXT-TO-SPEECH EN COCINA)
+                // =====================================================================
+                // Solo activamos la voz si el que está usando la app es el Administrador
+                if (currentUser && (currentUser.userType === 'admin' || currentUser.isEmployee)) {
                     
-                    // Actualizar Admin si lo está viendo
-                    if (document.getElementById('adminOrdersSection') && !document.getElementById('adminOrdersSection').classList.contains('hidden')) renderAdminOrders();
-                    if (document.getElementById('adminInvoicingSection') && !document.getElementById('adminInvoicingSection').classList.contains('hidden')) renderAdminInvoicing();
+                    // Inicializar memoria para no leer pedidos viejos al recargar la página
+                    if (!window.spokenOrdersMem) window.spokenOrdersMem = orders.map(o => o.id);
                     
-                    // 👇 MAGIA AQUÍ: Actualizamos la Cocina en Vivo 👇
-                    if (document.getElementById('adminKitchenSection') && !document.getElementById('adminKitchenSection').classList.contains('hidden')) {
-                        if (typeof renderKitchenView === 'function') renderKitchenView();
-                    }
+                    // Filtrar: Buscar pedidos que sean nuevos ('pendiente') y no estén en la memoria
+                    const newPending = orders.filter(o => o.status === 'pendiente' && !window.spokenOrdersMem.includes(o.id));
+                    
+                    newPending.forEach(order => {
+                        window.spokenOrdersMem.push(order.id); // Lo guardamos para no repetirlo
+                        
+                        if ('speechSynthesis' in window) {
+                            // Extraemos las cantidades y nombres de lo que pidió
+                            const listaProductos = order.items.map(i => `${i.quantity} ${i.name}`).join(', ');
+                            const texto = `Nueva orden recibida. Preparar: ${listaProductos}.`;
+                            
+                            // Configuramos al locutor robótico
+                            const voz = new SpeechSynthesisUtterance(texto);
+                            voz.lang = 'es-MX'; // Español con acento latino/mexicano
+                            voz.rate = 1.0; // Velocidad normal de lectura
+                            voz.pitch = 1.0; // Tono de voz estándar
+                            
+                            window.speechSynthesis.speak(voz);
+                            console.log("🔊 Bocina IoT Activada: " + texto);
+                        }
+                    });
+                }
+                // =====================================================================
 
-                    // Actualizar Cliente si está viendo el menú
-                    if (document.getElementById('customerMenu') && !document.getElementById('customerMenu').classList.contains('hidden')) renderCustomerActiveOrders();
-                });
+                // Actualizar Admin si lo está viendo
+                if (document.getElementById('adminOrdersSection') && !document.getElementById('adminOrdersSection').classList.contains('hidden')) renderAdminOrders();
+                if (document.getElementById('adminInvoicingSection') && !document.getElementById('adminInvoicingSection').classList.contains('hidden')) renderAdminInvoicing();
+                
+                // 👇 MAGIA AQUÍ: Actualizamos la Cocina en Vivo 👇
+                if (document.getElementById('adminKitchenSection') && !document.getElementById('adminKitchenSection').classList.contains('hidden')) {
+                    if (typeof renderKitchenView === 'function') renderKitchenView();
+                }
+
+                // Actualizar Cliente si está viendo el menú
+                if (document.getElementById('customerMenu') && !document.getElementById('customerMenu').classList.contains('hidden')) renderCustomerActiveOrders();
+            });
 
                 // 2. Carga inicial OBLIGATORIA (Evita que la pantalla se quede congelada al inicio)
                 const getDocData = async (docName) => {
