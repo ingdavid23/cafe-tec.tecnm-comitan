@@ -6516,6 +6516,548 @@ if (users.some(u => u.username !== originalUsername && u.username.toLowerCase() 
         };
 
     })();
+    // =====================================================================
+    // 🛡️ PARCHE V7: CREACIÓN DINÁMICA DE NUEVOS CATÁLOGOS Y CAMPOS
+    // =====================================================================
+    (function() {
+        // 1. Inyectamos el botón de "Nuevo Catálogo" junto a la lista desplegable
+        const selectCat = document.getElementById('crudCatalogSelect');
+        if (selectCat && !document.getElementById('btnCreateCatalogType')) {
+            const container = selectCat.parentElement;
+            container.classList.add('flex', 'items-end', 'gap-2');
+            
+            const btnHtml = `<button id="btnCreateCatalogType" type="button" onclick="window.createNewCatalogCategory()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-4 rounded-lg shadow-sm transition-colors text-xs whitespace-nowrap h-full border-2 border-purple-700">➕ Crear Catálogo</button>`;
+            container.insertAdjacentHTML('beforeend', btnHtml);
+        }
+
+        // 2. Función para crear un TIPO de catálogo totalmente nuevo
+        window.createNewCatalogCategory = function() {
+            const catName = prompt("Ingresa el nombre del nuevo catálogo\n(Ejemplo: Estado Civil, Tipo de Sangre, Turno):");
+            if (!catName || catName.trim() === '') return;
+            
+            // Creamos un ID técnico seguro (sin espacios ni acentos)
+            const catId = 'custom_' + catName.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '');
+            
+            if (window.dynamicCatalogs[catId]) {
+                alert("❌ Ese catálogo ya existe en el sistema.");
+                return;
+            }
+
+            // Inicializamos la base de datos de este nuevo catálogo
+            window.dynamicCatalogs[catId] = [];
+            
+            // Guardamos el metadato para recordarlo
+            if (!window.dynamicCatalogs._metadata) window.dynamicCatalogs._metadata = [];
+            window.dynamicCatalogs._metadata.push({ id: catId, label: catName.trim() });
+            
+            // Sincronizamos con Firebase de inmediato
+            if(typeof window.saveCatalogsToFirebase === 'function') window.saveCatalogsToFirebase();
+            
+            alert(`✅ Catálogo "${catName.trim()}" creado con éxito.\nAhora puedes seleccionarlo en la lista para agregarle opciones.`);
+            window.refreshCatalogSelects();
+        };
+
+        // 3. Refrescar la lista de selección del Administrador
+        window.refreshCatalogSelects = function() {
+            const selectEl = document.getElementById('crudCatalogSelect');
+            if (!selectEl) return;
+            
+            const currentVal = selectEl.value;
+            
+            // Limpiamos solo los creados por el usuario para re-dibujarlos
+            Array.from(selectEl.options).forEach(opt => {
+                if (opt.value.startsWith('custom_')) opt.remove();
+            });
+
+            // Dibujamos los catálogos personalizados guardados en memoria
+            if (window.dynamicCatalogs._metadata) {
+                window.dynamicCatalogs._metadata.forEach(cat => {
+                    const option = new Option(`✨ ${cat.label}`, cat.id);
+                    selectEl.add(option);
+                });
+            }
+            
+            selectEl.value = currentVal;
+            window.injectCustomFieldsToPersonalData();
+        };
+
+        // 4. MAGIA: Dibujar los nuevos campos en la ficha de Datos Personales
+        window.injectCustomFieldsToPersonalData = function() {
+            // Buscamos el contenedor de Datos Personales en el Modal de Edición
+            const personalDataGrid = document.querySelector('#editUserForm .bg-white.border.rounded-lg .p-3.grid');
+            if (!personalDataGrid) return;
+
+            // Limpiamos campos dinámicos viejos para no duplicar
+            document.querySelectorAll('.custom-dynamic-field').forEach(el => el.remove());
+
+            if (window.dynamicCatalogs._metadata) {
+                window.dynamicCatalogs._metadata.forEach(cat => {
+                    // Creamos el HTML del nuevo Select para el formulario
+                    const fieldHtml = `
+                        <div class="custom-dynamic-field">
+                            <label class="block text-[0.65rem] font-bold text-purple-600 uppercase">✨ ${cat.label}</label>
+                            <select id="editCustom_${cat.id}" class="w-full border-b border-purple-300 bg-purple-50/50 px-1 py-1 text-sm focus:outline-none focus:border-purple-600 font-semibold text-purple-900">
+                                <option value="">Seleccione...</option>
+                            </select>
+                        </div>
+                    `;
+                    // Lo inyectamos al final de los datos personales
+                    personalDataGrid.insertAdjacentHTML('beforeend', fieldHtml);
+                });
+            }
+            
+            // Rellenamos las opciones de este nuevo Select
+            if(typeof window.populateAllDropdowns === 'function') window.populateAllDropdowns();
+        };
+
+        // 5. Sobrescribir el rellenador para que incluya los nuevos campos y los que te faltaban
+        const originalPopulate = window.populateAllDropdowns;
+        window.populateAllDropdowns = function() {
+            if (originalPopulate) originalPopulate(); // Rellena los básicos
+            
+            // Vinculamos los catálogos que te faltaban en tu código original
+            const extraMappings = {
+                'editGenero': 'generos',
+                'editCareer': 'carreras',
+                'editSemester': 'semestres',
+                'editGroup': 'grupos'
+            };
+
+            // Asegurarnos de que existan en la memoria del select principal
+            const adminSelect = document.getElementById('crudCatalogSelect');
+            if(adminSelect) {
+                if(!Array.from(adminSelect.options).some(o => o.value === 'generos')) adminSelect.add(new Option('Géneros', 'generos'));
+                if(!Array.from(adminSelect.options).some(o => o.value === 'carreras')) adminSelect.add(new Option('Carreras', 'carreras'));
+                if(!Array.from(adminSelect.options).some(o => o.value === 'semestres')) adminSelect.add(new Option('Semestres', 'semestres'));
+                if(!Array.from(adminSelect.options).some(o => o.value === 'grupos')) adminSelect.add(new Option('Grupos', 'grupos'));
+            }
+
+            for (const [selectId, catalogKey] of Object.entries(extraMappings)) {
+                const selectEl = document.getElementById(selectId);
+                if (selectEl) {
+                    const currentVal = selectEl.value; 
+                    selectEl.innerHTML = '<option value="">Seleccione...</option>';
+                    const catData = window.dynamicCatalogs[catalogKey] || [];
+                    catData.sort((a, b) => a.desc.localeCompare(b.desc)).forEach(item => {
+                        selectEl.innerHTML += `<option value="${item.desc}">${item.desc}</option>`;
+                    });
+                    if (catData.some(i => i.desc === currentVal)) selectEl.value = currentVal;
+                }
+            }
+
+            // Rellenamos los campos CREADOS POR EL USUARIO
+            if (window.dynamicCatalogs._metadata) {
+                window.dynamicCatalogs._metadata.forEach(cat => {
+                    const selectEl = document.getElementById(`editCustom_${cat.id}`);
+                    if (selectEl) {
+                        const currentVal = selectEl.value;
+                        selectEl.innerHTML = '<option value="">Seleccione...</option>';
+                        const catData = window.dynamicCatalogs[cat.id] || [];
+                        catData.sort((a, b) => a.desc.localeCompare(b.desc)).forEach(item => {
+                            selectEl.innerHTML += `<option value="${item.desc}">${item.desc}</option>`;
+                        });
+                        if (catData.some(i => i.desc === currentVal)) selectEl.value = currentVal;
+                    }
+                });
+            }
+        };
+
+        // 6. Sobrescribir la apertura del modal para cargar los datos guardados en la BD
+        const originalOpenEdit = window.openEditUserModal;
+        window.openEditUserModal = function(username) {
+            window.injectCustomFieldsToPersonalData(); // Asegurarnos de que existan
+            originalOpenEdit(username); // Llamada original
+            
+            if (username) {
+                const user = users.find(u => u.username === username);
+                if (user && user.customData && window.dynamicCatalogs._metadata) {
+                    window.dynamicCatalogs._metadata.forEach(cat => {
+                        const selectEl = document.getElementById(`editCustom_${cat.id}`);
+                        if (selectEl && user.customData[cat.id]) {
+                            selectEl.value = user.customData[cat.id]; // Le pone el valor guardado
+                        }
+                    });
+                }
+            }
+        };
+
+        // 7. Interceptor Silencioso: Al guardar un usuario, extraer y guardar los campos dinámicos
+        const formPersonalData = document.getElementById('editUserForm');
+        if (formPersonalData) {
+            formPersonalData.addEventListener('submit', function(e) {
+                setTimeout(() => {
+                    const curpActual = document.getElementById('editCurp').value.toUpperCase();
+                    const userObj = users.find(u => u.curp === curpActual);
+                    if (userObj) {
+                        let customDataToSave = {};
+                        if (window.dynamicCatalogs._metadata) {
+                            window.dynamicCatalogs._metadata.forEach(cat => {
+                                const selectEl = document.getElementById(`editCustom_${cat.id}`);
+                                if (selectEl) customDataToSave[cat.id] = selectEl.value;
+                            });
+                        }
+                        userObj.customData = customDataToSave;
+                        if(typeof window.saveState === 'function') saveState(); // Forzar guardado en Firebase
+                    }
+                }, 200); // 200ms de retraso para asegurar que el registro original ya terminó
+            });
+        }
+
+        // 8. Auto-Ejecutor para inicializar el sistema después de que Firebase cargue
+        setTimeout(() => {
+            window.refreshCatalogSelects();
+        }, 1500);
+
+    })();
+
+    // =====================================================================
+    // 🛡️ PARCHE V8: EDICIÓN Y ELIMINACIÓN DE CATÁLOGOS CREADOS (Custom)
+    // =====================================================================
+    (function() {
+        // 1. Inyectamos los botones de Control (➕ ✏️ 🗑️) justo al lado de la lista desplegable
+        const selectCat = document.getElementById('crudCatalogSelect');
+        if (selectCat && !document.getElementById('btnEditCatalogType')) {
+            // Creamos un contenedor flexible para alinear el select y los botones
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex items-center gap-2';
+            
+            // Movemos el select adentro de este nuevo contenedor
+            selectCat.parentNode.insertBefore(wrapper, selectCat);
+            wrapper.appendChild(selectCat);
+            
+            // Inyectamos los 3 botones de control de catálogos
+            const buttonsHtml = `
+                <button id="btnCreateCatalogTypeV8" type="button" onclick="window.createNewCatalogCategory()" title="Crear Nuevo Catálogo" class="bg-purple-600 hover:bg-purple-700 text-white font-bold p-2.5 rounded-lg shadow-sm transition-colors text-sm border border-purple-700 flex-shrink-0">➕</button>
+                <button id="btnEditCatalogType" type="button" onclick="window.editCatalogCategory()" title="Renombrar Catálogo" class="hidden bg-blue-600 hover:bg-blue-700 text-white font-bold p-2.5 rounded-lg shadow-sm transition-colors text-sm border border-blue-700 flex-shrink-0">✏️</button>
+                <button id="btnDeleteCatalogType" type="button" onclick="window.deleteCatalogCategory()" title="Eliminar Catálogo Completo" class="hidden bg-red-600 hover:bg-red-700 text-white font-bold p-2.5 rounded-lg shadow-sm transition-colors text-sm border border-red-700 flex-shrink-0">🗑️</button>
+            `;
+            wrapper.insertAdjacentHTML('beforeend', buttonsHtml);
+            
+            // Limpiamos el botón viejo de V7 si quedó por ahí
+            const oldBtn = document.getElementById('btnCreateCatalogType');
+            if (oldBtn && oldBtn.id !== 'btnCreateCatalogTypeV8') oldBtn.remove();
+        }
+
+        // 2. Interceptamos la función que carga el grid para MOSTRAR u OCULTAR los botones
+        const originalLoadCat = window.loadCatalogData;
+        window.loadCatalogData = function() {
+            if (originalLoadCat) originalLoadCat(); // Corre la lógica original de cargar tabla
+            
+            const val = document.getElementById('crudCatalogSelect').value;
+            const btnEdit = document.getElementById('btnEditCatalogType');
+            const btnDel = document.getElementById('btnDeleteCatalogType');
+            
+            if (btnEdit && btnDel) {
+                // Solo mostrar si es un catálogo personalizado (Empieza con 'custom_')
+                if (val && val.startsWith('custom_')) {
+                    btnEdit.classList.remove('hidden');
+                    btnDel.classList.remove('hidden');
+                } else {
+                    btnEdit.classList.add('hidden');
+                    btnDel.classList.add('hidden');
+                }
+            }
+        };
+
+        // 3. FUNCIÓN: Renombrar un catálogo existente
+        window.editCatalogCategory = function() {
+            const selectEl = document.getElementById('crudCatalogSelect');
+            const catId = selectEl.value;
+            
+            if (!catId.startsWith('custom_')) return; // Seguro extra
+            
+            const meta = window.dynamicCatalogs._metadata.find(m => m.id === catId);
+            if (!meta) return;
+
+            const newName = prompt("✏️ Ingresa el nuevo nombre para este catálogo:", meta.label);
+            
+            if (!newName || newName.trim() === '' || newName.trim() === meta.label) return; // Si cancela o no cambia, salir
+
+            // Actualizamos la etiqueta
+            meta.label = newName.trim();
+            
+            // Guardamos en Firebase
+            if(typeof window.saveCatalogsToFirebase === 'function') window.saveCatalogsToFirebase();
+            
+            alert(`✅ Catálogo renombrado a "${meta.label}".`);
+            window.refreshCatalogSelects(); // Refresca las listas
+        };
+
+        // 4. FUNCIÓN: Eliminar un catálogo por completo
+        window.deleteCatalogCategory = function() {
+            const selectEl = document.getElementById('crudCatalogSelect');
+            const catId = selectEl.value;
+            
+            if (!catId.startsWith('custom_')) return; // Seguro extra
+
+            const meta = window.dynamicCatalogs._metadata.find(m => m.id === catId);
+            if (!meta) return;
+
+            const msgConfirm = `⚠️ ATENCIÓN: ¿Estás seguro de ELIMINAR POR COMPLETO el catálogo "${meta.label}"?\n\nEsto borrará todas sus opciones (claves/descripciones) y la lista desaparecerá de la pestaña de Datos Personales.\n\nEsta acción NO se puede deshacer.`;
+
+            if (confirm(msgConfirm)) {
+                // 1. Eliminar del registro de metadatos
+                window.dynamicCatalogs._metadata = window.dynamicCatalogs._metadata.filter(m => m.id !== catId);
+                
+                // 2. Eliminar toda la data interna (sus opciones)
+                delete window.dynamicCatalogs[catId];
+                
+                // 3. Subir a Firebase
+                if(typeof window.saveCatalogsToFirebase === 'function') window.saveCatalogsToFirebase();
+                
+                // 4. Limpiar la interfaz
+                selectEl.value = '';
+                window.loadCatalogData(); // Al pasar en vacío, se limpian y ocultan los botones
+                window.refreshCatalogSelects(); // Actualiza el Select del Admin
+                window.injectCustomFieldsToPersonalData(); // Remueve el campo de Datos Personales
+                
+                alert("🗑️ Catálogo eliminado exitosamente de la base de datos.");
+            }
+        };
+
+    })();
+
+    // =====================================================================
+    // 🛡️ PARCHE V9: ACTUALIZACIÓN Y ELIMINACIÓN EN CASCADA (BASE DE DATOS)
+    // =====================================================================
+    (function() {
+        const relacionMaestra = {
+            'nombres': 'fullName',
+            'apPaterno': 'apPaterno',
+            'apMaterno': 'apMaterno',
+            'nacionalidades': 'nacionalidad',
+            'grados': 'gradoAcademico',
+            'puestos': 'puestoEmpresa',
+            'calles': 'calle',
+            'colonias': 'colonia',
+            'municipios': 'municipio',
+            'estados': 'estado',
+            'paises': 'pais'
+        };
+
+        // 1. Modificamos la Edición (Update) para que cambie en Cascada
+        const oldCrudEdit = window.crudActionEdit;
+        window.crudActionEdit = function() {
+            if (window.crudState === 'EDIT') {
+                const input = document.getElementById('crudDescriptionInput');
+                const editVal = input.value.trim().toUpperCase();
+                const editId = parseInt(document.getElementById('crudEditingId').value);
+                const catName = document.getElementById('crudCatalogSelect').value;
+                const oldDesc = window.selectedGridItem ? window.selectedGridItem.desc : '';
+
+                if (!editVal || !catName) return oldCrudEdit(); // Dejamos que el original tire el error de vacío
+                
+                // Verificamos duplicado
+                const isDuplicate = window.dynamicCatalogs[catName].some(i => i.desc === editVal && i.id !== editId);
+                if (isDuplicate) {
+                    alert("❌ ERROR: Esta descripción ya existe.");
+                    return;
+                }
+
+                // Hacemos el cambio en el catálogo
+                const itemIndex = window.dynamicCatalogs[catName].findIndex(i => i.id === editId);
+                if (itemIndex > -1) {
+                    window.dynamicCatalogs[catName][itemIndex].desc = editVal;
+                    
+                    // 🔥 ACTUALIZACIÓN EN CASCADA A LA BASE DE DATOS DE USUARIOS 🔥
+                    let changesMade = false;
+                    const campoUsuario = relacionMaestra[catName];
+
+                    users.forEach(u => {
+                        // Para campos predeterminados
+                        if (campoUsuario && u[campoUsuario] && u[campoUsuario].toString().toUpperCase() === oldDesc.toUpperCase()) {
+                            u[campoUsuario] = editVal;
+                            changesMade = true;
+                        }
+                        // Para campos dinámicos que tú creaste (Ej. Tallas, Turnos)
+                        else if (catName.startsWith('custom_') && u.customData && u.customData[catName] && u.customData[catName].toString().toUpperCase() === oldDesc.toUpperCase()) {
+                            u.customData[catName] = editVal;
+                            changesMade = true;
+                        }
+                    });
+
+                    // Si se afectó a algún usuario, Guardamos todo en Firebase
+                    if (changesMade) {
+                        saveState(); 
+                        alert(`✅ Catálogo actualizado y sincronizado en cascada con los usuarios de la base de datos.`);
+                    } else {
+                        if(typeof window.saveCatalogsToFirebase === 'function') window.saveCatalogsToFirebase();
+                        alert("✅ Registro actualizado en el catálogo.");
+                    }
+                }
+                window.resetCrudUI();
+            } else {
+                // Si es IDLE y va a entrar a EDIT, usar el original
+                if(oldCrudEdit) oldCrudEdit();
+            }
+        };
+
+        // 2. Modificamos la Eliminación (Delete) para que elimine en Cascada
+        window.confirmCatalogDelete = function(action) {
+            const modal = document.getElementById('catalogDeleteModal');
+            if(modal) modal.classList.add('hidden');
+            
+            if (action === 'SI' && window.itemToDeleteCache) {
+                const { catName, id, desc } = window.itemToDeleteCache;
+                
+                // Eliminamos del catálogo
+                window.dynamicCatalogs[catName] = window.dynamicCatalogs[catName].filter(i => i.id !== id);
+                
+                // 🔥 ELIMINACIÓN EN CASCADA A LA BASE DE DATOS DE USUARIOS 🔥
+                let changesMade = false;
+                const campoUsuario = relacionMaestra[catName];
+
+                users.forEach(u => {
+                    // Limpiamos el dato de los usuarios que lo tenían asignado
+                    if (campoUsuario && u[campoUsuario] && u[campoUsuario].toString().toUpperCase() === desc.toUpperCase()) {
+                        u[campoUsuario] = ""; 
+                        changesMade = true;
+                    }
+                    else if (catName.startsWith('custom_') && u.customData && u.customData[catName] && u.customData[catName].toString().toUpperCase() === desc.toUpperCase()) {
+                        u.customData[catName] = ""; 
+                        changesMade = true;
+                    }
+                });
+
+                if (changesMade) {
+                    saveState(); // Guarda en Firebase
+                    alert(`🗑️ Registro eliminado del catálogo y limpiado de los perfiles de los usuarios afectados.`);
+                } else {
+                    if(typeof window.saveCatalogsToFirebase === 'function') window.saveCatalogsToFirebase();
+                    alert("🗑️ Registro eliminado del catálogo de manera definitiva.");
+                }
+                
+                window.itemToDeleteCache = null;
+                window.resetCrudUI();
+            } else if (action === 'NO' || action === 'CANCELAR') {
+                window.itemToDeleteCache = null; 
+                window.resetCrudUI(); 
+            }
+        };
+
+        // 3. Adaptamos la comprobación de dependencia para advertir sobre la Cascada
+        window.crudActionDelete = function() {
+            if (!window.selectedGridItem) return;
+            const catName = document.getElementById('crudCatalogSelect').value;
+            const item = window.selectedGridItem;
+            const campoUsuario = relacionMaestra[catName];
+            
+            // Verificamos si algún usuario está usando este dato
+            const isBeingUsed = users.some(u => {
+                if (campoUsuario) return u[campoUsuario] && u[campoUsuario].toString().toUpperCase() === item.desc.toUpperCase();
+                if (catName.startsWith('custom_')) return u.customData && u.customData[catName] && u.customData[catName].toString().toUpperCase() === item.desc.toUpperCase();
+                return false;
+            });
+
+            let msg = `⚠️ Este dato será borrado permanentemente, ¿seguro que desea borrarlo?\n\nCatálogo: ${catName.toUpperCase()}\nDato a borrar: ${item.desc}`;
+            
+            if (isBeingUsed) {
+                // Notificamos que la eliminación afectará a los usuarios reales
+                msg = `⚠️ ATENCIÓN: Este registro está siendo usado actualmente por usuarios en la base de datos.\n\nSi decides continuar, el dato se borrará de los perfiles de esos usuarios (Eliminación en Cascada).\n\n¿Estás completamente seguro de borrarlo?`;
+            }
+
+            // Llamamos a la ventana de SI, NO, Cancelar
+            if (document.getElementById('catalogDeleteModal')) {
+                document.getElementById('catalogDeleteMsg').innerText = msg;
+                document.getElementById('catalogDeleteModal').classList.remove('hidden');
+                window.itemToDeleteCache = { catName, id: item.id, desc: item.desc };
+            } else {
+                if (confirm(msg)) {
+                    window.itemToDeleteCache = { catName, id: item.id, desc: item.desc };
+                    window.confirmCatalogDelete('SI');
+                }
+            }
+        };
+
+        // 4. MEGA-CASCADA: Si eliminas un Catálogo COMPLETO (botón 🗑️ de la barra) se borra de la BD
+        const oldDeleteCategory = window.deleteCatalogCategory;
+        if (oldDeleteCategory) {
+            window.deleteCatalogCategory = function() {
+                const selectEl = document.getElementById('crudCatalogSelect');
+                const catId = selectEl.value;
+                if (!catId.startsWith('custom_')) return;
+
+                const meta = window.dynamicCatalogs._metadata.find(m => m.id === catId);
+                if (!meta) return;
+
+                if (confirm(`⚠️ ATENCIÓN: ¿Estás seguro de ELIMINAR POR COMPLETO el catálogo "${meta.label}"?\n\nEsto borrará todas sus opciones y ELIMINARÁ EL DATO DE TODOS LOS USUARIOS en la base de datos.\n\nEsta acción NO se puede deshacer.`)) {
+                    
+                    let changesMade = false;
+                    users.forEach(u => {
+                        if (u.customData && u.customData[catId] !== undefined) {
+                            delete u.customData[catId]; // Borramos el campo de la base de datos
+                            changesMade = true;
+                        }
+                    });
+
+                    window.dynamicCatalogs._metadata = window.dynamicCatalogs._metadata.filter(m => m.id !== catId);
+                    delete window.dynamicCatalogs[catId];
+                    
+                    if (changesMade) saveState();
+                    else if(typeof window.saveCatalogsToFirebase === 'function') window.saveCatalogsToFirebase();
+
+                    selectEl.value = '';
+                    window.loadCatalogData(); 
+                    if(typeof window.refreshCatalogSelects === 'function') window.refreshCatalogSelects(); 
+                    if(typeof window.injectCustomFieldsToPersonalData === 'function') window.injectCustomFieldsToPersonalData(); 
+                    
+                    alert("🗑️ Catálogo eliminado por completo de la base de datos de usuarios y del sistema.");
+                }
+            };
+        }
+    })();
+
+    // =====================================================================
+    // 🛡️ PARCHE V10: ELIMINACIÓN DEFINITIVA DE NODOS EN FIREBASE (CASCADA)
+    // =====================================================================
+    window.deleteCatalogCategory = async function() {
+        const selectEl = document.getElementById('crudCatalogSelect');
+        const catId = selectEl.value;
+        if (!catId.startsWith('custom_')) return;
+
+        const meta = window.dynamicCatalogs._metadata.find(m => m.id === catId);
+        if (!meta) return;
+
+        if (confirm(`⚠️ ATENCIÓN: ¿Estás seguro de ELIMINAR POR COMPLETO el catálogo "${meta.label}"?\n\nEsto borrará todas sus opciones y ELIMINARÁ EL DATO DE TODOS LOS USUARIOS en la base de datos.\n\nEsta acción NO se puede deshacer.`)) {
+            
+            // 1. Borramos el dato de los perfiles de los usuarios (Cascada)
+            let changesMade = false;
+            users.forEach(u => {
+                if (u.customData && u.customData[catId] !== undefined) {
+                    delete u.customData[catId];
+                    changesMade = true;
+                }
+            });
+
+            // 2. Limpiamos la memoria local de la aplicación
+            window.dynamicCatalogs._metadata = window.dynamicCatalogs._metadata.filter(m => m.id !== catId);
+            delete window.dynamicCatalogs[catId];
+            
+            try {
+                // 3. 🔥 ORDEN DE DESTRUCCIÓN EXPLÍCITA A FIREBASE 🔥
+                // Esto le dice a la base de datos que aniquile ese nodo específico
+                await db.collection("cafetec").doc("catalogs").update({
+                    [`data.${catId}`]: firebase.firestore.FieldValue.delete(),
+                    'data._metadata': window.dynamicCatalogs._metadata
+                });
+                
+                // 4. Si se alteraron usuarios, guardamos sus perfiles limpios
+                if (changesMade) await saveState(); 
+
+                // 5. Refrescamos y limpiamos toda la interfaz visual
+                selectEl.value = '';
+                window.loadCatalogData(); 
+                if(typeof window.refreshCatalogSelects === 'function') window.refreshCatalogSelects(); 
+                if(typeof window.injectCustomFieldsToPersonalData === 'function') window.injectCustomFieldsToPersonalData(); 
+                
+                alert("🗑️ Catálogo eliminado por completo de la base de datos y del sistema.");
+                
+            } catch (error) {
+                console.error("Error crítico al borrar de Firebase:", error);
+                alert("Hubo un error al intentar borrar el catálogo de la base de datos en la nube.");
+            }
+        }
+    };
 </script>
 </body>
 <html>
