@@ -653,7 +653,7 @@
                     🔑 Contraseñas
                 </button>
                 <button onclick="window.showAdminCatalogs()" id="catalogsTab"
-                    class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium border-2 border-purple-300">
+                    class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium">
                     🗂️ Mantenimiento Catálogos
                 </button>
                 <button onclick="adminLogout()"
@@ -818,71 +818,69 @@
                 <div id="adminPasswordsList" class="space-y-2"></div>
             </div>
 
-            <div id="adminCatalogsSection" class="hidden mb-6 fade-in bg-white p-5 rounded-xl border border-gray-200 shadow-sm w-full">
-                <h3 class="text-xl font-bold mb-1 text-purple-800 border-b pb-2">🗂️ Mantenimiento de Catálogos</h3>
-                <p class="text-xs text-gray-500 mb-4 font-medium">👤 Usuario logueado: <span id="loggedUserNameCatalog" class="font-bold text-purple-600 uppercase"></span></p>
-                
-                <div class="mb-4 bg-purple-50 p-3 rounded-lg border border-purple-200">
-                    <label class="font-bold text-gray-700 text-sm block mb-1">Nombre de Catálogo:</label>
-                    <select id="crudCatalogSelect" onchange="window.loadCatalogData()" class="w-full border-2 border-purple-300 rounded-lg px-3 py-2 font-bold text-purple-900 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-sm">
-                        <option value="">-- Seleccione un Catálogo --</option>
-                        <option value="nombres">Nombre(s)</option>
-                        <option value="apPaterno">Apellido Paterno</option>
-                        <option value="apMaterno">Apellido Materno</option>
-                        <option value="nacionalidades">Nacionalidades</option>
-                        <option value="grados">Grados Académicos</option>
-                        <option value="puestos">Puestos / Empresas</option>
-                        <option value="calles">Calles</option>
-                        <option value="colonias">Colonias</option>
-                        <option value="municipios">Municipios</option>
-                        <option value="estados">Estados</option>
-                        <option value="paises">Países</option>
-                    </select>
-                </div>
-
-                <div class="border-2 border-blue-200 rounded-xl p-3 bg-blue-50/30 mb-4 relative mt-6">
-                    <span class="absolute -top-3 left-4 bg-white px-2 text-xs font-bold text-blue-600 border border-blue-200 rounded">Datos</span>
-                    
-                    <div class="mb-3 mt-2">
-                        <label class="font-bold text-gray-700 text-sm block mb-1">Descripción:</label>
-                        <input type="text" id="crudDescriptionInput" disabled class="w-full border-2 border-gray-300 rounded-lg px-3 py-2 disabled:bg-gray-200 disabled:cursor-not-allowed uppercase text-sm font-bold text-gray-800" placeholder="Seleccione 'Nuevo' o 'Modificar'...">
-                        <input type="hidden" id="crudEditingId">
+            <div id="adminCatalogsSection" class="hidden mb-6 fade-in">
+                <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm max-w-lg mx-auto mt-4">
+                    <div class="flex items-center gap-2 mb-3 border-b pb-3">
+                        <span class="text-2xl">🗂️</span>
+                        <h3 class="text-xl font-extrabold text-purple-900">Mantenimiento de Catálogos</h3>
                     </div>
 
-                    <div class="bg-white border rounded-lg shadow-inner h-48 overflow-y-auto">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-amber-400 text-amber-900 sticky top-0 z-10">
-                                <tr>
-                                    <th class="px-3 py-2 w-16 border-b-2 border-amber-500">Clave</th>
-                                    <th class="px-3 py-2 border-b-2 border-amber-500">Descripción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="crudCatalogGrid" class="divide-y divide-gray-100">
-                                <tr><td colspan="2" class="text-center py-6 text-gray-400 font-bold text-xs">Seleccione un catálogo arriba</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                    <p class="text-xs text-gray-500 mb-4 font-medium flex items-center gap-1">
+                        👤 Usuario logueado: <span id="loggedUserNameCatalog" class="font-bold text-purple-600 uppercase"></span>
+                    </p>
 
-                <div class="grid grid-cols-2 gap-2">
-                    <button id="btnCrudNuevo" onclick="window.crudActionNew()" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 rounded-lg border border-gray-300 shadow-sm transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1">
-                        📄 Nuevo
-                    </button>
-                    <button id="btnCrudEliminar" onclick="window.crudActionDelete()" disabled class="bg-red-50 hover:bg-red-100 text-red-700 font-bold py-2 rounded-lg border border-red-200 shadow-sm transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1">
-                        🗑️ Eliminar
-                    </button>
-                    <button id="btnCrudModificar" onclick="window.crudActionEdit()" disabled class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 rounded-lg border border-gray-300 shadow-sm transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1">
-                        ✏️ Modificar
-                    </button>
-                    <button id="btnCrudCancelar" onclick="window.crudActionCancel()" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 rounded-lg border border-gray-300 shadow-sm transition-all text-sm flex items-center justify-center gap-1">
-                        ❌ Cancelar
-                    </button>
-                    <button onclick="showAdminPanel()" class="col-span-2 bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 mt-2 rounded-lg shadow-md transition-all text-sm uppercase flex items-center justify-center gap-2">
-                        🚪 Salir / Regresar
-                    </button>
+                    <div class="mb-4 bg-purple-50 p-4 rounded-xl border border-purple-100">
+                        <label class="font-bold text-gray-800 text-sm block mb-2">Nombre de Catálogo:</label>
+                        <select id="crudCatalogSelect" onchange="window.loadCatalogData()" class="w-full border-2 border-purple-300 rounded-lg px-3 py-2.5 font-bold text-purple-900 focus:outline-none focus:border-purple-600 bg-white text-sm shadow-sm transition-colors">
+                            <option value="">-- Seleccione un Catálogo --</option>
+                            <option value="nombres">Nombre(s)</option>
+                            <option value="apPaterno">Apellido Paterno</option>
+                            <option value="apMaterno">Apellido Materno</option>
+                            <option value="nacionalidades">Nacionalidades</option>
+                            <option value="grados">Grados Académicos</option>
+                            <option value="puestos">Puestos / Empresas</option>
+                            <option value="calles">Calles</option>
+                            <option value="colonias">Colonias</option>
+                            <option value="municipios">Municipios</option>
+                            <option value="estados">Estados</option>
+                            <option value="paises">Países</option>
+                        </select>
+                    </div>
+
+                    <div class="border-2 border-blue-100 rounded-xl p-4 bg-blue-50/30 mb-5 relative mt-6">
+                        <span class="absolute -top-3 left-4 bg-white px-3 py-0.5 text-xs font-extrabold text-blue-700 border-2 border-blue-100 rounded-full">Datos</span>
+                        
+                        <div class="mb-4 mt-2">
+                            <label class="font-bold text-gray-800 text-sm block mb-1">Descripción:</label>
+                            <input type="text" id="crudDescriptionInput" disabled class="w-full border-2 border-gray-300 rounded-lg px-3 py-2.5 disabled:bg-gray-200 disabled:text-gray-500 uppercase text-sm font-bold text-gray-900 focus:border-blue-500 focus:ring-0 transition-colors" placeholder="SELECCIONE 'NUEVO' O 'MODIFICAR'...">
+                            <input type="hidden" id="crudEditingId">
+                        </div>
+
+                        <div class="bg-white border-2 border-gray-200 rounded-lg shadow-sm h-48 overflow-y-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-amber-500 text-white sticky top-0 z-10">
+                                    <tr>
+                                        <th class="px-4 py-2.5 w-20 font-bold border-r border-amber-600">Clave</th>
+                                        <th class="px-4 py-2.5 font-bold">Descripción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="crudCatalogGrid" class="divide-y divide-gray-100">
+                                    <tr><td colspan="2" class="text-center py-8 text-gray-400 font-bold text-xs">Seleccione un catálogo arriba</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <button id="btnCrudNuevo" onclick="window.crudActionNew()" disabled class="bg-gray-50 hover:bg-gray-100 text-gray-800 font-bold py-2.5 rounded-lg border-2 border-gray-200 shadow-sm transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed">Nuevo</button>
+                        <button id="btnCrudEliminar" onclick="window.crudActionDelete()" disabled class="bg-red-50 hover:bg-red-100 text-red-600 font-bold py-2.5 rounded-lg border-2 border-red-200 shadow-sm transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed">Eliminar</button>
+                        <button id="btnCrudModificar" onclick="window.crudActionEdit()" disabled class="bg-gray-50 hover:bg-gray-100 text-gray-800 font-bold py-2.5 rounded-lg border-2 border-gray-200 shadow-sm transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed">Modificar</button>
+                        <button id="btnCrudCancelar" onclick="window.crudActionCancel()" class="bg-gray-50 hover:bg-gray-100 text-gray-800 font-bold py-2.5 rounded-lg border-2 border-gray-200 shadow-sm transition-all text-sm">Cancelar</button>
+                        
+                        <button onclick="showAdminPanel()" class="col-span-2 bg-slate-800 hover:bg-slate-900 text-white font-extrabold py-3 mt-2 rounded-lg shadow-md transition-all text-sm uppercase tracking-wider">SALIR / REGRESAR</button>
+                    </div>
                 </div>
             </div>
-
             
 
             <div id="changePasswordModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -6062,10 +6060,8 @@ if (users.some(u => u.username !== originalUsername && u.username.toLowerCase() 
     loadState();
 
     // =====================================================================
-    // 🛡️ PARCHE DEFINITIVO V3: CORRECCIÓN DE PESTAÑAS EMPALMADAS Y BLINDAJE
+    // 🛡️ REPARACIÓN DE PESTAÑAS
     // =====================================================================
-    
-    // 1. Reparamos el cambiador de pestañas para que limpie errores visuales pegados
     window.activateTab = function(targetId) {
         document.querySelectorAll('.admin-tab').forEach(tab => {
             tab.classList.remove('bg-blue-600', 'text-white');
@@ -6082,700 +6078,28 @@ if (users.some(u => u.username !== originalUsername && u.username.toLowerCase() 
             'adminOrdersSection', 'adminKitchenSection', 'adminStatsSection',
             'adminUsersSection', 'adminMemorySection', 'adminPersonalDataSection',
             'adminReportsSection', 'adminSupplierStockSection', 'adminInvoicingSection',
-            'adminEmployeeRegSection', 'adminPasswordsSection'
+            'adminEmployeeRegSection', 'adminPasswordsSection', 'adminCatalogsSection'
         ];
         
         sections.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
                 el.classList.add('hidden');
-                el.style.display = ''; // 🔥 ESTO ELIMINA EL ERROR DE SUPERPOSICIÓN 🔥
+                el.style.display = ''; 
             }
         });
     };
 
-    // 2. Función segura para mostrar Usuarios
     window.showAdminUsers = function() {
         activateTab('usersTab');
-        
-        let section = document.getElementById('adminUsersSection');
-        if (!section) {
-            section = document.createElement('div');
-            section.id = 'adminUsersSection';
-            section.className = 'mb-6';
-            const stockSection = document.getElementById('adminStockSection');
-            if (stockSection && stockSection.parentNode) stockSection.parentNode.appendChild(section);
-        }
-        
-        if (!document.getElementById('adminUsersList')) {
-            section.innerHTML = `
-                <h3 class="text-lg font-semibold mb-3 text-slate-800">👥 Usuarios Registrados</h3>
-                <div id="adminUsersList" class="space-y-3"></div>
-            `;
-        }
-        
-        section.classList.remove('hidden');
-        window.renderAdminUsers();
-    };
-
-    // 3. Dibujado de tarjetas de usuario Inmune a Errores
-    window.renderAdminUsers = function() {
-        const list = document.getElementById('adminUsersList');
-        if (!list) return;
-
-        if (!users || users.length === 0) {
-            list.innerHTML = '<p class="text-center text-gray-500 py-8 font-bold bg-white rounded-xl border border-dashed">No hay usuarios registrados</p>';
-            return;
-        }
-
-        try {
-            const validUsers = users.filter(u => u && typeof u === 'object' && u.username);
-            
-            if (validUsers.length === 0) {
-                list.innerHTML = '<p class="text-center text-gray-500 py-8 font-bold bg-white rounded-xl border border-dashed">No hay usuarios válidos para mostrar.</p>';
-                return;
-            }
-
-            list.innerHTML = validUsers.map(user => {
-                const type = user.userType || 'Desconocido';
-                const name = user.fullName || 'Usuario sin nombre';
-                const uname = user.username || 'Sin Login';
-                const isActive = user.isActive !== false;
-                const isEmp = user.isEmployee || type === 'admin';
-
-                const statusPill = `<span class="ml-2 px-2 py-0.5 rounded-full text-[0.65rem] font-bold ${!isActive ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-green-100 text-green-800 border border-green-200'}">${!isActive ? 'Desactivada' : 'Activa'}</span>`;
-                
-                let regDateText = "N/D";
-                try {
-                    if (user.registrationDate) {
-                        const rd = user.registrationDate instanceof Date ? user.registrationDate : (user.registrationDate.toDate ? user.registrationDate.toDate() : new Date(user.registrationDate));
-                        if (!isNaN(rd.getTime())) regDateText = rd.toLocaleDateString();
-                    }
-                } catch(e) {}
-
-                return `
-                <div class="bg-white border rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow mb-3 relative overflow-hidden">
-                    ${!isActive ? '<div class="absolute top-0 left-0 w-1 h-full bg-red-500"></div>' : '<div class="absolute top-0 left-0 w-1 h-full bg-green-500"></div>'}
-                    <div class="flex items-center justify-between mb-3 border-b pb-3 pl-2">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-slate-50 border border-slate-200 rounded-full flex items-center justify-center shadow-inner">
-                                <span class="text-lg">
-                                    ${type === 'estudiante' ? '👨‍🎓' : type === 'profesor' ? '👨‍🏫' : type === 'docente' ? '👩‍🏫' : type === 'proveedor' ? '🚚' : '👨‍💼'}
-                                </span>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-slate-800 text-sm md:text-base">${name} ${statusPill}</h4>
-                                <p class="text-[0.65rem] text-gray-500 font-bold uppercase mt-0.5">${isEmp ? 'Empleado de Sistema' : type}</p>
-                            </div>
-                        </div>
-                        
-                        <div class="text-right flex flex-col items-end">
-                            <p class="text-[0.6rem] text-gray-400 font-bold uppercase mb-1 hidden md:block">Reg: ${regDateText}</p>
-                            <button onclick="openEditActivityModal('${uname}')" class="flex items-center gap-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3 py-1.5 rounded-lg text-[0.7rem] font-bold transition-colors shadow-sm">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                Actividad
-                            </button>
-                        </div>
-                    </div>
-            
-                    <div class="grid grid-cols-2 gap-4 text-sm px-2">
-                        <div>
-                            <span class="font-bold text-[0.65rem] text-gray-400 uppercase tracking-wider block mb-0.5">Usuario (Login)</span>
-                            <p class="font-mono bg-blue-50 px-2 py-0.5 rounded border border-blue-100 inline-block text-blue-700 text-xs">${uname}</p>
-                        </div>
-                        ${type === 'estudiante' ? `
-                            <div>
-                                <span class="font-bold text-[0.65rem] text-gray-400 uppercase tracking-wider block mb-0.5">Carrera / Semestre</span>
-                                <p class="text-xs text-gray-700">${user.career || 'N/D'} • ${user.semester || '-'}°${user.group || ''}</p>
-                            </div>
-                        ` : `
-                            <div>
-                                <span class="font-bold text-[0.65rem] text-gray-400 uppercase tracking-wider block mb-0.5">Teléfono</span>
-                                <p class="text-xs text-gray-700">${user.phoneNumber || 'N/D'}</p>
-                            </div>
-                        `}
-                    </div>
-                </div>
-                `;
-            }).join('');
-            
-        } catch (error) {
-            console.error("Error crítico: ", error);
-            list.innerHTML = `<div class="p-4 bg-red-50 text-red-700 rounded-lg border border-red-200 font-bold shadow-sm">⚠️ Hay datos corruptos en tu base de datos, pero la app sigue funcionando. Entra a Datos Personales para revisar.</div>`;
-        }
+        const section = document.getElementById('adminUsersSection');
+        if (section) section.classList.remove('hidden');
+        if (typeof renderAdminUsers === 'function') renderAdminUsers();
     };
 
     // =====================================================================
-    // 🛡️ ACTUALIZACIÓN: ALERTA INTELIGENTE DE CURP DUPLICADA
+    // 🗂️ MÓDULO CRUD: LÓGICA DE CATÁLOGOS Y MÁQUINA DE ESTADOS (Reglas PDF)
     // =====================================================================
-    (function() {
-        // 1. Inyectar el Modal HTML dinámicamente (El diseño de la ventana de alerta)
-        if (!document.getElementById('duplicateCurpModal')) {
-            const modalHTML = `
-            <div id="duplicateCurpModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-80 flex items-center justify-center z-[70] p-4 backdrop-blur-sm">
-                <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl p-6 text-center transform transition-all scale-100">
-                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-red-50">
-                        <span class="text-3xl">⚠️</span>
-                    </div>
-                    <h3 class="text-xl font-black text-slate-800 mb-2">CURP Ya Registrada</h3>
-                    <p class="text-sm text-gray-600 mb-6" id="duplicateCurpMsg">Esta CURP ya pertenece a un usuario.</p>
-                    
-                    <div class="flex flex-col gap-3">
-                        <button onclick="dupActionCancel()" class="w-full bg-gray-200 text-gray-800 py-3 rounded-xl font-bold shadow-sm hover:bg-gray-300 transition-colors flex justify-center items-center gap-2">
-                            ❌ Cancelar (Limpiar Registro Nuevo)
-                        </button>
-                        <button onclick="dupActionModify()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-blue-700 transition-colors flex justify-center items-center gap-2">
-                            ✏️ Modificar Registro Existente
-                        </button>
-                        <button onclick="dupActionDelete()" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-red-700 transition-colors flex justify-center items-center gap-2">
-                            🗑 Borrar Registro por Completo
-                        </button>
-                    </div>
-                </div>
-            </div>`;
-            document.body.insertAdjacentHTML('beforeend', modalHTML);
-        }
-
-        // Variable temporal para recordar qué usuario causó el conflicto
-        window.conflictUserCache = null;
-
-        // 2. Sobrescribir la función de validación de CURP con la nueva lógica
-        // 2. Sobrescribir validación: AHORA VALIDA CURP + TIPO DE PERSONA
-        window.validateCurpInline = function() {
-            const curpInput = document.getElementById('editCurp');
-            const typeEl = document.getElementById('editUserType');
-            if (!curpInput || !typeEl) return;
-            
-            const curp = curpInput.value.trim().toUpperCase();
-            const selectedType = typeEl.value;
-            const originalUsername = document.getElementById('editUserId') ? document.getElementById('editUserId').value : '';
-            const msgEl = document.getElementById('curpValidationMsg');
-            const btnAlta = document.getElementById('btnAlta');
-
-            if (msgEl) msgEl.classList.add('hidden');
-            curpInput.classList.remove('border-red-500', 'bg-red-100', 'text-red-900');
-            if (btnAlta) {
-                btnAlta.disabled = false;
-                btnAlta.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
-
-            if (curp.length === 18) {
-                if (!selectedType) {
-                    if (msgEl) {
-                        msgEl.textContent = '⚠️ Selecciona primero el Tipo de Persona.';
-                        msgEl.className = 'text-[0.7rem] font-bold mt-1 text-yellow-600 block';
-                        msgEl.classList.remove('hidden');
-                    }
-                    return;
-                }
-
-                // 🛡️ LÓGICA PRINCIPAL: Buscar si existe la MISMA CURP con el MISMO ROL
-                const conflictCurp = users.find(u => {
-                    if (u.curp !== curp || u.username === originalUsername) return false;
-                    const uType = (u.isEmployee || u.userType === 'admin') ? 'empleado' : u.userType;
-                    return uType === selectedType;
-                });
-                
-                if (conflictCurp) {
-                    // CONFLICTO EXACTO: Mostrar la alerta emergente
-                    window.conflictUserCache = conflictCurp;
-                    const msg = document.getElementById('duplicateCurpMsg');
-                    if (msg) {
-                        msg.innerHTML = "La CURP <b class='text-slate-800 font-mono'>" + curp + "</b> ya está registrada a nombre de:<br><b class='text-blue-600 text-lg block mt-2'>" + conflictCurp.fullName + "</b><span class='text-xs uppercase bg-gray-200 px-2 py-0.5 rounded mt-1 inline-block'>" + conflictCurp.userType + "</span><br><br>¿Qué deseas hacer?";
-                    }
-                    
-                    document.getElementById('duplicateCurpModal').classList.remove('hidden');
-                    
-                    if (msgEl) {
-                        msgEl.textContent = '❌ CURP ya registrada en este rol.';
-                        msgEl.className = 'text-[0.7rem] font-bold mt-1 text-red-500 block';
-                        msgEl.classList.remove('hidden');
-                    }
-                    curpInput.classList.add('border-red-500', 'bg-red-100', 'text-red-900');
-                    if (btnAlta) {
-                        btnAlta.disabled = true;
-                        btnAlta.classList.add('opacity-50', 'cursor-not-allowed');
-                    }
-                } else {
-                    // Verificar si existe en OTRO rol (Es informativo, PERO DEJA GUARDAR)
-                    const otherRole = users.find(u => u.curp === curp && u.username !== originalUsername);
-                    
-                    if (msgEl) {
-                        msgEl.classList.remove('hidden');
-                        if (otherRole) {
-                            msgEl.textContent = `ℹ️ CURP existente como ${otherRole.userType}, permitida como ${selectedType}.`;
-                            msgEl.className = 'text-[0.7rem] font-bold mt-1 text-blue-600 block';
-                        } else {
-                            msgEl.textContent = '✅ CURP disponible.';
-                            msgEl.className = 'text-[0.7rem] font-bold mt-1 text-green-600 block';
-                        }
-                    }
-
-                    // Autollenado de Fecha de nacimiento normal
-                    const yy = curp.substring(4, 6);
-                    const mm = curp.substring(6, 8);
-                    const dd = curp.substring(8, 10);
-                    const char17 = curp.charAt(16); 
-                    const year = /[A-Z]/.test(char17) ? "20" + yy : "19" + yy;
-                    const dateStr = year + "-" + mm + "-" + dd;
-                    
-                    const fechaNacEl = document.getElementById('editFechaNac');
-                    if (fechaNacEl) {
-                        fechaNacEl.value = dateStr;
-                        if (typeof calculateAgeFromDate === 'function') calculateAgeFromDate(dateStr);
-                    }
-                }
-            }
-        };
-        // 3. Lógica de los 3 Botones
-        window.dupActionCancel = function() {
-            document.getElementById('duplicateCurpModal').classList.add('hidden');
-            const form = document.getElementById('editUserForm');
-            if (form) form.reset();
-            
-            const curpInput = document.getElementById('editCurp');
-            if (curpInput) curpInput.classList.remove('border-red-500', 'bg-red-100', 'text-red-900');
-            
-            const msgEl = document.getElementById('curpValidationMsg');
-            if (msgEl) msgEl.classList.add('hidden');
-            
-            const btnAlta = document.getElementById('btnAlta');
-            if (btnAlta) {
-                btnAlta.disabled = false;
-                btnAlta.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
-            
-            const userIdEl = document.getElementById('editUserId');
-            if (userIdEl) userIdEl.value = '';
-            
-            if (typeof toggleEditUserFields === 'function') toggleEditUserFields();
-        };
-
-        window.dupActionModify = function() {
-            document.getElementById('duplicateCurpModal').classList.add('hidden');
-            if (window.conflictUserCache && window.conflictUserCache.username) {
-                if (typeof openEditUserModal === 'function') {
-                    // Mandamos llamar el editor con el usuario encontrado
-                    openEditUserModal(window.conflictUserCache.username);
-                }
-            }
-        };
-
-        window.dupActionDelete = function() {
-            if (window.conflictUserCache && window.conflictUserCache.username) {
-                document.getElementById('duplicateCurpModal').classList.add('hidden');
-                
-                // Extraemos los datos del usuario en conflicto para armar el mensaje
-                const u = window.conflictUserCache;
-                const rfcTexto = u.rfc ? u.rfc : 'No registrado';
-                
-                const mensajeConfirmacion = 
-                    "⚠️ ATENCIÓN: ¿Estás seguro de BORRAR POR COMPLETO este registro?\n\n" +
-                    "👤 Nombre: " + u.fullName + "\n" +
-                    "🏷️ Tipo: " + u.userType.toUpperCase() + "\n" +
-                    "🪪 CURP: " + u.curp + "\n" +
-                    "🏢 RFC: " + rfcTexto + "\n\n" +
-                    "Esta acción no se puede deshacer.";
-                
-                if (confirm(mensajeConfirmacion)) {
-                    
-                    // 1. Borramos al usuario del array global
-                    users = users.filter(user => user.username !== u.username);
-                    
-                    // 2. Guardamos y refrescamos tablas
-                    if (typeof saveState === 'function') saveState(); 
-                    if (typeof renderAdminPersonalData === 'function') renderAdminPersonalData();
-                    if (typeof renderAdminUsers === 'function') renderAdminUsers();
-                    
-                    alert('✅ Registro borrado exitosamente.');
-                    
-                    // 3. MAGIA: Re-validamos la caja actual para que calcule la edad y nos deje continuar con el nuevo usuario
-                    window.validateCurpInline();
-                } else {
-                    window.dupActionCancel();
-                }
-            }
-        };
-        // 4. Reconectar el evento de escritura para asegurarnos de que use este nuevo módulo
-        const curpInput = document.getElementById('editCurp');
-        if (curpInput) {
-            // Clonamos para eliminar comportamientos viejos y conectamos el nuevo
-            const newCurpInput = curpInput.cloneNode(true);
-            curpInput.parentNode.replaceChild(newCurpInput, curpInput);
-            newCurpInput.addEventListener('input', window.validateCurpInline);
-        }
-        
-    })();
-    // =====================================================================
-    // 🗂️ MÓDULO CRUD: MANTENIMIENTO DE CATÁLOGOS (Sincronizado a Firebase)
-    // =====================================================================
-    (function() {
-        // 1. Inyectar Botón en la barra de administrador
-        const tabContainer = document.querySelector('#adminPanel .overflow-x-auto');
-        if (tabContainer && !document.getElementById('catalogsTab')) {
-            const btnHtml = `<button onclick="showAdminCatalogs()" id="catalogsTab" class="admin-tab bg-gray-200 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap font-medium border-2 border-purple-300">🗂️ Mantenimiento Catálogos</button>`;
-            const logoutBtn = Array.from(tabContainer.querySelectorAll('button')).find(b => b.textContent.includes('Cerrar Sesión'));
-            if (logoutBtn) logoutBtn.insertAdjacentHTML('beforebegin', btnHtml);
-            else tabContainer.insertAdjacentHTML('beforeend', btnHtml);
-        }
-
-        // 2. Inyectar Interfaz Visual (Móvil/Responsive) basada en el PDF
-        const contentContainer = document.querySelector('#adminPanel > .p-4');
-        if (contentContainer && !document.getElementById('adminCatalogsSection')) {
-            const sectionHtml = `
-            <div id="adminCatalogsSection" class="hidden mb-6 fade-in bg-white p-4 rounded-xl border border-gray-200 shadow-sm w-full mt-2">
-                <h3 class="text-xl font-bold mb-1 text-purple-800 border-b pb-2">🗂️ Mantenimiento de Catálogos</h3>
-                <p class="text-xs text-gray-500 mb-4 font-medium">👤 Usuario logueado: <span id="loggedUserNameCatalog" class="font-bold text-purple-600 uppercase"></span></p>
-                
-                <div class="mb-4 bg-purple-50 p-3 rounded-lg border border-purple-200">
-                    <label class="font-bold text-gray-700 text-sm block mb-1">Nombre de Catálogo:</label>
-                    <select id="crudCatalogSelect" onchange="window.loadCatalogData()" class="w-full border-2 border-purple-300 rounded-lg px-3 py-2 font-bold text-purple-900 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white text-sm">
-                        <option value="">-- Seleccione un Catálogo --</option>
-                        <option value="nombres">Nombres</option>
-                        <option value="apPaterno">Apellido Paterno</option>
-                        <option value="apMaterno">Apellido Materno</option>
-                        <option value="nacionalidades">Nacionalidades</option>
-                        <option value="grados">Grados Académicos</option>
-                        <option value="puestos">Puestos / Empresas</option>
-                        <option value="calles">Calles</option>
-                        <option value="colonias">Colonias</option>
-                        <option value="municipios">Municipios</option>
-                        <option value="estados">Estados</option>
-                        <option value="paises">Países</option>
-                    </select>
-                </div>
-
-                <div class="border-2 border-blue-200 rounded-xl p-3 bg-blue-50/30 mb-4 relative mt-6">
-                    <span class="absolute -top-3 left-4 bg-white px-2 text-xs font-bold text-blue-600 border border-blue-200 rounded">Datos</span>
-                    
-                    <div class="mb-3 mt-2">
-                        <label class="font-bold text-gray-700 text-sm block mb-1">Descripción:</label>
-                        <input type="text" id="crudDescriptionInput" disabled class="w-full border-2 border-gray-300 rounded-lg px-3 py-2 disabled:bg-gray-200 disabled:cursor-not-allowed uppercase text-sm font-bold text-gray-800" placeholder="Seleccione 'Nuevo' o 'Modificar'...">
-                        <input type="hidden" id="crudEditingId">
-                    </div>
-
-                    <div class="bg-white border rounded-lg shadow-inner h-48 overflow-y-auto">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-amber-400 text-amber-900 sticky top-0 z-10">
-                                <tr>
-                                    <th class="px-3 py-2 w-16 border-b-2 border-amber-500">Clave</th>
-                                    <th class="px-3 py-2 border-b-2 border-amber-500">Descripción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="crudCatalogGrid" class="divide-y divide-gray-100">
-                                <tr><td colspan="2" class="text-center py-6 text-gray-400 font-bold text-xs">Seleccione un catálogo arriba</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-2">
-                    <button id="btnCrudNuevo" onclick="window.crudActionNew()" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 rounded-lg border border-gray-300 shadow-sm transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                        Nuevo
-                    </button>
-                    <button id="btnCrudEliminar" onclick="window.crudActionDelete()" disabled class="bg-red-50 hover:bg-red-100 text-red-700 font-bold py-2 rounded-lg border border-red-200 shadow-sm transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                        Eliminar
-                    </button>
-                    <button id="btnCrudModificar" onclick="window.crudActionEdit()" disabled class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 rounded-lg border border-gray-300 shadow-sm transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                        Modificar
-                    </button>
-                    <button id="btnCrudCancelar" onclick="window.crudActionCancel()" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 rounded-lg border border-gray-300 shadow-sm transition-all text-sm">
-                        Cancelar
-                    </button>
-                    <button onclick="showAdminPanel()" class="col-span-2 bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 mt-2 rounded-lg shadow-md transition-all text-sm uppercase">
-                        Salir / Regresar
-                    </button>
-                </div>
-            </div>`;
-            contentContainer.insertAdjacentHTML('beforeend', sectionHtml);
-        }
-
-        // 3. Estructura de Datos Base y Conexión a Firebase
-        window.dynamicCatalogs = {};
-        const defaultCatalogs = {
-            nombres: [{id: 1, desc: 'ALEXANDER'}, {id: 2, desc: 'ELIZABETH'}],
-            apPaterno: [{id: 1, desc: 'ARCOS'}, {id: 2, desc: 'CASTILLO'}],
-            apMaterno: [{id: 1, desc: 'LOPEZ'}, {id: 2, desc: 'MENDEZ'}],
-            nacionalidades: [{id: 1, desc: 'MEXICANA'}, {id: 2, desc: 'EXTRANJERA'}],
-            grados: [{id: 1, desc: 'LICENCIATURA'}, {id: 2, desc: 'MAESTRÍA'}],
-            puestos: [{id: 1, desc: 'DOCENTE'}, {id: 2, desc: 'ADMINISTRATIVO'}],
-            calles: [{id: 1, desc: 'AV. CENTRAL'}, {id: 2, desc: 'ENCINO'}],
-            colonias: [{id: 1, desc: 'CENTRO'}, {id: 2, desc: 'ARBOLEDAS'}],
-            municipios: [{id: 1, desc: 'COMITAN'}, {id: 2, desc: 'MARGARITAS'}],
-            estados: [{id: 1, desc: 'CHIAPAS'}],
-            paises: [{id: 1, desc: 'MEXICO'}]
-        };
-
-        // Escuchar Firebase para sincronizar catálogos
-        db.collection("cafetec").doc("catalogs").onSnapshot((doc) => {
-            if (doc.exists) window.dynamicCatalogs = doc.data().data || {...defaultCatalogs};
-            else window.dynamicCatalogs = {...defaultCatalogs};
-            
-            window.populateAllDropdowns(); // Sincroniza formularios de "Datos Personales" al instante
-            
-            // Si la ventana está abierta, refrescar la tabla del CRUD
-            const catSection = document.getElementById('adminCatalogsSection');
-            if (catSection && !catSection.classList.contains('hidden')) {
-                if(document.getElementById('crudCatalogSelect').value !== '') window.loadCatalogData();
-            }
-        });
-
-        // Función para subir a Firebase
-        window.saveCatalogsToFirebase = async function() {
-            try {
-                await db.collection("cafetec").doc("catalogs").set({ data: window.dynamicCatalogs });
-            } catch(e) { console.error("Error guardando catálogos", e); }
-        };
-
-        // 4. Llenador Dinámico de los Dropdowns del formulario de "Datos Personales"
-        window.populateAllDropdowns = function() {
-            const mappings = {
-                'editFullName': 'nombres', 'editApPaterno': 'apPaterno', 'editApMaterno': 'apMaterno',
-                'editNacionalidad': 'nacionalidades', 'editGrado': 'grados', 'editPuesto': 'puestos',
-                'editCalle': 'calles', 'editColonia': 'colonias', 'editMunicipio': 'municipios',
-                'editEstado': 'estados', 'editPais': 'paises'
-            };
-
-            for (const [selectId, catalogKey] of Object.entries(mappings)) {
-                const selectEl = document.getElementById(selectId);
-                if (selectEl) {
-                    const currentVal = selectEl.value; // Guardar valor seleccionado por el usuario
-                    selectEl.innerHTML = '<option value="">Seleccione...</option>'; // Limpiar
-                    
-                    const catData = window.dynamicCatalogs[catalogKey] || [];
-                    
-                    // Ordenar alfabéticamente para mayor ergonomía
-                    const sortedData = [...catData].sort((a, b) => a.desc.localeCompare(b.desc));
-                    
-                    sortedData.forEach(item => {
-                        selectEl.innerHTML += `<option value="${item.desc}">${item.desc}</option>`;
-                    });
-                    
-                    // Restaurar el valor que tenía seleccionado si aún existe en el catálogo
-                    if (sortedData.some(i => i.desc === currentVal)) selectEl.value = currentVal;
-                }
-            }
-        };
-
-        // 5. MÁQUINA DE ESTADOS CRUD (Cumpliendo reglas del PDF)
-        window.crudState = 'IDLE'; // 'IDLE', 'NEW', 'EDIT'
-        window.selectedGridItem = null;
-
-        window.showAdminCatalogs = function() {
-            activateTab('catalogsTab');
-            document.getElementById('adminCatalogsSection').classList.remove('hidden');
-            
-            // PD2: Cargar datos del usuario logueado
-            if(currentUser) {
-                document.getElementById('loggedUserNameCatalog').textContent = `${currentUser.fullName} (${currentUser.userType})`;
-            }
-            window.resetCrudUI();
-        };
-
-        window.resetCrudUI = function() {
-            document.getElementById('crudDescriptionInput').value = '';
-            document.getElementById('crudDescriptionInput').disabled = true; // Área inactiva por defecto
-            document.getElementById('crudEditingId').value = '';
-            
-            const btnNuevo = document.getElementById('btnCrudNuevo');
-            const btnModif = document.getElementById('btnCrudModificar');
-            const btnEliminar = document.getElementById('btnCrudEliminar');
-            
-            btnNuevo.textContent = 'Nuevo';
-            btnModif.textContent = 'Modificar';
-            
-            const catalogSelected = document.getElementById('crudCatalogSelect').value !== '';
-            
-            // Regla: Botones deshabilitados hasta que seleccione un catálogo
-            btnNuevo.disabled = !catalogSelected;
-            btnModif.disabled = true;
-            btnEliminar.disabled = true;
-            
-            window.crudState = 'IDLE';
-            window.selectedGridItem = null;
-            
-            if(catalogSelected) window.loadCatalogData();
-        };
-
-        window.loadCatalogData = function() {
-            const catName = document.getElementById('crudCatalogSelect').value;
-            const grid = document.getElementById('crudCatalogGrid');
-            
-            if (window.crudState !== 'IDLE') window.resetCrudUI();
-
-            if (!catName) {
-                grid.innerHTML = '<tr><td colspan="2" class="text-center py-6 text-gray-400 font-bold text-xs">Seleccione un catálogo arriba</td></tr>';
-                document.getElementById('btnCrudNuevo').disabled = true;
-                return;
-            }
-
-            document.getElementById('btnCrudNuevo').disabled = false;
-            
-            const data = window.dynamicCatalogs[catName] || [];
-            // Ordenamos por clave de menor a mayor
-            const sortedData = [...data].sort((a, b) => a.id - b.id);
-
-            if (sortedData.length === 0) {
-                grid.innerHTML = '<tr><td colspan="2" class="text-center py-6 text-gray-400 font-bold text-xs">Catálogo vacío</td></tr>';
-                return;
-            }
-
-            grid.innerHTML = sortedData.map(item => `
-                <tr onclick="window.selectGridItem(${item.id}, '${item.desc}')" id="crudRow_${item.id}" class="cursor-pointer hover:bg-amber-50 transition-colors border-b border-gray-50">
-                    <td class="px-3 py-2 font-mono text-gray-500">${item.id}</td>
-                    <td class="px-3 py-2 font-bold text-gray-800">${item.desc}</td>
-                </tr>
-            `).join('');
-        };
-
-        window.selectGridItem = function(id, desc) {
-            if (window.crudState !== 'IDLE') return;
-
-            document.querySelectorAll('#crudCatalogGrid tr').forEach(tr => tr.classList.remove('bg-amber-100'));
-            document.getElementById(`crudRow_${id}`).classList.add('bg-amber-100');
-
-            window.selectedGridItem = { id, desc };
-            
-            // Activar Eliminar y Modificar al seleccionar
-            document.getElementById('btnCrudModificar').disabled = false;
-            document.getElementById('btnCrudEliminar').disabled = false;
-        };
-
-        // ACCIÓN 1: ALTA (Create / Nuevo)
-        window.crudActionNew = function() {
-            const btn = document.getElementById('btnCrudNuevo');
-            const input = document.getElementById('crudDescriptionInput');
-            
-            if (window.crudState === 'IDLE') {
-                window.crudState = 'NEW';
-                input.disabled = false; // Habilitar área de captura
-                input.value = '';
-                input.focus();
-                
-                btn.innerHTML = '💾 Grabar'; // Cambiar texto
-                document.getElementById('btnCrudModificar').disabled = true;
-                document.getElementById('btnCrudEliminar').disabled = true;
-                document.querySelectorAll('#crudCatalogGrid tr').forEach(tr => tr.classList.remove('bg-amber-100'));
-                window.selectedGridItem = null;
-                
-            } else if (window.crudState === 'NEW') {
-                // VALIDACIÓN Y GRABADO
-                const newVal = input.value.trim().toUpperCase();
-                if (!newVal) { alert("⚠️ La descripción no puede estar vacía."); return; }
-                
-                const catName = document.getElementById('crudCatalogSelect').value;
-                if (!window.dynamicCatalogs[catName]) window.dynamicCatalogs[catName] = [];
-                
-                // Sin duplicados
-                if (window.dynamicCatalogs[catName].some(i => i.desc === newVal)) {
-                    alert("❌ ERROR: Esta descripción ya existe en el catálogo. No se aceptan duplicados.");
-                    return;
-                }
-
-                // Crear ID consecutivo
-                const newId = window.dynamicCatalogs[catName].reduce((max, i) => Math.max(max, i.id), 0) + 1;
-                window.dynamicCatalogs[catName].push({ id: newId, desc: newVal });
-                
-                window.saveCatalogsToFirebase(); // Sincronizar
-                alert("✅ Registro guardado exitosamente.");
-                window.resetCrudUI();
-            }
-        };
-
-        // ACCIÓN 2: MODIFICAR (Update)
-        window.crudActionEdit = function() {
-            const btn = document.getElementById('btnCrudModificar');
-            const input = document.getElementById('crudDescriptionInput');
-            
-            if (window.crudState === 'IDLE' && window.selectedGridItem) {
-                window.crudState = 'EDIT';
-                input.disabled = false; // Habilitar área de captura
-                input.value = window.selectedGridItem.desc;
-                document.getElementById('crudEditingId').value = window.selectedGridItem.id;
-                input.focus();
-                
-                btn.innerHTML = '💾 Grabar'; // Cambiar texto
-                document.getElementById('btnCrudNuevo').disabled = true;
-                document.getElementById('btnCrudEliminar').disabled = true;
-                
-            } else if (window.crudState === 'EDIT') {
-                // VALIDACIÓN Y ACTUALIZACIÓN
-                const editVal = input.value.trim().toUpperCase();
-                const editId = parseInt(document.getElementById('crudEditingId').value);
-                const catName = document.getElementById('crudCatalogSelect').value;
-
-                if (!editVal) { alert("⚠️ La descripción no puede estar vacía."); return; }
-
-                // Sin duplicados (ignorando el que estoy editando)
-                if (window.dynamicCatalogs[catName].some(i => i.desc === editVal && i.id !== editId)) {
-                    alert("❌ ERROR: Esta descripción ya existe. No se aceptan duplicados.");
-                    return;
-                }
-
-                const itemIndex = window.dynamicCatalogs[catName].findIndex(i => i.id === editId);
-                if (itemIndex > -1) {
-                    window.dynamicCatalogs[catName][itemIndex].desc = editVal;
-                    window.saveCatalogsToFirebase(); // Sincronizar
-                    alert("✅ Registro actualizado exitosamente.");
-                }
-                window.resetCrudUI();
-            }
-        };
-
-        // ACCIÓN 3: ELIMINAR (Delete / Baja)
-        window.crudActionDelete = function() {
-            if (!window.selectedGridItem) return;
-            const catName = document.getElementById('crudCatalogSelect').value;
-            const item = window.selectedGridItem;
-
-            // Validación del PDF: Mostrar mensaje con la descripción a borrar
-            const msg = `⚠️ Este dato será borrado permanentemente, ¿seguro que desea borrarlo?\n\nCatálogo: ${catName.toUpperCase()}\nClave: ${item.id}\nDescripción: ${item.desc}`;
-            
-            if (confirm(msg)) {
-                window.dynamicCatalogs[catName] = window.dynamicCatalogs[catName].filter(i => i.id !== item.id);
-                window.saveCatalogsToFirebase(); // Sincronizar
-                alert("🗑️ Registro eliminado de manera definitiva.");
-                window.resetCrudUI();
-            }
-        };
-
-        // ACCIÓN 4: CANCELAR
-        window.crudActionCancel = function() {
-            window.resetCrudUI();
-        };
-
-        // 6. Asegurar que las pestañas respondan correctamente
-        window.activateTab = function(targetId) {
-            document.querySelectorAll('.admin-tab').forEach(tab => {
-                tab.classList.remove('bg-blue-600', 'text-white');
-                tab.classList.add('bg-gray-200', 'text-gray-700');
-            });
-            const targetBtn = document.getElementById(targetId);
-            if (targetBtn) {
-                targetBtn.classList.remove('bg-gray-200', 'text-gray-700');
-                targetBtn.classList.add('bg-blue-600', 'text-white');
-            }
-
-            const sections = [
-                'adminStockSection', 'adminRawMaterialsSection', 'adminSupplierPurchasesSection',
-                'adminOrdersSection', 'adminKitchenSection', 'adminStatsSection',
-                'adminUsersSection', 'adminMemorySection', 'adminPersonalDataSection',
-                'adminReportsSection', 'adminSupplierStockSection', 'adminInvoicingSection',
-                'adminEmployeeRegSection', 'adminPasswordsSection', 'adminCatalogsSection'
-            ];
-            
-            sections.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) { el.classList.add('hidden'); el.style.display = ''; }
-            });
-        };
-    })();
-
-    // =====================================================================
-    // 🗂️ MÓDULO CRUD: LÓGICA Y SINCRONIZACIÓN DE CATÁLOGOS
-    // =====================================================================
-    
-    // 1. Estructura de Datos Base y Conexión a Firebase
     window.dynamicCatalogs = {};
     const defaultCatalogs = {
         nombres: [{id: 1, desc: 'ALEXANDER'}, {id: 2, desc: 'ELIZABETH'}],
@@ -6791,32 +6115,26 @@ if (users.some(u => u.username !== originalUsername && u.username.toLowerCase() 
         paises: [{id: 1, desc: 'MEXICO'}]
     };
 
-    // Escuchar Firebase para sincronizar catálogos en vivo
     db.collection("cafetec").doc("catalogs").onSnapshot((doc) => {
         if (doc.exists) window.dynamicCatalogs = doc.data().data || {...defaultCatalogs};
         else window.dynamicCatalogs = {...defaultCatalogs};
+        window.populateAllDropdowns();
         
-        window.populateAllDropdowns(); // Sincroniza formularios de "Datos Personales" al instante
-        
-        // Refrescar tabla si está abierta
         const catSection = document.getElementById('adminCatalogsSection');
         if (catSection && !catSection.classList.contains('hidden') && document.getElementById('crudCatalogSelect').value !== '') {
             window.loadCatalogData();
         }
     });
 
-    // Interceptar guardado global para incluir los catálogos en la nube
     const oldSaveState = saveState;
     saveState = async function() {
         await oldSaveState();
         if (isDataLoaded) {
-            try {
-                await db.collection("cafetec").doc("catalogs").set({ data: window.dynamicCatalogs });
-            } catch(e) { console.error("Error guardando catálogos", e); }
+            try { await db.collection("cafetec").doc("catalogs").set({ data: window.dynamicCatalogs }); } 
+            catch(e) { console.error("Error guardando catálogos", e); }
         }
     };
 
-    // 2. Llenador Dinámico de Dropdowns en Datos Personales
     window.populateAllDropdowns = function() {
         const mappings = {
             'editFullName': 'nombres', 'editApPaterno': 'apPaterno', 'editApMaterno': 'apMaterno',
@@ -6832,23 +6150,19 @@ if (users.some(u => u.username !== originalUsername && u.username.toLowerCase() 
                 selectEl.innerHTML = '<option value="">Seleccione...</option>';
                 const catData = window.dynamicCatalogs[catalogKey] || [];
                 const sortedData = [...catData].sort((a, b) => a.desc.localeCompare(b.desc));
-                
-                sortedData.forEach(item => {
-                    selectEl.innerHTML += `<option value="${item.desc}">${item.desc}</option>`;
-                });
-                
+                sortedData.forEach(item => { selectEl.innerHTML += `<option value="${item.desc}">${item.desc}</option>`; });
                 if (sortedData.some(i => i.desc === currentVal)) selectEl.value = currentVal;
             }
         }
     };
 
-    // 3. MÁQUINA DE ESTADOS CRUD
     window.crudState = 'IDLE';
     window.selectedGridItem = null;
 
     window.showAdminCatalogs = function() {
         activateTab('catalogsTab');
-        document.getElementById('adminCatalogsSection').classList.remove('hidden');
+        const section = document.getElementById('adminCatalogsSection');
+        if (section) section.classList.remove('hidden');
         if(currentUser) document.getElementById('loggedUserNameCatalog').textContent = `${currentUser.fullName} (${currentUser.userType})`;
         window.resetCrudUI();
     };
@@ -6856,17 +6170,21 @@ if (users.some(u => u.username !== originalUsername && u.username.toLowerCase() 
     window.resetCrudUI = function() {
         const input = document.getElementById('crudDescriptionInput');
         input.value = '';
-        input.disabled = true;
+        
+        // REGLA DEL PDF: Área de captura NO editable al inicio
+        input.disabled = true; 
         document.getElementById('crudEditingId').value = '';
         
         const btnNuevo = document.getElementById('btnCrudNuevo');
         const btnModif = document.getElementById('btnCrudModificar');
         const btnEliminar = document.getElementById('btnCrudEliminar');
         
-        btnNuevo.innerHTML = '📄 Nuevo';
-        btnModif.innerHTML = '✏️ Modificar';
+        btnNuevo.textContent = 'Nuevo';
+        btnModif.textContent = 'Modificar';
         
         const catalogSelected = document.getElementById('crudCatalogSelect').value !== '';
+        
+        // REGLA DEL PDF: Botones deshabilitados hasta seleccionar catálogo
         btnNuevo.disabled = !catalogSelected;
         btnModif.disabled = true;
         btnEliminar.disabled = true;
@@ -6882,7 +6200,7 @@ if (users.some(u => u.username !== originalUsername && u.username.toLowerCase() 
         if (window.crudState !== 'IDLE') window.resetCrudUI();
 
         if (!catName) {
-            grid.innerHTML = '<tr><td colspan="2" class="text-center py-6 text-gray-400 font-bold text-xs">Seleccione un catálogo arriba</td></tr>';
+            grid.innerHTML = '<tr><td colspan="2" class="text-center py-8 text-gray-400 font-bold text-xs">Seleccione un catálogo arriba</td></tr>';
             document.getElementById('btnCrudNuevo').disabled = true;
             return;
         }
@@ -6891,14 +6209,14 @@ if (users.some(u => u.username !== originalUsername && u.username.toLowerCase() 
         const sortedData = [...(window.dynamicCatalogs[catName] || [])].sort((a, b) => a.id - b.id);
 
         if (sortedData.length === 0) {
-            grid.innerHTML = '<tr><td colspan="2" class="text-center py-6 text-gray-400 font-bold text-xs">Catálogo vacío</td></tr>';
+            grid.innerHTML = '<tr><td colspan="2" class="text-center py-8 text-gray-400 font-bold text-xs">Catálogo vacío</td></tr>';
             return;
         }
 
         grid.innerHTML = sortedData.map(item => `
-            <tr onclick="window.selectGridItem(${item.id}, '${item.desc}')" id="crudRow_${item.id}" class="cursor-pointer hover:bg-amber-50 transition-colors border-b border-gray-50">
-                <td class="px-3 py-2 font-mono text-gray-500">${item.id}</td>
-                <td class="px-3 py-2 font-bold text-gray-800">${item.desc}</td>
+            <tr onclick="window.selectGridItem(${item.id}, '${item.desc}')" id="crudRow_${item.id}" class="cursor-pointer hover:bg-amber-50 transition-colors border-b border-gray-100">
+                <td class="px-4 py-2.5 font-mono text-gray-500 border-r border-gray-100">${item.id}</td>
+                <td class="px-4 py-2.5 font-bold text-gray-800">${item.desc}</td>
             </tr>
         `).join('');
     };
@@ -6917,8 +6235,12 @@ if (users.some(u => u.username !== originalUsername && u.username.toLowerCase() 
         const input = document.getElementById('crudDescriptionInput');
         if (window.crudState === 'IDLE') {
             window.crudState = 'NEW';
-            input.disabled = false; input.value = ''; input.focus();
-            btn.innerHTML = '💾 <span class="text-blue-700">Grabar</span>';
+            // REGLA DEL PDF: Habilitar captura al pulsar Nuevo
+            input.disabled = false; 
+            input.value = ''; 
+            input.focus();
+            
+            btn.textContent = 'Grabar';
             document.getElementById('btnCrudModificar').disabled = true;
             document.getElementById('btnCrudEliminar').disabled = true;
             document.querySelectorAll('#crudCatalogGrid tr').forEach(tr => tr.classList.remove('bg-amber-100'));
@@ -6928,7 +6250,7 @@ if (users.some(u => u.username !== originalUsername && u.username.toLowerCase() 
             if (!newVal) { alert("⚠️ La descripción no puede estar vacía."); return; }
             const catName = document.getElementById('crudCatalogSelect').value;
             if (!window.dynamicCatalogs[catName]) window.dynamicCatalogs[catName] = [];
-            if (window.dynamicCatalogs[catName].some(i => i.desc === newVal)) { alert("❌ ERROR: Esta descripción ya existe. No duplicados."); return; }
+            if (window.dynamicCatalogs[catName].some(i => i.desc === newVal)) { alert("❌ ERROR: Esta descripción ya existe. No se aceptan duplicados."); return; }
             const newId = window.dynamicCatalogs[catName].reduce((max, i) => Math.max(max, i.id), 0) + 1;
             window.dynamicCatalogs[catName].push({ id: newId, desc: newVal });
             saveState(); alert("✅ Registro guardado exitosamente."); window.resetCrudUI();
@@ -6940,10 +6262,13 @@ if (users.some(u => u.username !== originalUsername && u.username.toLowerCase() 
         const input = document.getElementById('crudDescriptionInput');
         if (window.crudState === 'IDLE' && window.selectedGridItem) {
             window.crudState = 'EDIT';
-            input.disabled = false; input.value = window.selectedGridItem.desc;
+            // REGLA DEL PDF: Habilitar captura al pulsar Modificar
+            input.disabled = false; 
+            input.value = window.selectedGridItem.desc;
             document.getElementById('crudEditingId').value = window.selectedGridItem.id;
             input.focus();
-            btn.innerHTML = '💾 <span class="text-blue-700">Grabar</span>';
+            
+            btn.textContent = 'Grabar';
             document.getElementById('btnCrudNuevo').disabled = true;
             document.getElementById('btnCrudEliminar').disabled = true;
         } else if (window.crudState === 'EDIT') {
@@ -6973,17 +6298,224 @@ if (users.some(u => u.username !== originalUsername && u.username.toLowerCase() 
 
     window.crudActionCancel = function() { window.resetCrudUI(); };
 
-    // 4. Parche a la función activateTab para que incluya nuestra nueva pestaña
-    const oldActivateTab = activateTab;
-    activateTab = function(targetId) {
-        oldActivateTab(targetId);
-        const sec = document.getElementById('adminCatalogsSection');
-        if (targetId === 'catalogsTab') {
-            if(sec) sec.classList.remove('hidden');
+    // =====================================================================
+    // 🛡️ PARCHE V2: RECUPERAR PESTAÑA DE USUARIOS (Ubicación Corregida)
+    // =====================================================================
+    window.showAdminUsers = function() {
+        window.activateTab('usersTab');
+        
+        let section = document.getElementById('adminUsersSection');
+        const correctContainer = document.getElementById('adminStockSection').parentNode; // Apuntamos al lugar exacto
+        
+        // Si no existe, la creamos
+        if (!section) {
+            section = document.createElement('div');
+            section.id = 'adminUsersSection';
+            section.className = 'mb-6 bg-white p-5 rounded-xl border border-gray-200 shadow-sm w-full mt-4 fade-in';
+            section.innerHTML = `
+                <div class="flex items-center gap-2 mb-4 border-b pb-3">
+                    <span class="text-2xl">👥</span>
+                    <h3 class="text-xl font-extrabold text-purple-900">Usuarios Registrados</h3>
+                </div>
+                <div id="adminUsersList" class="space-y-3"></div>
+            `;
+            if (correctContainer) correctContainer.appendChild(section);
         } else {
-            if(sec) sec.classList.add('hidden');
+            // Si ya existe pero se quedó atorada en el fondo azul, la sacamos de ahí y la movemos a la zona blanca
+            if (section.parentNode !== correctContainer) {
+                correctContainer.appendChild(section);
+                // Le arreglamos las clases por si se rompió el diseño
+                section.className = 'mb-6 bg-white p-5 rounded-xl border border-gray-200 shadow-sm w-full mt-4 fade-in';
+            }
+        }
+        
+        section.classList.remove('hidden');
+        section.style.display = '';
+        if (typeof window.renderAdminUsers === 'function') window.renderAdminUsers();
+    };
+
+    window.renderAdminUsers = function() {
+        const list = document.getElementById('adminUsersList');
+        if (!list) return;
+
+        if (!users || users.length === 0) {
+            list.innerHTML = '<p class="text-center text-gray-500 py-8 font-bold bg-gray-50 rounded-xl border border-dashed">No hay usuarios registrados</p>';
+            return;
+        }
+
+        try {
+            const validUsers = users.filter(u => u && typeof u === 'object' && u.username);
+            if (validUsers.length === 0) {
+                list.innerHTML = '<p class="text-center text-gray-500 py-8 font-bold bg-gray-50 rounded-xl border border-dashed">No hay usuarios válidos para mostrar.</p>';
+                return;
+            }
+
+            list.innerHTML = validUsers.map(user => {
+                const type = user.userType || 'Desconocido';
+                const name = user.fullName || 'Usuario sin nombre';
+                const uname = user.username || 'Sin Login';
+                const isActive = user.isActive !== false;
+                const isEmp = user.isEmployee || type === 'admin';
+
+                const statusPill = `<span class="ml-2 px-2 py-0.5 rounded-full text-[0.65rem] font-bold ${!isActive ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-green-100 text-green-800 border border-green-200'}">${!isActive ? 'Desactivada' : 'Activa'}</span>`;
+                
+                let regDateText = "N/D";
+                try {
+                    if (user.registrationDate) {
+                        const rd = user.registrationDate instanceof Date ? user.registrationDate : (user.registrationDate.toDate ? user.registrationDate.toDate() : new Date(user.registrationDate));
+                        if (!isNaN(rd.getTime())) regDateText = rd.toLocaleDateString();
+                    }
+                } catch(e) {}
+
+                return `
+                <div class="bg-white border-2 border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                    ${!isActive ? '<div class="absolute top-0 left-0 w-1.5 h-full bg-red-500"></div>' : '<div class="absolute top-0 left-0 w-1.5 h-full bg-green-500"></div>'}
+                    <div class="flex items-center justify-between mb-3 border-b border-gray-100 pb-3 pl-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-slate-50 border border-slate-200 rounded-full flex items-center justify-center shadow-inner">
+                                <span class="text-lg">
+                                    ${type === 'estudiante' ? '👨‍🎓' : type === 'profesor' ? '👨‍🏫' : type === 'docente' ? '👩‍🏫' : type === 'proveedor' ? '🚚' : '👨‍💼'}
+                                </span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm md:text-base">${name} ${statusPill}</h4>
+                                <p class="text-[0.65rem] text-gray-500 font-bold uppercase mt-0.5">${isEmp ? 'Empleado de Sistema' : type}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="text-right flex flex-col items-end">
+                            <p class="text-[0.6rem] text-gray-400 font-bold uppercase mb-1 hidden md:block">Reg: ${regDateText}</p>
+                            <button onclick="openEditActivityModal('${uname}')" class="flex items-center gap-1 bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-300 px-3 py-1.5 rounded-lg text-[0.7rem] font-bold transition-colors shadow-sm">
+                                ⚙️ Actividad
+                            </button>
+                        </div>
+                    </div>
+            
+                    <div class="grid grid-cols-2 gap-4 text-sm px-3">
+                        <div>
+                            <span class="font-bold text-[0.65rem] text-gray-400 uppercase tracking-wider block mb-0.5">Usuario (Login)</span>
+                            <p class="font-mono bg-blue-50 px-2 py-0.5 rounded border border-blue-200 inline-block text-blue-800 text-xs font-bold">${uname}</p>
+                        </div>
+                        ${type === 'estudiante' ? `
+                            <div>
+                                <span class="font-bold text-[0.65rem] text-gray-400 uppercase tracking-wider block mb-0.5">Carrera / Semestre</span>
+                                <p class="text-xs text-gray-700 font-medium">${user.career || 'N/D'} • ${user.semester || '-'}°${user.group || ''}</p>
+                            </div>
+                        ` : `
+                            <div>
+                                <span class="font-bold text-[0.65rem] text-gray-400 uppercase tracking-wider block mb-0.5">Teléfono</span>
+                                <p class="text-xs text-gray-700 font-medium">${user.phoneNumber || 'N/D'}</p>
+                            </div>
+                        `}
+                    </div>
+                </div>
+                `;
+            }).join('');
+            
+        } catch (error) {
+            console.error("Error crítico: ", error);
+            list.innerHTML = `<div class="p-4 bg-red-50 text-red-700 rounded-lg border border-red-200 font-bold shadow-sm">⚠️ Hay datos corruptos en tu base de datos, pero la app sigue funcionando. Entra a Datos Personales para revisar.</div>`;
         }
     };
+
+    // =====================================================================
+    // 🛡️ PARCHE V6: ELIMINACIÓN DE CATÁLOGOS CON REGLAS DE DEPENDENCIA
+    // =====================================================================
+    (function() {
+        // 1. Inyectamos el Modal Custom de 3 botones (SI, NO, Cancelar)
+        if (!document.getElementById('catalogDeleteModal')) {
+            const modalHTML = `
+            <div id="catalogDeleteModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-80 flex items-center justify-center z-[90] p-4 backdrop-blur-sm">
+                <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6 text-center transform transition-all scale-100">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-red-50">
+                        <span class="text-3xl">⚠️</span>
+                    </div>
+                    <p id="catalogDeleteMsg" class="text-sm text-gray-700 mb-6 font-medium whitespace-pre-line"></p>
+                    
+                    <div class="flex flex-col gap-2">
+                        <button onclick="confirmCatalogDelete('SI')" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-red-700 transition-colors">
+                            SI
+                        </button>
+                        <button onclick="confirmCatalogDelete('NO')" class="w-full bg-slate-200 text-slate-800 py-3 rounded-xl font-bold shadow-sm hover:bg-slate-300 transition-colors">
+                            NO
+                        </button>
+                        <button onclick="confirmCatalogDelete('CANCELAR')" class="w-full bg-white text-gray-500 py-2 rounded-xl font-bold hover:text-gray-700 transition-colors underline">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        // 2. Sobrescribimos la función de Borrar (crudActionDelete)
+        window.crudActionDelete = function() {
+            if (!window.selectedGridItem) return;
+            const catName = document.getElementById('crudCatalogSelect').value;
+            const item = window.selectedGridItem;
+
+            // MAPA DE RELACIONES: ¿Qué catálogo afecta a qué campo del usuario?
+            const relacionMaestra = {
+                'nombres': 'fullName',
+                'apPaterno': 'apPaterno',
+                'apMaterno': 'apMaterno',
+                'nacionalidades': 'nacionalidad',
+                'grados': 'gradoAcademico',
+                'puestos': 'puestoEmpresa',
+                'calles': 'calle',
+                'colonias': 'colonia',
+                'municipios': 'municipio',
+                'estados': 'estado',
+                'paises': 'pais'
+            };
+
+            const campoUsuario = relacionMaestra[catName];
+            
+            // VERIFICACIÓN DE DEPENDENCIA
+            // Busca en toda la base de usuarios si alguno está usando el texto exacto que intentamos borrar
+            const isBeingUsed = users.some(u => {
+                return u[campoUsuario] && u[campoUsuario].toString().toUpperCase() === item.desc.toUpperCase();
+            });
+
+            if (isBeingUsed) {
+                // REGLA 1: Si está en uso, mostrar advertencia exacta y abortar
+                alert(`⚠️ Registro no se puede borrar, Completa datos.\n\nDescripción a eliminar: ${item.desc}`);
+                return;
+            }
+
+            // REGLA 2: Si NO está en uso, mostrar el modal con SI, NO, Cancelar
+            const msg = `Este dato, será borrado permanentemente, seguro que desea borrarlo\n\nCatálogo: ${catName.toUpperCase()}\nDato a borrar: ${item.desc}`;
+            
+            document.getElementById('catalogDeleteMsg').innerText = msg;
+            document.getElementById('catalogDeleteModal').classList.remove('hidden');
+            
+            // Guardamos temporalmente qué vamos a borrar para que el modal lo sepa
+            window.itemToDeleteCache = { catName, id: item.id };
+        };
+
+        // 3. Función que responde a los 3 botones del Modal
+        window.confirmCatalogDelete = function(action) {
+            document.getElementById('catalogDeleteModal').classList.add('hidden');
+            
+            if (action === 'SI') {
+                const { catName, id } = window.itemToDeleteCache;
+                
+                // Eliminado de la relación de tipo catálogo de manera definitiva
+                window.dynamicCatalogs[catName] = window.dynamicCatalogs[catName].filter(i => i.id !== id);
+                
+                // Guardar en Firebase
+                if(typeof window.saveCatalogsToFirebase === 'function') window.saveCatalogsToFirebase(); 
+                
+                alert("🗑️ Registro eliminado de la relación de tipo catálogo de manera definitiva.");
+                window.resetCrudUI();
+            } else if (action === 'NO' || action === 'CANCELAR') {
+                // En caso contrario, se debe mantener el registro en cuestión.
+                window.itemToDeleteCache = null; // Limpiamos caché
+                window.resetCrudUI(); // Reseteamos la selección y bloqueamos la captura
+            }
+        };
+
+    })();
 </script>
 </body>
 <html>
